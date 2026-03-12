@@ -1,0 +1,9 @@
+.rating {
+  color: #f4c542;
+  display: flex;
+  gap: 4px;
+  font-size: 1.1rem;
+}
+
+
+

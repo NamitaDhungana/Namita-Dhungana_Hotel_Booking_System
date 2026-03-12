@@ -1,0 +1,219 @@
+/* Global */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Arial", sans-serif;
+  background: #f4f6f9;
+}
+
+/* Wrapper */
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 20px;
+  background: #f4f6f9;
+  color: #555;
+}
+
+/* Container */
+.login-box {
+  background: #ffffff;
+  padding: 35px;
+  border-radius: 12px;
+  width: 360px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+/* Title */
+h2.login-title {
+  margin-bottom: 25px;
+  font-size: 28px;
+  color: #222;
+}
+
+/* Inputs */
+.login-input {
+  width: 100%;
+  padding: 14px;         
+  margin: 12px 0;
+  border: 1px solid #424141;
+  border-radius: 8px;     
+  background-color: white;
+  color: #424141;
+  font-size: 17px;     
+  outline: none;
+  transition: 0.3s;
+  box-sizing: border-box;  
+}
+
+
+/* Login button */
+.login-button {
+  width: 100%;
+  background: #007bff;
+  color: white;
+  padding: 14px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 17px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.login-button:hover {
+  background: #0056b3;
+}
+
+/* Options */
+.login-options {
+  margin: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+ 
+  color: Black;
+}
+
+/* Make the label layout stable and aligned */
+.login-options label {
+  display: inline-flex;       /* keeps it inline with the "Forgot" link */
+  align-items: center;        /* vertically centers checkbox and text */
+  gap: 8px;                   /* space between box and text */
+  font-size: 14px;
+  color: #000;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Custom checkbox: centered content and no absolute positioning */
+.login-options input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: white;
+  border: 1.8px solid #424141;
+  border-radius: 4px;
+  display: inline-grid;       
+  place-items: center;        
+  flex: 0 0 18px;             
+  margin: 0;                  
+  box-sizing: border-box;
+  transition: 0.18s;
+}
+
+/* Checked state: fill the box with blue */
+.login-options input[type="checkbox"]:checked {
+  background: #007bff;
+  border-color: #007bff;
+}
+
+/* The tick — centered by the grid above */
+.login-options input[type="checkbox"]::after {
+  content: "";
+  color: white;
+  font-size: 12px;
+  line-height: 1;
+  transform: scale(0.95);
+  opacity: 0;                 
+  transition: opacity 0.12s;
+}
+
+/* show tick when checked */
+.login-options input[type="checkbox"]:checked::after {
+  content: "✔";
+  opacity: 1;
+}
+
+/* small tweak to ensure checkbox aligns on single-line labels */
+.login-options label input[type="checkbox"] {
+  vertical-align: middle;
+}
+
+
+.login-options a.forgot {
+  color: #007bff;
+  text-decoration: none;
+  background-color: white;
+}
+
+.login-options a.forgot:hover {
+  text-decoration: underline;
+}
+
+/* Divider */
+.divider {
+  margin: 22px 0;
+  display: flex;
+  align-items: center;
+  color: #aaa;
+}
+
+.divider span {
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+
+.divider p {
+  margin: 0 10px;
+  color: #555;
+  font-size: 15px;
+}
+
+
+/* Social Login */
+.social-login {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.social-btn {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  color: white;
+  border: none;
+  gap: 8px;
+  font-weight: 600;
+}
+
+/* REAL GOOGLE RED (#DB4437) */
+.social-btn.google {
+  background: #de6224;
+}
+
+/* REAL FACEBOOK BLUE (#1877F2) */
+.social-btn.facebook {
+  background: #1877F2;
+}
+
+.social-btn:hover {
+  opacity: 0.9;
+}
+
+/* Register  */
+.register-text {
+  margin-top: 18px;
+  font-size: 15px;
+  color: black;
+}
+
+.register-text a {
+  color: #007bff; 
+  text-decoration: none;
+}
+
+.register-text a:hover {
+  text-decoration: underline;
+}

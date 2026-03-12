@@ -1,0 +1,38 @@
+.room-details-page {
+  display: flex;
+  gap: 30px;
+  padding: 40px;
+  flex-wrap: wrap;
+  color: black;
+}
+
+.image-box img {
+  width: 550px;
+  height: 350px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.details-box {
+  max-width: 500px;
+}
+
+.details-box ul {
+  margin: 10px 0;
+}
+
+.price {
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.book-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: #2d6cdf;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}

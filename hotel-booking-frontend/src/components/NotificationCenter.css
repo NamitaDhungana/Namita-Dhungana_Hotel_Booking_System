@@ -1,0 +1,108 @@
+.notification-center {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: 20px auto;
+    overflow: hidden;
+}
+
+.notification-header {
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-header h2 {
+    margin: 0;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.clear-btn {
+    background: none;
+    border: none;
+    color: #4e73df;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.notification-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    padding: 16px 20px;
+    gap: 15px;
+    border-bottom: 1px solid #f1f1f1;
+    transition: background 0.2s;
+    cursor: pointer;
+    position: relative;
+}
+
+.notification-item:hover {
+    background: #f9f9fc;
+}
+
+.notification-item.unread {
+    background: #f0f4ff;
+}
+
+.note-icon {
+    font-size: 20px;
+    margin-top: 3px;
+}
+
+.icon-success {
+    color: #1cc88a;
+}
+
+.icon-info {
+    color: #4e73df;
+}
+
+.icon-warning {
+    color: #f6c23e;
+}
+
+.note-body h4 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    color: #333;
+}
+
+.note-body p {
+    margin: 0 0 6px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.note-time {
+    font-size: 11px;
+    color: #999;
+}
+
+.unread-dot {
+    width: 8px;
+    height: 8px;
+    background: #4e73df;
+    border-radius: 50%;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.no-notifications {
+    padding: 40px;
+    text-align: center;
+    color: #888;
+}

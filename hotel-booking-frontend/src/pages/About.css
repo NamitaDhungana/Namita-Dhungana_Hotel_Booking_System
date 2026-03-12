@@ -1,0 +1,146 @@
+.about-page {
+  font-family: Arial, sans-serif;
+}
+
+/* ---------------- HERO SECTION ---------------- */
+.about-hero {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  background-image: 
+  linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+  url("https://dynamic-media-cdn.tripadvisor.com/media/photo-o/29/bd/db/a8/hotel-barahi-kathmandu.jpg?w=1200&h=-1&s=1");
+}
+
+.hero-img {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  background-position: center;
+}
+
+.hero-text {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+}
+
+.hero-text h1 {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.hero-text p {
+    color: white;
+}
+
+/* ---------------- STATS SECTION ---------------- */
+.stats-section {
+  display: flex;
+  justify-content: space-around;
+  background: #000;
+  color: white;
+  padding: 25px 0;
+}
+
+.stat-box h2 {
+  margin: 0;
+  font-size: 32px;
+  text-align: center;
+}
+
+.stat-box p {
+  text-align: center;
+  color: white;
+}
+
+/* ---------------- STORY SECTION ---------------- */
+.story-section {
+  display: flex;
+  padding: 50px;
+  gap: 40px;
+}
+
+.story-img {
+  width: 50%;
+  border-radius: 8px;
+}
+
+.story-text {
+  width: 50%;
+  color: black;
+}
+
+.story-text h2 {
+  margin-bottom: 15px;
+}
+
+/* ---------------- MISSION & VISION ---------------- */
+.mv-section  {
+  display: flex;
+  justify-content: space-around;
+  padding: 40px;
+  color: white;
+}
+
+.mv-card {
+  width: 40%;
+  background: #4e4e4e;
+  padding: 30px;
+  border-radius: 8px;
+}
+
+.mv-card p {
+  color: white;
+}
+
+
+/* ---------------- TEAM SECTION ---------------- */
+.team-section {
+  background:  rgb(235, 235, 240);
+  padding: 60px;
+  text-align: center;
+  color: black;
+}
+
+.team-grid {
+  /* display: flex;
+  justify-content: space-evenly;
+  gap: 25px;
+  margin-top: 30px; */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  padding: 0px;
+  width: 100%;
+}
+
+.team-card {
+  /* width: 250px;
+  background: white;
+  padding-bottom: 20px;
+  border-radius: 8px;
+  color: black; */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  padding: 15px;
+  text-align: left;
+  transition: 0.3s ease-in-out;
+}
+
+.team-card img {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+}
+
+.team-card h3 {
+  margin-top: 10px;
+}
+
+.team-card p {
+  color: gray;
+}

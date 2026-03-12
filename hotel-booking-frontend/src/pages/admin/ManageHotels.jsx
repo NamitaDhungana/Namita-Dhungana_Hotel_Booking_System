@@ -1,0 +1,191 @@
+import React, { useState, useEffect } from 'react';
+import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
+import adminService from '../../services/adminService';
+import hotelService from '../../services/hotelService';
+import './ManageHotels.css';
+
+const ManageHotels = () => {
+    const [hotels, setHotels] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [editingHotel, setEditingHotel] = useState(null);
+    const [formData, setFormData] = useState({
+        name: '',
+        address: '',
+        city: '',
+        description: '',
+        rating: 0,
+        featured_image: '',
+        property_type: 'hotel'
+    });
+
+    useEffect(() => {
+        fetchHotels();
+    }, []);
+
+    const fetchHotels = async () => {
+        try {
+            const data = await hotelService.getHotels();
+            setHotels(data);
+        } catch (error) {
+            console.error("Failed to fetch hotels", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm("Are you sure you want to delete this hotel?")) {
+            try {
+                await adminService.deleteHotel(id);
+                setHotels(hotels.filter(h => h.id !== id));
+            } catch (error) {
+                alert("Failed to delete hotel");
+            }
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            if (editingHotel) {
+                await adminService.updateHotel(editingHotel.id, formData);
+                alert("Hotel updated successfully");
+            } else {
+                await adminService.createHotel(formData);
+                alert("Hotel created successfully");
+            }
+            setShowModal(false);
+            setEditingHotel(null);
+            fetchHotels();
+        } catch (error) {
+            alert("Action failed: " + (error.message || "Unknown error"));
+        }
+    };
+
+    const openEdit = (hotel) => {
+        setEditingHotel(hotel);
+        setFormData({
+            name: hotel.name,
+            address: hotel.address,
+            city: hotel.city,
+            description: hotel.description,
+            rating: hotel.rating,
+            featured_image: hotel.featured_image,
+            property_type: hotel.property_type || 'hotel'
+        });
+        setShowModal(true);
+    };
+
+    const filteredHotels = hotels.filter(h =>
+        h.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (h.city && h.city.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
+    return (
+        <div className="manage-hotels">
+            <div className="page-actions">
+                <div className="search-bar">
+                    <FaSearch />
+                    <input
+                        type="text"
+                        placeholder="Search hotels..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <button className="add-btn" onClick={() => { setShowModal(true); setEditingHotel(null); setFormData({ name: '', address: '', city: '', description: '', rating: 0, featured_image: '', property_type: 'hotel' }); }}>
+                    <FaPlus /> Add New Hotel
+                </button>
+            </div>
+
+            <div className="hotels-table-container">
+                <table className="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>City</th>
+                            <th>Rating</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredHotels.map(hotel => (
+                            <tr key={hotel.id}>
+                                <td><img src={hotel.featured_image} alt={hotel.name} className="table-thumb" /></td>
+                                <td>{hotel.name}</td>
+                                <td>{hotel.city}</td>
+                                <td>{hotel.rating} / 5</td>
+                                <td className="actions">
+                                    <button className="edit-icon" onClick={() => openEdit(hotel)}><FaEdit /></button>
+                                    <button className="delete-icon" onClick={() => handleDelete(hotel.id)}><FaTrash /></button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {showModal && (
+                <div className="modal-overlay">
+                    <div className="admin-modal">
+                        <h2>{editingHotel ? 'Edit Hotel' : 'Add New Hotel'}</h2>
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label>Hotel Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Address</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.address}
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>City</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.city}
+                                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Description</label>
+                                <textarea
+                                    required
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Image URL</label>
+                                <input
+                                    type="text"
+                                    value={formData.featured_image}
+                                    onChange={(e) => setFormData({ ...formData, featured_image: e.target.value })}
+                                />
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>
+                                <button type="submit" className="save-btn">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default ManageHotels;

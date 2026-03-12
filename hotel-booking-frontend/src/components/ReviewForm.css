@@ -1,0 +1,64 @@
+.review-form-container {
+    background: #fdfdfd;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    margin-top: 30px;
+}
+
+.review-form-container h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.star-rating {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.star-rating input[type="radio"] {
+    display: none;
+}
+
+.star {
+    cursor: pointer;
+    font-size: 24px;
+    transition: color 200ms;
+}
+
+.review-form-container textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #eee;
+    border-radius: 8px;
+    min-height: 100px;
+    margin-bottom: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.review-form-container textarea:focus {
+    border-color: #4e73df;
+}
+
+.review-form-container button {
+    background: #1a1a2e;
+    color: #fff;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.1s;
+}
+
+.review-form-container button:active {
+    transform: scale(0.98);
+}
+
+.review-form-container button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
