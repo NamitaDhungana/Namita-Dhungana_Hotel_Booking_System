@@ -16,7 +16,7 @@ function Header() {
           <Link to="/services">Services</Link>
           <Link to="/gallery">Gallery</Link>
           <Link to="/contact">Contact</Link>
-          <Link to="/admin" style={{ color: '#ff4d4d', fontWeight: 'bold' }}>Admin</Link>
+          <Link to="/admin" className="admin-link">Admin</Link>
         </nav>
 
         <Link className="login-btn" to="/login">
