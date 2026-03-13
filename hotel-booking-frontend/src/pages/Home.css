@@ -35,23 +35,38 @@
 }
 
 .btn-primary {
-  background: black;
+  background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
   color: white;
-  padding: 12px 30px;
-  border-radius: 5px;
+  padding: 12px 35px;
+  border-radius: 50px;
   border: none;
   cursor: pointer;
   font-size: 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5);
 }
 
 .btn-outline {
-  background: white;
-  color: black;
-  padding: 12px 30px;
-  border-radius: 5px;
-  border: none;
+  background: transparent;
+  color: white;
+  padding: 12px 35px;
+  border-radius: 50px;
+  border: 2px solid white;
   cursor: pointer;
   font-size: 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background: white;
+  color: #6C5CE7;
 }
 
 /* ------------------ POPULAR DESTINATIONS ------------------ */
@@ -98,18 +113,21 @@
 }
 
 .section-title {
-  font-size: 28px;
+  font-size: 32px;
   text-align: center;
-  font-weight: 700;
-  color: black;
+  font-weight: 800;
+  color: var(--deep-purple);
+  margin-bottom: 8px;
 }
 
 .section-subtitle {
-  font-size: 22px;
+  font-size: 18px;
   text-align: center;
-  color: #000000;
-  margin-bottom: 40px;
+  color: #666;
+  margin-top: 0;
+  margin-bottom: 50px;
   font-weight: 500;
+  line-height: 1.4;
 }
 
 .card-grid {
@@ -166,13 +184,21 @@
 
 .btn-book {
   margin-top: 10px;
-  font-size: 22px;
-  background: #000000;
-  color: rgb(255, 255, 255);
-  padding: 8px 20px;
-  border-radius: 6px;
+  font-size: 20px;
+  background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
+  color: white;
+  padding: 8px 24px;
+  border-radius: 50px;
   cursor: pointer;
-  border: white;
+  border: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+}
+
+.btn-book:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(108, 92, 231, 0.4);
 }
 
 /* ------------------ EXPLORE CATEGORIES ------------------ */
@@ -191,35 +217,56 @@
   height: 150px;
 }
 
-.category-card h3,
-.category-card p {
+.category-card h3 {
   color: white;
+  margin-bottom: 8px;
+  font-size: 22px;
+}
+
+.category-card p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
 }
 
 .luxury {
-  background: #4e4e4e;
+  background: linear-gradient(45deg, #6C5CE7, #a29bfe);
 }
 
 .budget {
-  background: #262626;
+  background: linear-gradient(45deg, #5A4BD1, #6C5CE7);
 }
 
 .family {
-  background: #4e4e4e;
+  background: linear-gradient(45deg, #2D1B69, #5A4BD1);
 }
 
 .resort {
-  background: #262626;
+  background: linear-gradient(45deg, #6C5CE7, #2D1B69);
 }
 
 /* ------------------ OFFER SECTION ------------------ */
 .offer {
-  margin: 50px 80px;
-  background: black;
+  margin: 80px 80px;
+  background: linear-gradient(135deg, var(--deep-purple) 0%, #1a1a2e 100%);
   color: white;
-  padding: 50px;
+  padding: 80px 40px;
   text-align: center;
-  border-radius: 12px;
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.offer-title {
+  color: var(--gold-highlight);
+  font-size: 42px;
+  margin-bottom: 15px;
+  font-weight: 800;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.offer p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 20px;
+  margin-bottom: 35px;
 }
 
 .offer-btns {

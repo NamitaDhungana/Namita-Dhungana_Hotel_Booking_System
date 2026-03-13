@@ -162,7 +162,7 @@ function Home() {
 
       {/* ------------------ EXCLUSIVE OFFER ------------------ */}
       <section className="offer">
-        <h2>Ready to Book Your Dream Vacation?</h2>
+        <h2 className="offer-title">Ready to Book Your Dream Vacation?</h2>
         <p>Join thousands of happy travelers booking comfort & luxury.</p>
 
         <div className="offer-btns">
