@@ -19,4 +19,18 @@ apiClient.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
+// Add a response interceptor to handle unauthenticated errors globally
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      console.warn("Session expired or unauthenticated. Clearing token.");
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // We don't force redirect here to allow components to handle it gracefully
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default apiClient;
