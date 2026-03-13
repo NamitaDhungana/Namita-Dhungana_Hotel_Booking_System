@@ -11,44 +11,44 @@ class BookingController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'hotel_id' => 'required|exists:hotels,id',
-            'room_id' => 'required|exists:rooms,id',
-            'check_in_date' => 'required|date',
+            'hotel_id'       => 'required|exists:hotels,id',
+            'room_type_id'   => 'required|exists:room_types,id',
+            'check_in_date'  => 'required|date|after_or_equal:today',
             'check_out_date' => 'required|date|after:check_in_date',
-            'num_guests' => 'required|integer',
-            'total_amount' => 'required|numeric'
+            'num_guests'     => 'required|integer|min:1',
+            'total_amount'   => 'required|numeric',
         ]);
 
-        // Check availability
-        $checkIn = $request->check_in_date;
+        $checkIn  = $request->check_in_date;
         $checkOut = $request->check_out_date;
 
-        $exists = Booking::where('room_id', $request->room_id)
-            ->where('status', '!=', 'cancelled')
-            ->where(function ($query) use ($checkIn, $checkOut) {
-                $query->where('check_in_date', '<', $checkOut)
+        // Find an available room of this type that is not booked for these dates
+        $availableRoom = \App\Models\Room::where('hotel_id', $request->hotel_id)
+            ->where('room_type_id', $request->room_type_id)
+            ->where('status', 'available')
+            ->whereDoesntHave('bookings', function ($query) use ($checkIn, $checkOut) {
+                $query->where('status', '!=', 'cancelled')
+                      ->where('check_in_date', '<', $checkOut)
                       ->where('check_out_date', '>', $checkIn);
             })
-            ->exists();
+            ->first();
 
-        if ($exists) {
-            return response()->json(['message' => 'Room is already booked for these dates'], 422);
+        if (!$availableRoom) {
+            return response()->json(['message' => 'No available rooms for the selected dates.'], 422);
         }
-        $booking = Booking::create([
-            'user_id' => $request->user()->id,
-            'hotel_id' => $request->hotel_id,
-            'room_id' => $request->room_id,
-            'booking_reference' => 'BK-' . strtoupper(uniqid()),
-            'check_in_date' => $request->check_in_date,
-            'check_out_date' => $request->check_out_date,
-            'num_guests' => $request->num_guests,
-            'num_adults' => $request->num_adults ?? 1,
-            'total_amount' => $request->total_amount,
-            'status' => 'pending'
-        ]);
 
-        // Create notification
-        // ...
+        $booking = Booking::create([
+            'user_id'           => $request->user()->id,
+            'hotel_id'          => $request->hotel_id,
+            'room_id'           => $availableRoom->id,
+            'booking_reference' => 'BK-' . strtoupper(uniqid()),
+            'check_in_date'     => $checkIn,
+            'check_out_date'    => $checkOut,
+            'num_guests'        => $request->num_guests,
+            'num_adults'        => $request->num_adults ?? 1,
+            'total_amount'      => $request->total_amount,
+            'status'            => 'pending',
+        ]);
 
         return response()->json($booking, 201);
     }
