@@ -73,8 +73,13 @@ function Booking() {
       });
       setBookingSuccess(result);
     } catch (err) {
-      const msg = err?.message || JSON.stringify(err) || "Booking failed. Please try again.";
-      setError("book_fail:" + msg);
+      console.error("Booking submission error:", err);
+      const msg = err?.message || "Booking failed. Please try again.";
+      if (msg.toLowerCase().includes("unauthenticated") || err?.status === 401) {
+        setError("auth_fail");
+      } else {
+        setError("book_fail:" + msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -117,6 +122,22 @@ function Booking() {
   }
 
   // ── Booking error ─────────────────────────────────────────
+  if (error === "auth_fail") {
+    return (
+      <div className="bk-empty">
+        <div className="bk-empty-icon">🔐</div>
+        <h2>Session Expired</h2>
+        <p>You need to be logged in to complete your booking. Your current session may have expired.</p>
+        <button 
+          className="bk-btn-primary" 
+          onClick={() => navigate(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`)}
+        >
+          Login & Continue
+        </button>
+      </div>
+    );
+  }
+
   if (error && error.startsWith("book_fail:")) {
     const msg = error.replace("book_fail:", "");
     return (
