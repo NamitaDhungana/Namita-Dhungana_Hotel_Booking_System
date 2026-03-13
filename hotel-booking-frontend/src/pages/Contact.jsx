@@ -8,11 +8,13 @@ function Contact() {
     subject: "",
     message: ""
   });
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert("Thank you for your message! We will get back to you soon.");
+    setSuccess(true);
     setFormData({ name: "", email: "", subject: "", message: "" });
+    setTimeout(() => setSuccess(false), 5000);
   };
 
   const handleChange = (e) => {
@@ -23,6 +25,25 @@ function Contact() {
     <div className="section" style={{ maxWidth: '800px', margin: '0 auto' }}>
       <h1 className="section-title">Get In Touch</h1>
       <p className="section-subtitle">Have questions? We'd love to hear from you.</p>
+
+      {success && (
+        <div style={{
+          background: 'linear-gradient(135deg, #1cc88a, #17a673)',
+          color: 'white',
+          padding: '16px 24px',
+          borderRadius: '12px',
+          marginTop: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          fontSize: '1rem',
+          fontWeight: '600',
+          boxShadow: '0 4px 15px rgba(28, 200, 138, 0.3)',
+        }}>
+          <span style={{ fontSize: '1.4rem' }}>✅</span>
+          Thank you for your message! We will get back to you soon.
+        </div>
+      )}
 
       <div className="contact-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginTop: '40px' }}>
         <div className="contact-info">
@@ -62,7 +83,7 @@ function Contact() {
           <button
             type="submit"
             className="btn-primary"
-            style={{ padding: '15px', borderRadius: '8px', border: 'none', background: '#2d6cdf', color: 'white', fontWeight: 'bold' }}
+            style={{ padding: '15px', borderRadius: '8px', border: 'none', background: '#2d6cdf', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
           >
             Send Message
           </button>
