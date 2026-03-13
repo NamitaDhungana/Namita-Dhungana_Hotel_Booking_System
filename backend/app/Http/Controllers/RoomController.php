@@ -11,7 +11,7 @@ class RoomController extends Controller
     // Get room types for a hotel
     public function getRoomTypes($hotelId)
     {
-        $roomTypes = RoomType::where('hotel_id', $hotelId)->with('images')->get();
+        $roomTypes = RoomType::where('hotel_id', $hotelId)->get();
         // Calculate availability count - simplified for now
         return response()->json($roomTypes);
     }
@@ -19,14 +19,14 @@ class RoomController extends Controller
     // Get all room types
     public function getAllRoomTypes()
     {
-        $roomTypes = RoomType::with(['hotel', 'images'])->get();
+        $roomTypes = RoomType::with(['hotel'])->get();
         return response()->json($roomTypes);
     }
 
     // Get specific room type details
     public function showRoomType($id)
     {
-        $roomType = RoomType::with(['images', 'amenities'])->find($id);
+        $roomType = RoomType::find($id);
         if (!$roomType) return response()->json(['message' => 'Room Type not found'], 404);
         return response()->json($roomType);
     }
