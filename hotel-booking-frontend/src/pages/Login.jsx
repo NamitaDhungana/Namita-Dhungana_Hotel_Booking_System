@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import "./Login.css";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
 import authService from "../services/authService";
@@ -11,21 +11,30 @@ function Login() {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo");
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      setError("Please fill in all fields");
+      return;
+    }
     try {
       setLoading(true);
       setError("");
       await authService.login({ email, password });
 
-      // Clear loading before showing alert to provide better feedback
       setLoading(false);
       alert("Login successful!");
-      navigate("/");
+      
+      if (redirectTo) {
+        navigate(decodeURIComponent(redirectTo));
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       console.error("Login failed:", err);
       setError(err.message || "Invalid email or password!");
-      alert(err.message || "Invalid email or password!");
       setLoading(false);
     }
   };
@@ -33,7 +42,8 @@ function Login() {
   return (
     <div className="login-wrapper">
       <div className="login-box">
-        <h2 className="login-title">Login</h2>
+        <h2 className="login-title">Welcome Back</h2>
+        {error && <div className="login-error-msg" style={{color: 'red', marginBottom: '15px', textAlign: 'center'}}>{error}</div>}
 
         {/* Email */}
         <input
