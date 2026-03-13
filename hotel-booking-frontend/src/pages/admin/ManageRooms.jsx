@@ -30,10 +30,13 @@ const ManageRooms = () => {
                 hotelService.getAllRoomTypes(),
                 hotelService.getHotels()
             ]);
-            setRoomTypes(roomsData);
-            setHotels(hotelsData);
+            console.log("Hotels loaded:", hotelsData);
+            console.log("Rooms loaded:", roomsData);
+            setRoomTypes(Array.isArray(roomsData) ? roomsData : []);
+            setHotels(Array.isArray(hotelsData) ? hotelsData : []);
         } catch (error) {
-            console.error("Failed to fetch room data", error);
+            console.error("Failed to fetch room data:", error);
+            alert("Failed to load data: " + JSON.stringify(error));
         } finally {
             setLoading(false);
         }
@@ -135,7 +138,7 @@ const ManageRooms = () => {
                                     onChange={(e) => setFormData({ ...formData, type_name: e.target.value })}
                                 />
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                 <div className="form-group">
                                     <label>Price / Night</label>
                                     <input
