@@ -96,9 +96,9 @@ const ManageRooms = () => {
                     <tbody>
                         {roomTypes.map(room => (
                             <tr key={room.id}>
-                                <td style={{ fontWeight: 600, color: '#4e73df' }}>{room.hotel?.name || 'N/A'}</td>
+                                <td style={{ fontWeight: 600, color: '#6C5CE7' }}>{room.hotel?.name || 'N/A'}</td>
                                 <td>{room.type_name}</td>
-                                <td style={{ fontWeight: 700 }}>${room.base_price}</td>
+                                <td style={{ fontWeight: 700, color: '#F5C518' }}>Rs. {room.base_price}</td>
                                 <td>
                                     <span style={{ background: '#f8f9fc', padding: '4px 10px', borderRadius: '20px', fontSize: '12px' }}>
                                         {room.max_occupancy} Persons
@@ -177,7 +177,7 @@ const ManageRooms = () => {
                     background: #fff;
                     padding: 30px;
                     border-radius: 16px;
-                    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+                    box-shadow: 0 0.15rem 1.75rem 0 rgba(108, 92, 231, 0.1);
                 }
                 .page-actions {
                     display: flex;
@@ -186,19 +186,24 @@ const ManageRooms = () => {
                     margin-bottom: 30px;
                 }
                 .page-actions h2 {
-                    color: #4e73df;
+                    color: #2D1B69;
                     margin: 0;
                     font-weight: 700;
                 }
-                .status-badge {
-                    padding: 6px 12px;
-                    border-radius: 20px;
-                    font-size: 11px;
-                    text-transform: uppercase;
-                    font-weight: 800;
+                .add-btn {
+                    background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
+                    border: none;
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
                 }
                 .save-btn {
-                    background: #4e73df;
+                    background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
                     border: none;
                     color: white;
                     padding: 10px 25px;
@@ -208,8 +213,7 @@ const ManageRooms = () => {
                     transition: all 0.2s;
                 }
                 .save-btn:hover {
-                    background: #2e59d9;
-                    box-shadow: 0 4px 12px rgba(78, 115, 223, 0.3);
+                    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
                 }
                 .cancel-btn {
                     background: #eaecf4;
@@ -221,7 +225,7 @@ const ManageRooms = () => {
                     cursor: pointer;
                 }
                 .edit-icon {
-                    color: #4e73df;
+                    color: #6C5CE7;
                     font-size: 18px;
                     transition: transform 0.2s;
                 }

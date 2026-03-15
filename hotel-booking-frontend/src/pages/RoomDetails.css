@@ -3,7 +3,7 @@
   gap: 30px;
   padding: 40px;
   flex-wrap: wrap;
-  color: black;
+  color: #2D1B69;
 }
 
 .image-box img {
@@ -11,6 +11,7 @@
   height: 350px;
   object-fit: cover;
   border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(108, 92, 231, 0.15);
 }
 
 .details-box {
@@ -19,20 +20,30 @@
 
 .details-box ul {
   margin: 10px 0;
+  color: #555;
 }
 
 .price {
   margin-top: 20px;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
+  color: #F5C518;
 }
 
 .book-btn {
   margin-top: 15px;
-  padding: 10px 20px;
-  background: #2d6cdf;
+  padding: 12px 30px;
+  background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 50px;
   cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+}
+
+.book-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
 }

@@ -37,23 +37,23 @@ h2.login-title {
 /* Inputs */
 .login-input {
   width: 100%;
-  padding: 14px;         
+  padding: 14px;
   margin: 12px 0;
   border: 1px solid #424141;
-  border-radius: 8px;     
+  border-radius: 8px;
   background-color: white;
   color: #424141;
-  font-size: 17px;     
+  font-size: 17px;
   outline: none;
   transition: 0.3s;
-  box-sizing: border-box;  
+  box-sizing: border-box;
 }
 
 
 /* Login button */
 .login-button {
   width: 100%;
-  background: #007bff;
+  background: var(--primary-purple);
   color: white;
   padding: 14px;
   margin-top: 15px;
@@ -61,11 +61,14 @@ h2.login-title {
   border-radius: 8px;
   font-size: 17px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
 }
 
 .login-button:hover {
-  background: #0056b3;
+  background: var(--deep-purple);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(108, 92, 231, 0.4);
 }
 
 /* Options */
@@ -74,15 +77,18 @@ h2.login-title {
   display: flex;
   justify-content: space-between;
   font-size: 14px;
- 
+
   color: Black;
 }
 
 /* Make the label layout stable and aligned */
 .login-options label {
-  display: inline-flex;       /* keeps it inline with the "Forgot" link */
-  align-items: center;        /* vertically centers checkbox and text */
-  gap: 8px;                   /* space between box and text */
+  display: inline-flex;
+  /* keeps it inline with the "Forgot" link */
+  align-items: center;
+  /* vertically centers checkbox and text */
+  gap: 8px;
+  /* space between box and text */
   font-size: 14px;
   color: #000;
   cursor: pointer;
@@ -98,18 +104,18 @@ h2.login-title {
   background: white;
   border: 1.8px solid #424141;
   border-radius: 4px;
-  display: inline-grid;       
-  place-items: center;        
-  flex: 0 0 18px;             
-  margin: 0;                  
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 18px;
+  margin: 0;
   box-sizing: border-box;
   transition: 0.18s;
 }
 
 /* Checked state: fill the box with blue */
 .login-options input[type="checkbox"]:checked {
-  background: #007bff;
-  border-color: #007bff;
+  background: var(--primary-purple);
+  border-color: var(--primary-purple);
 }
 
 /* The tick — centered by the grid above */
@@ -119,7 +125,7 @@ h2.login-title {
   font-size: 12px;
   line-height: 1;
   transform: scale(0.95);
-  opacity: 0;                 
+  opacity: 0;
   transition: opacity 0.12s;
 }
 
@@ -136,9 +142,10 @@ h2.login-title {
 
 
 .login-options a.forgot {
-  color: #007bff;
+  color: var(--primary-purple);
   text-decoration: none;
   background-color: white;
+  font-weight: 500;
 }
 
 .login-options a.forgot:hover {
@@ -195,7 +202,8 @@ h2.login-title {
 
 /* REAL FACEBOOK BLUE (#1877F2) */
 .social-btn.facebook {
-  background: #1877F2;
+  background: #4267B2;
+  /* Keeping brand identity but softening it */
 }
 
 .social-btn:hover {
@@ -210,8 +218,9 @@ h2.login-title {
 }
 
 .register-text a {
-  color: #007bff; 
+  color: var(--primary-purple);
   text-decoration: none;
+  font-weight: 600;
 }
 
 .register-text a:hover {

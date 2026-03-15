@@ -27,7 +27,7 @@
 .clear-btn {
     background: none;
     border: none;
-    color: #4e73df;
+    color: #6C5CE7;
     font-size: 12px;
     cursor: pointer;
 }
@@ -48,11 +48,11 @@
 }
 
 .notification-item:hover {
-    background: #f9f9fc;
+    background: #fdfdff;
 }
 
 .notification-item.unread {
-    background: #f0f4ff;
+    background: #f7f6ff;
 }
 
 .note-icon {
@@ -65,17 +65,17 @@
 }
 
 .icon-info {
-    color: #4e73df;
+    color: #6C5CE7;
 }
 
 .icon-warning {
-    color: #f6c23e;
+    color: #F5C518;
 }
 
 .note-body h4 {
     margin: 0 0 4px;
     font-size: 15px;
-    color: #333;
+    color: #2D1B69;
 }
 
 .note-body p {
@@ -93,7 +93,7 @@
 .unread-dot {
     width: 8px;
     height: 8px;
-    background: #4e73df;
+    background: #6C5CE7;
     border-radius: 50%;
     position: absolute;
     right: 20px;

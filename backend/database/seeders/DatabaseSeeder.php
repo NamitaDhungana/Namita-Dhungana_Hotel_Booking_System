@@ -14,231 +14,271 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create Admin User
-        $adminUser = User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@stayhub.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'phone' => '1234567890',
-        ]);
+        // ── USERS ──────────────────────────────────────────────
+        $adminUser = User::firstOrCreate(
+            ['email' => 'admin@stayhub.com'],
+            [
+                'name'     => 'Admin User',
+                'password' => Hash::make('password'),
+                'role'     => 'admin',
+                'phone'    => '9841000000',
+            ]
+        );
 
-        $admin = Admin::create([
-            'user_id' => $adminUser->id,
-            'status' => 'active',
-        ]);
+        $admin = Admin::firstOrCreate(
+            ['user_id' => $adminUser->id],
+            ['status' => 'active']
+        );
 
-        // Create Regular User
-        User::create([
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'user',
-            'phone' => '0987654321',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'namita@example.com'],
+            [
+                'name'     => 'Namita Dhungana',
+                'password' => Hash::make('password'),
+                'role'     => 'user',
+                'phone'    => '9841111111',
+            ]
+        );
 
-        // Create Hotels
-        $hotel1 = Hotel::create([
-            'admin_id' => $admin->id,
-            'name' => 'Kathmandu Luxury Hotel',
-            'property_type' => 'hotel',
-            'description' => 'Experience luxury in the heart of Kathmandu.',
-            'address' => 'Thamel, Kathmandu',
-            'city' => 'Kathmandu',
-            'phone' => '01-4444444',
-            'email' => 'info@ktmluxury.com',
-            'rating' => 4.5,
-            'total_reviews' => 10,
-            'status' => 'active',
-            'featured_image' => 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80',
-            'latitude' => 27.7172,
-            'longitude' => 85.3240,
-            'amenities' => ['WiFi', 'Pool', 'Spa', 'Restaurant'],
-            'policies' => 'No smoking. Check-in after 2PM.',
-            'is_featured' => true,
-        ]);
+        // ── HOTELS ─────────────────────────────────────────────
+        $hotels = [
+            // 1. Hotel Yak & Yeti
+            [
+                'name'           => 'Hotel Yak & Yeti',
+                'property_type'  => 'hotel',
+                'description'    => 'One of Nepal\'s most iconic luxury hotels, blending Rana-era architecture with modern comforts. Located in Durbar Marg, close to royal palaces and the bustling city center.',
+                'address'        => 'Durbar Marg, Kathmandu',
+                'city'           => 'Kathmandu',
+                'phone'          => '01-4248999',
+                'email'          => 'info@yakandyeti.com',
+                'rating'         => 4.7,
+                'total_reviews'  => 120,
+                'featured_image' => 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1920&q=80',
+                'amenities'      => ['WiFi', 'Pool', 'Spa', 'Casino', 'Restaurant', 'Gym'],
+                'policies'       => 'Check-in: 2 PM. Check-out: 12 PM. No smoking in rooms.',
+                'is_featured'    => true,
+                'rooms' => [
+                    ['type' => 'Deluxe Room',       'price' => 8500,  'capacity' => 2, 'desc' => 'Elegant room with Rana-era decor, king bed, and city views.'],
+                    ['type' => 'Premium Suite',     'price' => 15000, 'capacity' => 3, 'desc' => 'Spacious suite with separate living area, premium amenities, and garden views.'],
+                    ['type' => 'Heritage Room',     'price' => 12000, 'capacity' => 2, 'desc' => 'Restored heritage wing room with traditional Nepali artwork and modern bath.'],
+                ],
+            ],
+            // 2. Hyatt Regency Kathmandu
+            [
+                'name'           => 'Hyatt Regency Kathmandu',
+                'property_type'  => 'hotel',
+                'description'    => 'A 5-star luxury hotel situated near the sacred Boudhanath Stupa, offering world-class hospitality with stunning views of the Himalayan foothills.',
+                'address'        => 'Taragaon, Boudha, Kathmandu',
+                'city'           => 'Kathmandu',
+                'phone'          => '01-5171234',
+                'email'          => 'kathmandu.regency@hyatt.com',
+                'rating'         => 4.8,
+                'total_reviews'  => 200,
+                'featured_image' => 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80',
+                'amenities'      => ['WiFi', 'Pool', 'Spa', 'Fitness Center', 'Multiple Restaurants', 'Conference Hall'],
+                'policies'       => 'Check-in: 3 PM. Check-out: 12 PM. Child-friendly property.',
+                'is_featured'    => true,
+                'rooms' => [
+                    ['type' => 'Standard King Room', 'price' => 11000, 'capacity' => 2, 'desc' => 'Modern room with king bed, work desk, and mountain or garden views.'],
+                    ['type' => 'Regency Suite',      'price' => 22000, 'capacity' => 4, 'desc' => 'Luxurious suite with lounge access, separate living room, and premium bath.'],
+                    ['type' => 'Club Twin Room',     'price' => 13000, 'capacity' => 2, 'desc' => 'Twin room with club lounge access, complimentary breakfast and evening cocktails.'],
+                ],
+            ],
+            // 3. Dwarika's Hotel
+            [
+                'name'           => 'Dwarika\'s Hotel Kathmandu',
+                'property_type'  => 'hotel',
+                'description'    => 'A heritage boutique hotel showcasing centuries of Newar art and architecture. Every room is a museum piece with hand-carved wooden windows and traditional courtyards.',
+                'address'        => 'Battisputali, Kathmandu',
+                'city'           => 'Kathmandu',
+                'phone'          => '01-4479488',
+                'email'          => 'info@dwarikas.com',
+                'rating'         => 4.9,
+                'total_reviews'  => 180,
+                'featured_image' => 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1920&q=80',
+                'amenities'      => ['Heritage Architecture', 'Spa', 'Restaurant', 'WiFi', 'Garden', 'Cultural Programs'],
+                'policies'       => 'Check-in: 2 PM. Photography welcome. Respect heritage artifacts.',
+                'is_featured'    => true,
+                'rooms' => [
+                    ['type' => 'Heritage Deluxe',      'price' => 18000, 'capacity' => 2, 'desc' => 'Hand-carved Newari woodwork, traditional brick walls, and premium bedding.'],
+                    ['type' => 'Royal Suite',           'price' => 35000, 'capacity' => 4, 'desc' => 'Grand suite with private courtyard, antique furnishings, and panoramic views.'],
+                    ['type' => 'Traditional Room',      'price' => 14000, 'capacity' => 2, 'desc' => 'Warm traditional decor with modern comforts and courtyard access.'],
+                ],
+            ],
+            // 4. Temple Tree Resort, Pokhara
+            [
+                'name'           => 'Temple Tree Resort & Spa',
+                'property_type'  => 'hotel',
+                'description'    => 'A luxury boutique resort in the heart of Pokhara Lakeside, surrounded by lush gardens with views of the Annapurna range and Phewa Lake.',
+                'address'        => 'Lakeside, Pokhara',
+                'city'           => 'Pokhara',
+                'phone'          => '061-465819',
+                'email'          => 'info@templetreenepal.com',
+                'rating'         => 4.6,
+                'total_reviews'  => 95,
+                'featured_image' => 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1920&q=80',
+                'amenities'      => ['Lake View', 'WiFi', 'Spa', 'Garden', 'Pool', 'Restaurant'],
+                'policies'       => 'Check-in: 1 PM. Free cancellation up to 48hrs. Breakfast included.',
+                'rooms' => [
+                    ['type' => 'Garden View Room',   'price' => 7500,  'capacity' => 2, 'desc' => 'Cozy room overlooking the tropical gardens with modern amenities.'],
+                    ['type' => 'Lake View Suite',    'price' => 14000, 'capacity' => 3, 'desc' => 'Premium suite with private balcony facing Phewa Lake and Annapurna views.'],
+                    ['type' => 'Honeymoon Cottage',  'price' => 18000, 'capacity' => 2, 'desc' => 'Romantic private cottage with jacuzzi, canopy bed, and garden terrace.'],
+                ],
+            ],
+            // 5. Tiger Mountain Pokhara Lodge
+            [
+                'name'           => 'Tiger Mountain Pokhara Lodge',
+                'property_type'  => 'hotel',
+                'description'    => 'Perched on a ridge above Pokhara with 180-degree panoramic views of the Annapurna Himalayas. An eco-luxury lodge experience like no other.',
+                'address'        => 'Lekhnath, Pokhara',
+                'city'           => 'Pokhara',
+                'phone'          => '061-462343',
+                'email'          => 'lodge@tigermountain.com',
+                'rating'         => 4.8,
+                'total_reviews'  => 65,
+                'featured_image' => 'https://images.unsplash.com/photo-1551882547-ff43c63faf76?auto=format&fit=crop&w=1920&q=80',
+                'amenities'      => ['Mountain View', 'Organic Food', 'Hiking Trails', 'Bird Watching', 'WiFi'],
+                'policies'       => 'Eco-lodge. All meals included. No plastic allowed.',
+                'rooms' => [
+                    ['type' => 'Mountain View Bungalow', 'price' => 16000, 'capacity' => 2, 'desc' => 'Private stone-walled bungalow with stunning Himalayan panorama.'],
+                    ['type' => 'Premium Lodge Room',     'price' => 12000, 'capacity' => 2, 'desc' => 'Cozy lodge room with fireplace, local stone construction, and valley views.'],
+                ],
+            ],
+            // 6. Barahi Jungle Lodge, Chitwan
+            [
+                'name'           => 'Barahi Jungle Lodge',
+                'property_type'  => 'hotel',
+                'description'    => 'A luxury jungle lodge at the edge of Chitwan National Park, offering thrilling safari experiences, elephant encounters, and canoe rides through the wild.',
+                'address'        => 'Meghauli, Chitwan',
+                'city'           => 'Chitwan',
+                'phone'          => '056-580112',
+                'email'          => 'info@barahijunglelodge.com',
+                'rating'         => 4.7,
+                'total_reviews'  => 78,
+                'featured_image' => 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=1920&q=80',
+                'amenities'      => ['Jungle Safari', 'Pool', 'Canoe Rides', 'Bird Watching', 'Campfire'],
+                'policies'       => 'All meals included. Safari timings fixed by park authority.',
+                'rooms' => [
+                    ['type' => 'Jungle Deluxe Room',   'price' => 9000,  'capacity' => 2, 'desc' => 'Spacious room with jungle-themed decor, private patio facing the forest.'],
+                    ['type' => 'Safari Suite',          'price' => 18000, 'capacity' => 4, 'desc' => 'Premium suite with outdoor shower, private deck, and river views.'],
+                    ['type' => 'Standard Cottage',      'price' => 6500,  'capacity' => 2, 'desc' => 'Comfortable cottage surrounded by greenery, ideal for nature lovers.'],
+                ],
+            ],
+            // 7. Nagarkot Farmhouse Resort (Villa)
+            [
+                'name'           => 'Nagarkot Farmhouse Resort',
+                'property_type'  => 'villa',
+                'description'    => 'A charming farmhouse villa perched in Nagarkot with unobstructed sunrise views over the Himalayas, including Mt. Everest on clear days.',
+                'address'        => 'Nagarkot Hill, Bhaktapur',
+                'city'           => 'Nagarkot',
+                'phone'          => '01-6680088',
+                'email'          => 'stay@nagarkotfarmhouse.com',
+                'rating'         => 4.5,
+                'total_reviews'  => 55,
+                'featured_image' => 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1920&q=80',
+                'amenities'      => ['Sunrise View', 'Organic Farm', 'Fireplace', 'Terrace', 'WiFi'],
+                'policies'       => 'Ideal for families. Early morning sunrise viewing. No loud music.',
+                'is_featured'    => true,
+                'rooms' => [
+                    ['type' => 'Sunrise View Room',    'price' => 5500,  'capacity' => 2, 'desc' => 'East-facing room with floor-to-ceiling windows capturing the golden sunrise.'],
+                    ['type' => 'Family Farmhouse',     'price' => 8500,  'capacity' => 5, 'desc' => 'Spacious family room with traditional furnishings, fireplace, and mountain view.'],
+                    ['type' => 'Honeymoon Suite',      'price' => 10000, 'capacity' => 2, 'desc' => 'Private suite with jacuzzi, panoramic views, and romantic ambiance.'],
+                ],
+            ],
+            // 8. Pavilions Himalayas, Pokhara (Villa)
+            [
+                'name'           => 'Pavilions Himalayas Pokhara',
+                'property_type'  => 'villa',
+                'description'    => 'An eco-luxury boutique villa resort overlooking the Annapurna mountains. Each villa is sustainably built with local materials and offers total privacy.',
+                'address'        => 'Pumdi Bhumdi, Pokhara',
+                'city'           => 'Pokhara',
+                'phone'          => '061-463777',
+                'email'          => 'hello@pavilionshimalayas.com',
+                'rating'         => 4.9,
+                'total_reviews'  => 42,
+                'featured_image' => 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=1920&q=80',
+                'amenities'      => ['Private Pool', 'Yoga', 'Organic Farm', 'Himalayan View', 'Spa'],
+                'policies'       => 'Eco-friendly property. Solar powered. All organic meals.',
+                'is_featured'    => true,
+                'rooms' => [
+                    ['type' => 'Eco Village Villa',    'price' => 22000, 'capacity' => 4, 'desc' => 'Private eco-villa with plunge pool, organic garden, and 360° mountain views.'],
+                    ['type' => 'Himalayan View Room',  'price' => 12000, 'capacity' => 2, 'desc' => 'Hand-built room with stone walls, bamboo ceiling, and Annapurna panorama.'],
+                ],
+            ],
+            // 9. Lumbini Buddha Garden Resort
+            [
+                'name'           => 'Lumbini Buddha Garden Resort',
+                'property_type'  => 'hotel',
+                'description'    => 'A peaceful resort near the sacred birthplace of Lord Buddha. Surrounded by monasteries and meditation gardens, perfect for spiritual seekers.',
+                'address'        => 'Sacred Garden Area, Lumbini',
+                'city'           => 'Lumbini',
+                'phone'          => '071-580234',
+                'email'          => 'peace@buddhagardenresort.com',
+                'rating'         => 4.5,
+                'total_reviews'  => 38,
+                'featured_image' => 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1920&q=80',
+                'amenities'      => ['Meditation Hall', 'Garden', 'Vegetarian Restaurant', 'WiFi', 'Bicycle Rental'],
+                'policies'       => 'Quiet zone. Respect the sacred surroundings. Vegetarian meals only.',
+                'rooms' => [
+                    ['type' => 'Meditation Room',      'price' => 3500,  'capacity' => 1, 'desc' => 'Simple, serene room designed for mindfulness with natural light and garden view.'],
+                    ['type' => 'Zen Comfort Suite',    'price' => 6000,  'capacity' => 2, 'desc' => 'A peaceful suite with Buddhist art, tea station, and monastery views.'],
+                    ['type' => 'Garden Family Room',   'price' => 7500,  'capacity' => 4, 'desc' => 'Spacious family room overlooking the Buddhist gardens with two queen beds.'],
+                ],
+            ],
+            // 10. Mustang Adventure Lodge (Villa)
+            [
+                'name'           => 'Mustang Adventure Lodge',
+                'property_type'  => 'villa',
+                'description'    => 'A remote luxury lodge in the mysterious Upper Mustang region, featuring traditional Tibetan architecture, stargazing decks, and horse riding adventures.',
+                'address'        => 'Lo Manthang, Mustang',
+                'city'           => 'Upper Mustang',
+                'phone'          => '069-440111',
+                'email'          => 'adventure@mustanglodge.com',
+                'rating'         => 4.8,
+                'total_reviews'  => 22,
+                'featured_image' => 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1920&q=80',
+                'amenities'      => ['Stargazing Deck', 'Horse Riding', 'Traditional Cuisine', 'Heated Rooms'],
+                'policies'       => 'Restricted area permit required. All meals included.',
+                'rooms' => [
+                    ['type' => 'Royal Tibetan Suite',  'price' => 14000, 'capacity' => 3, 'desc' => 'Luxurious suite with antique Tibetan furniture, hand-woven carpets, and private balcony.'],
+                    ['type' => 'Explorer Room',        'price' => 7000,  'capacity' => 2, 'desc' => 'Cozy heated room with traditional decor and views of the desert landscape.'],
+                ],
+            ],
+        ];
 
-        $hotel2 = Hotel::create([
-            'admin_id' => $admin->id,
-            'name' => 'Pokhara Lakeside Resort',
-            'property_type' => 'hotel',
-            'description' => 'Beautiful resort by the Phewa Lake.',
-            'address' => 'Lakeside, Pokhara',
-            'city' => 'Pokhara',
-            'phone' => '061-555555',
-            'email' => 'stay@pokhararesort.com',
-            'rating' => 4.8,
-            'total_reviews' => 25,
-            'status' => 'active',
-            'featured_image' => 'https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80',
-            'latitude' => 28.2096,
-            'longitude' => 83.9856,
-            'amenities' => ['Lake View', 'WiFi', 'Bar', 'Hiking'],
-            'policies' => 'Pets allowed. Breakfast included.',
-        ]);
+        // ── CREATE HOTELS, ROOM TYPES & ROOMS ─────────────────
+        foreach ($hotels as $hotelData) {
+            $roomsData = $hotelData['rooms'];
+            unset($hotelData['rooms']);
 
-        // Create Villas
-        $villa1 = Hotel::create([
-            'admin_id' => $admin->id,
-            'name' => 'Everest View Private Villa',
-            'property_type' => 'villa',
-            'description' => 'A stunning private villa with an unobstructed view of Mt. Everest.',
-            'address' => 'Nagarkot Hill',
-            'city' => 'Nagarkot',
-            'phone' => '01-6666666',
-            'email' => 'contact@everestvilla.com',
-            'rating' => 4.9,
-            'total_reviews' => 15,
-            'status' => 'active',
-            'featured_image' => 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80',
-            'latitude' => 27.7170,
-            'longitude' => 85.5200,
-            'amenities' => ['Private Pool', 'Kitchen', 'Fireplace', 'Everest View'],
-            'policies' => 'Perfect for families. No loud music after 10PM.',
-            'is_featured' => true,
-        ]);
+            $hotelData['admin_id'] = $admin->id;
+            $hotelData['status']   = 'active';
+            $hotelData['latitude']  = $hotelData['latitude'] ?? 27.7172;
+            $hotelData['longitude'] = $hotelData['longitude'] ?? 85.3240;
 
-        $villa2 = Hotel::create([
-            'admin_id' => $admin->id,
-            'name' => 'Tropical Jungle Villa',
-            'property_type' => 'villa',
-            'description' => 'Secluded villa surrounded by the lush greenery of Chitwan.',
-            'address' => 'Sauraha',
-            'city' => 'Chitwan',
-            'phone' => '056-222222',
-            'email' => 'raw@jungle-villa.com',
-            'rating' => 4.7,
-            'total_reviews' => 8,
-            'status' => 'active',
-            'featured_image' => 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80',
-            'latitude' => 27.5833,
-            'longitude' => 84.4833,
-            'amenities' => ['Safari Tours', 'WiFi', 'Private Garden', 'Hammock'],
-            'policies' => 'Eco-friendly property. Respect the wildlife.',
-        ]);
+            $hotel = Hotel::create($hotelData);
 
-        // Create more Hotels
-        $hotel3 = Hotel::create([
-            'admin_id' => $admin->id,
-            'name' => 'Everest Base Camp Lodge',
-            'property_type' => 'hotel',
-            'description' => 'A cozy lodge at the foot of the world\'s highest mountain.',
-            'address' => 'Base Camp Road, Solu-Khumbu',
-            'city' => 'Namche Bazaar',
-            'phone' => '01-9999999',
-            'email' => 'booking@everestlodge.uk',
-            'rating' => 4.6,
-            'total_reviews' => 45,
-            'status' => 'active',
-            'featured_image' => 'https://images.unsplash.com/photo-1551882547-ff43c63faf76?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80',
-            'latitude' => 27.8069,
-            'longitude' => 86.7133,
-            'amenities' => ['Heated Rooms', 'Oxygen Supply', 'Restaurant', 'Guide Service'],
-            'policies' => 'Acclimatization recommended. Respect local traditions.',
-        ]);
+            $roomNumber = 101;
+            foreach ($roomsData as $rt) {
+                $roomType = RoomType::create([
+                    'hotel_id'      => $hotel->id,
+                    'type_name'     => $rt['type'],
+                    'description'   => $rt['desc'],
+                    'base_price'    => $rt['price'],
+                    'max_occupancy' => $rt['capacity'],
+                    'amenities'     => [],
+                ]);
 
-        $hotel4 = Hotel::create([
-            'admin_id' => $admin->id,
-            'name' => 'Lumbini Sacred Garden Hotel',
-            'property_type' => 'hotel',
-            'description' => 'Find peace and tranquility near the birthplace of Lord Buddha.',
-            'address' => 'Sacred Garden Area, Lumbini',
-            'city' => 'Lumbini',
-            'phone' => '071-888888',
-            'email' => 'peace@lumbinihotel.com',
-            'rating' => 4.7,
-            'total_reviews' => 32,
-            'status' => 'active',
-            'featured_image' => 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80',
-            'latitude' => 27.4789,
-            'longitude' => 83.2753,
-            'amenities' => ['Meditation Hall', 'Vegetarian Restaurant', 'WiFi', 'Garden'],
-            'policies' => 'Respect the sacred surroundings. Quiet hours after 9PM.',
-        ]);
-
-        // Create more Villas
-        $villa3 = Hotel::create([
-            'admin_id' => $admin->id,
-            'name' => 'Mustang Desert Breeze Villa',
-            'property_type' => 'villa',
-            'description' => 'A unique luxury villa in the mystical landscape of Upper Mustang.',
-            'address' => 'Lo Manthang',
-            'city' => 'Upper Mustang',
-            'phone' => '067-111111',
-            'email' => 'adventure@mustangvilla.com',
-            'rating' => 4.9,
-            'total_reviews' => 12,
-            'status' => 'active',
-            'featured_image' => 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80',
-            'latitude' => 29.1833,
-            'longitude' => 83.9500,
-            'amenities' => ['Earthy Architecture', 'Stargazing Deck', 'Traditional Cuisine', 'Horse Riding'],
-            'policies' => 'Restricted area permit required. Eco-friendly stay.',
-            'is_featured' => true,
-        ]);
-
-        $villa4 = Hotel::create([
-            'admin_id' => $admin->id,
-            'name' => 'Ghandruk Heritage Villa',
-            'property_type' => 'villa',
-            'description' => 'Experience the rich Gurung culture in this beautifully restored heritage villa.',
-            'address' => 'Gurung Hill, Ghandruk',
-            'city' => 'Ghandruk',
-            'phone' => '061-777777',
-            'email' => 'culture@ghandrukvilla.com',
-            'rating' => 4.8,
-            'total_reviews' => 28,
-            'status' => 'active',
-            'featured_image' => 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80',
-            'latitude' => 28.3758,
-            'longitude' => 83.8064,
-            'amenities' => ['Traditional Decor', 'Mountain View', 'Cultural Shows', 'Organic Farm'],
-            'policies' => 'Ideal for trekkers. Local hospitality at its best.',
-        ]);
-
-        // Room Types for new properties
-        $mountainViewRoom = RoomType::create([
-            'hotel_id' => $hotel3->id,
-            'type_name' => 'Everest Panorama Room',
-            'description' => 'Wake up to the spectacular view of Mt. Everest.',
-            'base_price' => 4500,
-            'max_occupancy' => 2,
-            'amenities' => ['Heated Blanket', 'En-suite bath', 'Large Window'],
-        ]);
-
-        RoomType::create([
-            'hotel_id' => $hotel4->id,
-            'type_name' => 'Zen Comfort Suite',
-            'description' => 'A peaceful suite designed for relaxation and mindfulness.',
-            'base_price' => 3500,
-            'max_occupancy' => 2,
-            'amenities' => ['Yoga Mat', 'Tea Station', 'Air Purifier'],
-        ]);
-
-        RoomType::create([
-            'hotel_id' => $villa3->id,
-            'type_name' => 'Royal Tibetan Suite',
-            'description' => 'Live like Lo Kings in this luxuriously appointed traditional suite.',
-            'base_price' => 12000,
-            'max_occupancy' => 4,
-            'amenities' => ['Antique Furniture', 'Hand-woven Carpets', 'Private Balcony'],
-        ]);
-
-        RoomType::create([
-            'hotel_id' => $villa4->id,
-            'type_name' => 'Heritage Gurung Room',
-            'description' => 'Authentic Gurung living experience with modern comforts.',
-            'base_price' => 2500,
-            'max_occupancy' => 2,
-            'amenities' => ['Wooden Panels', 'Himalayan View', 'Shared Balcony'],
-        ]);
-
-        // Add some rooms for the new room types
-        Room::create([
-            'hotel_id' => $hotel3->id,
-            'room_type_id' => $mountainViewRoom->id,
-            'room_number' => '301',
-            'status' => 'available',
-        ]);
+                // Create 3 rooms for each room type
+                for ($i = 0; $i < 3; $i++) {
+                    Room::create([
+                        'hotel_id'     => $hotel->id,
+                        'room_type_id' => $roomType->id,
+                        'room_number'  => (string) $roomNumber++,
+                        'status'       => 'available',
+                    ]);
+                }
+            }
+        }
     }
 }

@@ -7,7 +7,7 @@
 
 .admin-sidebar {
     width: 260px;
-    background-color: #1a1a2e;
+    background: var(--admin-sidebar-gradient);
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -16,13 +16,14 @@
     position: fixed;
     height: 100vh;
     z-index: 1000;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2);
 }
 
 .admin-logo {
     padding: 0 20px 40px;
     font-size: 26px;
     font-weight: 800;
-    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    background: linear-gradient(135deg, var(--soft-lavender) 0%, #fff 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -37,18 +38,19 @@
 .nav-item {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
-    color: #aeb7c2;
+    padding: 15px 25px;
+    color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
-    transition: all 0.2s;
+    transition: all 0.3s;
     border-left: 4px solid transparent;
+    margin-bottom: 5px;
 }
 
 .nav-item:hover,
 .nav-item.active {
-    background-color: #252545;
+    background: rgba(255, 255, 255, 0.1);
     color: #fff;
-    border-left-color: #4e73df;
+    border-left-color: var(--gold-highlight);
 }
 
 .nav-item i {
@@ -150,8 +152,8 @@
 }
 
 .icon-blue {
-    background: rgba(78, 115, 223, 0.1);
-    color: #4e73df;
+    background: rgba(108, 92, 231, 0.1);
+    color: #6C5CE7;
 }
 
 .icon-green {
@@ -161,7 +163,7 @@
 
 .icon-yellow {
     background: rgba(246, 194, 62, 0.1);
-    color: #f6c23e;
+    color: #F5C518;
 }
 
 .icon-red {

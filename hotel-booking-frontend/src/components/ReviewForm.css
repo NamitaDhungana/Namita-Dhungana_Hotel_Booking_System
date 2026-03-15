@@ -40,18 +40,25 @@
 }
 
 .review-form-container textarea:focus {
-    border-color: #4e73df;
+    border-color: #6C5CE7;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
 }
 
 .review-form-container button {
-    background: #1a1a2e;
+    background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
     color: #fff;
     border: none;
     padding: 10px 25px;
-    border-radius: 6px;
+    border-radius: 50px;
     cursor: pointer;
     font-weight: 600;
-    transition: transform 0.1s;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+}
+
+.review-form-container button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(108, 92, 231, 0.4);
 }
 
 .review-form-container button:active {

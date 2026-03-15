@@ -81,12 +81,12 @@
 .hotel-rooms-section h2 {
     font-family: 'Playfair Display', serif;
     font-size: 2rem;
-    color: #1a1a1a;
+    color: #2D1B69;
     margin-bottom: 20px;
 }
 
 .about-hotel p {
-    color: #555;
+    color: #666;
     line-height: 1.8;
     font-size: 1.1rem;
 }
@@ -101,12 +101,12 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #444;
+    color: #555;
     font-size: 1.05rem;
     padding: 12px;
-    background: #f9f9f9;
+    background: #fdfdfd;
     border-radius: 10px;
-    border: 1px solid #eee;
+    border: 1px solid #ebf0ff;
 }
 
 /* Rooms Section */
@@ -115,7 +115,7 @@
 }
 
 .section-subtitle {
-    color: #666;
+    color: #777;
     font-size: 1.1rem;
     margin-top: -10px;
     margin-bottom: 30px;
@@ -132,14 +132,14 @@
     background: white;
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.03);
-    border: 1px solid #f0f0f0;
+    box-shadow: 0 4px 20px rgba(108, 92, 231, 0.05);
+    border: 1px solid #ebf0ff;
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .room-item-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 15px 40px rgba(108, 92, 231, 0.12);
 }
 
 .room-image-wrap {
@@ -169,12 +169,12 @@
 .room-item-header h3 {
     font-family: 'Playfair Display', serif;
     font-size: 1.6rem;
-    color: #1a1a1a;
+    color: #2D1B69;
 }
 
 .room-price-box {
     text-align: right;
-    background: #f9f9f9;
+    background: #fafbff;
     padding: 10px 20px;
     border-radius: 12px;
 }
@@ -183,7 +183,7 @@
     display: block;
     font-size: 1.4rem;
     font-weight: 700;
-    color: #000;
+    color: #F5C518;
 }
 
 .per-night {
@@ -199,10 +199,12 @@
 }
 
 .room-features span {
-    background: #f0f0f0;
+    background: #ebf0ff;
+    color: #6C5CE7;
     padding: 6px 14px;
     border-radius: 20px;
     font-size: 0.95rem;
+    font-weight: 500;
 }
 
 .room-action {
@@ -211,19 +213,21 @@
 }
 
 .btn-reserve {
-    background: #000;
+    background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
     color: white;
     padding: 12px 30px;
     border: none;
-    border-radius: 8px;
+    border-radius: 50px;
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
 }
 
 .btn-reserve:hover {
-    background: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
 }
 
 /* Loading & Error */

@@ -60,8 +60,8 @@ const ManageBookings = () => {
                                 <td>{booking.room?.room_type?.type_name || booking.room?.roomType?.type_name || 'N/A'}</td>
                                 <td>{new Date(booking.check_in_date).toLocaleDateString()}</td>
                                 <td>
-                                    <div style={{ fontWeight: 700, color: '#2e59d9' }}>
-                                        ${parseFloat(booking.total_amount).toLocaleString()}
+                                    <div style={{ fontWeight: 700, color: '#F5C518' }}>
+                                        Rs. {parseFloat(booking.total_amount).toLocaleString()}
                                     </div>
                                 </td>
                                 <td>
@@ -89,11 +89,11 @@ const ManageBookings = () => {
                     background: #fff;
                     padding: 30px;
                     border-radius: 16px;
-                    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+                    box-shadow: 0 0.15rem 1.75rem 0 rgba(108, 92, 231, 0.1);
                 }
                 .manage-bookings h2 {
                     margin-bottom: 25px;
-                    color: #4e73df;
+                    color: #2D1B69;
                     font-weight: 700;
                 }
                 .status-badge {
@@ -105,10 +105,12 @@ const ManageBookings = () => {
                     letter-spacing: 0.5px;
                     display: inline-block;
                 }
-                .status-badge.pending { background: rgba(246, 194, 62, 0.1); color: #f6c23e; }
+                .status-badge.pending { background: rgba(246, 194, 62, 0.1); color: #F5C518; }
                 .status-badge.confirmed { background: rgba(28, 200, 138, 0.1); color: #1cc88a; }
                 .status-badge.cancelled { background: rgba(231, 74, 59, 0.1); color: #e74a3b; }
                 .view-icon { color: #858796; }
+                .edit-icon { color: #6C5CE7; }
+                .delete-icon { color: #e74a3b; }
                 .actions button {
                     transition: all 0.2s;
                 }

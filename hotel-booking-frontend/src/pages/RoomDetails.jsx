@@ -40,7 +40,13 @@ function RoomDetails() {
       <div className="details-box">
 
         <h1>{room.type_name}</h1>
-        <p className="location">🏨 {room.hotel?.name || 'Hotel Name'} - {room.hotel?.city || 'City'}</p>
+        <p className="location">
+          {room.hotel ? (
+            <>🏨 {room.hotel.name} - {room.hotel.city}</>
+          ) : (
+            <>🏨 StayHub Partner Hotel - Nepal</>
+          )}
+        </p>
 
         <h3>Room Features</h3>
         <ul>
@@ -50,13 +56,18 @@ function RoomDetails() {
               <li key={index}>{amenity}</li>
             ))
           ) : (
-            <li>AC, TV, Mini Bar (Standard)</li>
+            <>
+              <li>Air Conditioning</li>
+              <li>Premium Bedding</li>
+              <li>Private Bathroom</li>
+              <li>Flat Screen TV</li>
+            </>
           )}
         </ul>
 
-        <p className="desc">{room.description || "No description available for this room."}</p>
+        <p className="desc">{room.description || "Indulge in comfort and luxury. This elegantly designed room offers everything you need for a perfect stay, including premium amenities and beautiful views."}</p>
 
-        <p className="price">Price: <strong>Rs. {room.base_price?.toLocaleString()} / night</strong></p>
+        <p className="price">Price: <strong>Rs. {parseFloat(room.base_price || 0).toLocaleString()} / night</strong></p>
 
         <Link to={`/booking?roomTypeId=${room.id}`}>
           <button className="book-btn">Book Now</button>
