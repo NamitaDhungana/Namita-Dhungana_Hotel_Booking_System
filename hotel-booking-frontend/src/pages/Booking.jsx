@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { message } from "antd";
+import { message, App } from "antd";
 import hotelService from "../services/hotelService";
 import bookingService from "../services/bookingService";
 import "./Booking.css";
 
 function Booking() {
+  const { message } = App.useApp();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const roomTypeId = searchParams.get("roomTypeId");

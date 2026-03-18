@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { message, Modal } from 'antd';
+import { Modal, App } from 'antd'; // Removed 'message' from import as it's obtained via App.useApp()
 import { FaExternalLinkAlt, FaCheck, FaTimes, FaUserShield, FaUserCircle } from 'react-icons/fa';
 import './ManageUsers.css';
 
 const ManageUsers = () => {
+    const { message, modal } = App.useApp();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -42,7 +43,7 @@ const ManageUsers = () => {
     };
 
     const handleReject = (userId) => {
-        Modal.confirm({
+        modal.confirm({
             title: 'Reject Manager',
             content: 'Are you sure you want to reject this manager?',
             okText: 'Yes, Reject',

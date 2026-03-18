@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { App } from 'antd';
 import { FaCheck, FaTimes, FaEye } from 'react-icons/fa';
 import bookingService from '../../services/bookingService';
 import adminService from '../../services/adminService';
 import './ManageHotels.css';
 
 const ManageBookings = () => {
+    const { message } = App.useApp();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
 

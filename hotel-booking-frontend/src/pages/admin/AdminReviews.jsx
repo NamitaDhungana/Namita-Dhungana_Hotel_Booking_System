@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { message, Modal } from 'antd';
+import { App } from 'antd';
 import { FaTrash, FaStar, FaUser } from 'react-icons/fa';
 import apiClient from '../../services/apiClient';
 import './ManageHotels.css';
 
 const AdminReviews = () => {
+    const { message, modal } = App.useApp();
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -31,7 +32,7 @@ const AdminReviews = () => {
     };
 
     const handleDelete = (id) => {
-        Modal.confirm({
+        modal.confirm({
             title: 'Delete Review',
             content: 'Are you sure you want to delete this review?',
             okText: 'Delete',

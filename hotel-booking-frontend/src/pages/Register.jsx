@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { message } from "antd";
+import { message, App } from "antd";
 import "./Register.css";
 import authService from "../services/authService";
 
 function Register() {
+  const { message } = App.useApp();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",

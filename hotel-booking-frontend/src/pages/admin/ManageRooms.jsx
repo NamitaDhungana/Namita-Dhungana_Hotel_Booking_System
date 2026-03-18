@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message, App } from 'antd';
 import { FaPlus, FaEdit, FaCheckCircle, FaTimesCircle, FaSearch } from 'react-icons/fa';
 import adminService from '../../services/adminService';
 import hotelService from '../../services/hotelService';
 import './ManageHotels.css'; // Reusing table and modal styles
 
 const ManageRooms = () => {
+    const { message } = App.useApp();
     const [roomTypes, setRoomTypes] = useState([]);
     const [hotels, setHotels] = useState([]);
     const [loading, setLoading] = useState(true);

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { message } from "antd";
+import { message as staticMessage, App } from "antd";
 import "./Login.css";
 import authService from "../services/authService";
 
 function Login() {
+  const { message } = App.useApp();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

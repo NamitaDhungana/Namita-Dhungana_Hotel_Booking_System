@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { message, Modal } from 'antd';
+import { message, Modal, App } from 'antd';
 import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 import adminService from '../../services/adminService';
 import hotelService from '../../services/hotelService';
 import './ManageHotels.css';
 
 const ManageHotels = () => {
+    const { message, modal } = App.useApp();
     const [hotels, setHotels] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -38,7 +39,7 @@ const ManageHotels = () => {
     };
 
     const handleDelete = (id) => {
-        Modal.confirm({
+        modal.confirm({
             title: 'Delete Hotel',
             content: 'Are you sure you want to delete this hotel?',
             okText: 'Yes, Delete',
