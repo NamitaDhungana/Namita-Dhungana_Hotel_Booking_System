@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { message, Modal } from 'antd';
 import { FaTrash, FaStar, FaUser } from 'react-icons/fa';
 import apiClient from '../../services/apiClient';
 import './ManageHotels.css';
@@ -29,15 +30,22 @@ const AdminReviews = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Delete this review?")) {
-            try {
-                await apiClient.delete(`/admin/reviews/${id}`);
-                setReviews(reviews.filter(r => r.id !== id));
-            } catch (error) {
-                alert("Delete failed");
+    const handleDelete = (id) => {
+        Modal.confirm({
+            title: 'Delete Review',
+            content: 'Are you sure you want to delete this review?',
+            okText: 'Delete',
+            okType: 'danger',
+            onOk: async () => {
+                try {
+                    await apiClient.delete(`/admin/reviews/${id}`);
+                    setReviews(reviews.filter(r => r.id !== id));
+                    message.success("Review deleted");
+                } catch (error) {
+                    message.error("Delete failed");
+                }
             }
-        }
+        });
     };
 
     return (

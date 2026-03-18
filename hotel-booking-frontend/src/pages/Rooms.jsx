@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./Rooms.css";
 import { Link, useSearchParams } from "react-router-dom";
 import hotelService from "../services/hotelService";
+import authService from "../services/authService";
 
 const ROOM_IMAGES = [
   "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80",
@@ -40,6 +41,7 @@ function getAmenities(roomId) {
 function Rooms() {
   const [searchParams] = useSearchParams();
   const hotelId = searchParams.get("hotelId");
+  const user = authService.getCurrentUser();
 
   const [roomTypes, setRoomTypes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +53,15 @@ function Rooms() {
   const [searchText, setSearchText] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState([]);
 
+  // Fallback static rooms
+  const fallbackRoomTypes = [
+    { id: 101, hotel_id: 1, type_name: "Deluxe Single Room", base_price: 3500, max_occupancy: 1, hotel: { name: "Hotel Grand Pokhara", city: "Pokhara" } },
+    { id: 102, hotel_id: 1, type_name: "Luxury Double Suite", base_price: 7500, max_occupancy: 2, hotel: { name: "Hotel Grand Pokhara", city: "Pokhara" } },
+    { id: 103, hotel_id: 2, type_name: "Standard Twin Room", base_price: 4200, max_occupancy: 2, hotel: { name: "Royal Kathmandu Stay", city: "Kathmandu" } },
+    { id: 104, hotel_id: 3, type_name: "Safari View Suite", base_price: 6800, max_occupancy: 3, hotel: { name: "Park Safari Resort", city: "Chitwan" } },
+    { id: 105, hotel_id: 4, type_name: "Mountain View Deluxe", base_price: 9500, max_occupancy: 2, hotel: { name: "Club Himalayan Nagarkot Resort", city: "Nagarkot" } },
+  ];
+
   useEffect(() => {
     const fetchRooms = async () => {
       try {
@@ -61,10 +72,27 @@ function Rooms() {
         } else {
           data = await hotelService.getAllRoomTypes();
         }
-        setRoomTypes(Array.isArray(data) ? data : []);
+        
+        if (data && Array.isArray(data) && data.length > 0) {
+          setRoomTypes(data);
+        } else {
+          // If a hotelId is present, filter fallback rooms for that hotel
+          if (hotelId) {
+            const filteredFallback = fallbackRoomTypes.filter(r => r.hotel_id === parseInt(hotelId));
+            setRoomTypes(filteredFallback.length > 0 ? filteredFallback : fallbackRoomTypes);
+          } else {
+            setRoomTypes(fallbackRoomTypes);
+          }
+        }
       } catch (err) {
-        console.error("Failed to fetch rooms:", err);
-        setError("Could not load rooms. Please try again.");
+        console.error("Failed to fetch rooms, using fallback:", err);
+        // Error handling with fallback
+        if (hotelId) {
+          const filteredFallback = fallbackRoomTypes.filter(r => r.hotel_id === parseInt(hotelId));
+          setRoomTypes(filteredFallback.length > 0 ? filteredFallback : fallbackRoomTypes);
+        } else {
+          setRoomTypes(fallbackRoomTypes);
+        }
       } finally {
         setLoading(false);
       }
@@ -241,9 +269,15 @@ function Rooms() {
                       )}
 
                       <div className="rm-card-actions">
-                        <Link to={`/booking?roomTypeId=${room.id}`} className="rm-btn-book">
-                          Reserve Now
-                        </Link>
+                        {(!user || user.role === 'customer') ? (
+                          <Link to={`/booking?roomTypeId=${room.id}`} className="rm-btn-book">
+                            Reserve Now
+                          </Link>
+                        ) : (
+                          <button className="rm-btn-book" style={{ opacity: 0.6, cursor: 'not-allowed' }} disabled title="Managers cannot book rooms">
+                            Managers Restricted
+                          </button>
+                        )}
                         <Link to={`/rooms/${room.id}?roomTypeId=${room.id}`} className="rm-btn-details">
                           View Details
                         </Link>

@@ -14,19 +14,31 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // ── USERS ──────────────────────────────────────────────
-        $adminUser = User::firstOrCreate(
-            ['email' => 'admin@stayhub.com'],
+        // ── SUPER ADMIN ───────────────────────────────────────
+        $superAdmin = User::firstOrCreate(
+            ['email' => 'superadmin@stayhub.com'],
             [
-                'name'     => 'Admin User',
-                'password' => Hash::make('password'),
-                'role'     => 'admin',
+                'name'     => 'Super Admin',
+                'password' => Hash::make('password123'),
+                'role'     => 'super_admin',
                 'phone'    => '9841000000',
             ]
         );
 
+        // ── HOTEL MANAGER (ADMIN) ─────────────────────────────
+        $hotelManager = User::firstOrCreate(
+            ['email' => 'manager@stayhub.com'],
+            [
+                'name'       => 'Hotel Manager',
+                'password'   => Hash::make('password123'),
+                'role'       => 'admin',
+                'phone'      => '9841000001',
+                'pan_number' => 'PAN123456789',
+            ]
+        );
+
         $admin = Admin::firstOrCreate(
-            ['user_id' => $adminUser->id],
+            ['user_id' => $hotelManager->id],
             ['status' => 'active']
         );
 
@@ -35,7 +47,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name'     => 'Namita Dhungana',
                 'password' => Hash::make('password'),
-                'role'     => 'user',
+                'role'     => 'customer',
                 'phone'    => '9841111111',
             ]
         );

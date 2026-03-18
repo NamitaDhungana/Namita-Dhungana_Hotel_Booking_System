@@ -13,25 +13,25 @@ class AdminController extends Controller
     public function getDashboardStats(Request $request)
     {
         $hotelId = $request->hotel_id;
-        
+
         $queryBookings = Booking::query();
         $queryPayments = Payment::where('payment_status', 'completed');
-        
+
         if ($hotelId) {
             $queryBookings->where('hotel_id', $hotelId);
-            $queryPayments->whereHas('booking', function($q) use ($hotelId) {
+            $queryPayments->whereHas('booking', function ($q) use ($hotelId) {
                 $q->where('hotel_id', $hotelId);
             });
         }
-        
+
         $totalBookings = $queryBookings->count();
         $totalRevenue = $queryPayments->sum('amount');
-        
+
         $activeBookings = (clone $queryBookings)->whereIn('status', ['confirmed', 'checked_in'])->count();
-        
+
         $totalHotels = Hotel::count();
         $totalUsers = \App\Models\User::where('role', 'user')->count();
-            
+
         return response()->json([
             'total_bookings' => $totalBookings,
             'total_revenue' => $totalRevenue,

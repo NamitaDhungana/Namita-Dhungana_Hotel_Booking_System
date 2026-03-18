@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { message, Modal } from 'antd';
 import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 import adminService from '../../services/adminService';
 import hotelService from '../../services/hotelService';
@@ -30,20 +31,29 @@ const ManageHotels = () => {
             setHotels(data);
         } catch (error) {
             console.error("Failed to fetch hotels", error);
+            message.error("Failed to fetch hotels");
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this hotel?")) {
-            try {
-                await adminService.deleteHotel(id);
-                setHotels(hotels.filter(h => h.id !== id));
-            } catch (error) {
-                alert("Failed to delete hotel");
+    const handleDelete = (id) => {
+        Modal.confirm({
+            title: 'Delete Hotel',
+            content: 'Are you sure you want to delete this hotel?',
+            okText: 'Yes, Delete',
+            okType: 'danger',
+            cancelText: 'No',
+            onOk: async () => {
+                try {
+                    await adminService.deleteHotel(id);
+                    setHotels(hotels.filter(h => h.id !== id));
+                    message.success("Hotel deleted successfully");
+                } catch (error) {
+                    message.error("Failed to delete hotel");
+                }
             }
-        }
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -51,16 +61,16 @@ const ManageHotels = () => {
         try {
             if (editingHotel) {
                 await adminService.updateHotel(editingHotel.id, formData);
-                alert("Hotel updated successfully");
+                message.success("Hotel updated successfully");
             } else {
                 await adminService.createHotel(formData);
-                alert("Hotel created successfully");
+                message.success("Hotel created successfully");
             }
             setShowModal(false);
             setEditingHotel(null);
             fetchHotels();
         } catch (error) {
-            alert("Action failed: " + (error.message || "Unknown error"));
+            message.error("Action failed: " + (error.message || "Unknown error"));
         }
     };
 

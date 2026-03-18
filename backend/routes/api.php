@@ -34,6 +34,14 @@ use App\Http\Controllers\NotificationController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Email Verification
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+    ->middleware(['signed'])
+    ->name('verification.verify');
+Route::post('/email/resend', [AuthController::class, 'resendVerificationEmail'])
+    ->middleware(['auth:sanctum', 'throttle:6,1'])
+    ->name('verification.resend');
+
 Route::get('/hotels', [HotelController::class, 'index']);
 Route::get('/hotels/{id}', [HotelController::class, 'show']);
 Route::get('/property-types', [HotelController::class, 'getPropertyTypes']);
@@ -52,24 +60,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [AuthController::class, 'updateProfile']);
 
     // Bookings
-    Route::post('/bookings', [BookingController::class, 'store']);
+    Route::post('/bookings', [BookingController::class, 'store'])->middleware('role:customer');
     Route::get('/user/bookings', [BookingController::class, 'getUserBookings']);
     Route::get('/bookings/{id}', [BookingController::class, 'show']);
-    Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
+    Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel'])->middleware('role:customer');
 
     // Payments
-    Route::post('/payments/initiate', [PaymentController::class, 'initiatePayment']);
-    Route::post('/payments/verify', [PaymentController::class, 'verifyPayment']);
+    Route::post('/payments/initiate', [PaymentController::class, 'initiatePayment'])->middleware('role:customer');
+    Route::post('/payments/verify', [PaymentController::class, 'verifyPayment'])->middleware('role:customer');
 
     // Reviews
-    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::post('/reviews', [ReviewController::class, 'store'])->middleware('role:customer');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
-    // Admin Routes (Should have 'role:admin' middleware ideally)
-    Route::prefix('admin')->group(function () {
+    // Admin Routes
+    Route::middleware('role:admin,super_admin')->prefix('admin')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'getDashboardStats']);
         Route::get('/revenue', [AdminController::class, 'getRevenueReport']);
         
@@ -78,7 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/hotels/{id}', [HotelController::class, 'update']);
         Route::delete('/hotels/{id}', [HotelController::class, 'destroy']);
 
-        // Room Management
+        // Room Management 
         Route::post('/room-types', [RoomController::class, 'storeRoomType']);
         Route::put('/room-types/{id}', [RoomController::class, 'updateRoomType']);
         Route::post('/rooms', [RoomController::class, 'storeRoom']);
@@ -89,8 +97,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/bookings/{id}/status', [BookingController::class, 'updateStatus']);
     });
 
-    // Super Admin Routes (Should have 'role:super_admin' middleware)
-    Route::prefix('super-admin')->group(function () {
+    // Super Admin Routes
+    Route::middleware('role:super_admin')->prefix('super-admin')->group(function () {
+        Route::get('/users', [SuperAdminController::class, 'getUsers']);
+        Route::get('/pending-managers', [SuperAdminController::class, 'getPendingManagers']);
+        Route::post('/users/{id}/approve', [SuperAdminController::class, 'approveUser']);
+        Route::post('/users/{id}/reject', [SuperAdminController::class, 'rejectUser']);
         Route::post('/admins', [SuperAdminController::class, 'createAdmin']);
         Route::get('/settings', [SuperAdminController::class, 'getSettings']);
     });

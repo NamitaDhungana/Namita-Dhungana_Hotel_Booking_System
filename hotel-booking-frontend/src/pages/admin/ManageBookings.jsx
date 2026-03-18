@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { message } from 'antd';
 import { FaCheck, FaTimes, FaEye } from 'react-icons/fa';
 import bookingService from '../../services/bookingService';
 import adminService from '../../services/adminService';
@@ -26,10 +27,10 @@ const ManageBookings = () => {
     const handleStatusUpdate = async (id, status) => {
         try {
             await adminService.updateBookingStatus(id, status);
-            alert(`Booking ${status} successfully!`);
+            message.success(`Booking ${status} successfully!`);
             fetchBookings();
         } catch (error) {
-            alert("Status update failed");
+            message.error("Status update failed");
         }
     };
 

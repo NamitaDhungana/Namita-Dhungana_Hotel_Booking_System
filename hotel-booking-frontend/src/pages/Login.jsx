@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { message } from "antd";
 import "./Login.css";
-import { FaGoogle, FaFacebook } from "react-icons/fa";
 import authService from "../services/authService";
 
 function Login() {
@@ -13,28 +13,38 @@ function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
+  const successMessage = searchParams.get("message");
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError("Please fill in all fields");
+      message.warning("Please fill in all fields");
       return;
     }
     try {
       setLoading(true);
       setError("");
-      await authService.login({ email, password });
+      const response = await authService.login({ email, password });
 
       setLoading(false);
-      alert("Login successful!");
+      message.success("Login successful!");
       
-      if (redirectTo) {
-        navigate(decodeURIComponent(redirectTo));
-      } else {
-        navigate("/");
-      }
+      setTimeout(() => {
+        if (redirectTo) {
+          navigate(decodeURIComponent(redirectTo));
+        } else {
+          const user = response.user;
+          if (user.role === 'admin' || user.role === 'super_admin') {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
+        }
+      }, 1500);
     } catch (err) {
       console.error("Login failed:", err);
-      setError(err.message || "Invalid email or password!");
+      const errorMsg = err.message || "Invalid email or password!";
+      setError(errorMsg);
+      message.error(errorMsg);
       setLoading(false);
     }
   };
@@ -43,7 +53,19 @@ function Login() {
     <div className="login-wrapper">
       <div className="login-box">
         <h2 className="login-title">Welcome Back</h2>
-        {error && <div className="login-error-msg" style={{color: 'red', marginBottom: '15px', textAlign: 'center'}}>{error}</div>}
+        <p className="login-subtitle">Sign in to your account to continue</p>
+        
+        {successMessage && (
+          <div className="login-success-msg">
+            {successMessage}
+          </div>
+        )}
+
+        {error && (
+          <div className="login-error-msg">
+            {error}
+          </div>
+        )}
 
         {/* Email */}
         <input
@@ -80,22 +102,6 @@ function Login() {
           {loading ? "Logging in..." : "Login"}
         </button>
 
-        {/* Divider */}
-        <div className="divider">
-          <span></span>
-          <p>or continue with</p>
-          <span></span>
-        </div>
-
-        {/* Social */}
-        <div className="social-login">
-          <button className="social-btn google" onClick={() => alert("Google Login is not configured yet.")}>
-            <FaGoogle className="icon" /> Google
-          </button>
-          <button className="social-btn facebook" onClick={() => alert("Facebook Login is not configured yet.")}>
-            <FaFacebook className="icon" /> Facebook
-          </button>
-        </div>
 
         {/* Register */}
         <p className="register-text">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { message } from 'antd';
 import { FaPlus, FaEdit, FaCheckCircle, FaTimesCircle, FaSearch } from 'react-icons/fa';
 import adminService from '../../services/adminService';
 import hotelService from '../../services/hotelService';
@@ -36,7 +37,7 @@ const ManageRooms = () => {
             setHotels(Array.isArray(hotelsData) ? hotelsData : []);
         } catch (error) {
             console.error("Failed to fetch room data:", error);
-            alert("Failed to load data: " + JSON.stringify(error));
+            message.error("Failed to load data");
         } finally {
             setLoading(false);
         }
@@ -47,15 +48,15 @@ const ManageRooms = () => {
         try {
             if (editingRoom) {
                 await adminService.updateRoomType(editingRoom.id, formData);
-                alert("Room type updated!");
+                message.success("Room type updated!");
             } else {
                 await adminService.createRoomType(formData);
-                alert("Room type created!");
+                message.success("Room type created!");
             }
             setShowModal(false);
             fetchData();
         } catch (error) {
-            alert("Action failed: " + (error.message || "Unknown error"));
+            message.error("Action failed: " + (error.message || "Unknown error"));
         }
     };
 

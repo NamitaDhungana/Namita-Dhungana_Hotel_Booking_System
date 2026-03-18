@@ -1,15 +1,18 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FaChartLine, FaHotel, FaBed, FaCalendarCheck, FaSignOutAlt, FaBell, FaStar } from 'react-icons/fa';
+import { FaChartLine, FaHotel, FaBed, FaCalendarCheck, FaSignOutAlt, FaBell, FaStar, FaUsers } from 'react-icons/fa';
+import authService from '../services/authService';
 import './AdminLayout.css';
 
 const AdminLayout = () => {
     const navigate = useNavigate();
+    const user = authService.getCurrentUser();
+    const isSuperAdmin = user && user.role === 'super_admin';
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+    const handleLogout = async () => {
+        await authService.logout();
         navigate('/login');
+        window.location.reload();
     };
 
     return (
@@ -21,6 +24,14 @@ const AdminLayout = () => {
                         <i><FaChartLine /></i>
                         <span>Dashboard</span>
                     </NavLink>
+                    
+                    {isSuperAdmin && (
+                        <NavLink to="/admin/users" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                            <i><FaUsers /></i>
+                            <span>Manage Users</span>
+                        </NavLink>
+                    )}
+
                     <NavLink to="/admin/hotels" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                         <i><FaHotel /></i>
                         <span>Manage Hotels</span>

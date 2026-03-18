@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import hotelService from "../services/hotelService";
+import authService from "../services/authService";
 import "./HotelDetails.css";
 
 function HotelDetails() {
@@ -8,6 +9,7 @@ function HotelDetails() {
     const [hotel, setHotel] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const user = authService.getCurrentUser();
 
     // Static Fallback in case Backend is down or empty
     const staticFallback = {
@@ -19,7 +21,7 @@ function HotelDetails() {
         property_type: "Hotel",
         roomTypes: [
             {
-                id: 1,
+                id: 101,
                 type_name: "Deluxe King Room",
                 max_occupancy: 2,
                 base_price: 5200,
@@ -27,7 +29,7 @@ function HotelDetails() {
                 amenities: ["King Bed", "City View", "Free WiFi", "Minibar"]
             },
             {
-                id: 2,
+                id: 102,
                 type_name: "Family Suite",
                 max_occupancy: 4,
                 base_price: 8500,
@@ -132,9 +134,15 @@ function HotelDetails() {
                                         </div>
 
                                         <div className="room-action">
-                                            <Link to={`/booking?roomTypeId=${room.id}`}>
-                                                <button className="btn-reserve">Reserve Now</button>
-                                            </Link>
+                                            {(!user || user.role === 'customer') ? (
+                                                <Link to={`/booking?roomTypeId=${room.id}`}>
+                                                    <button className="btn-reserve">Reserve Now</button>
+                                                </Link>
+                                            ) : (
+                                                <button className="btn-reserve" style={{ opacity: 0.6, cursor: 'not-allowed' }} disabled>
+                                                    Managers Restricted
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

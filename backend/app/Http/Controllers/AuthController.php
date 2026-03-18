@@ -18,8 +18,11 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
-            'role' => 'in:user,admin,super_admin' // For testing, maybe restrict later
+            'role' => 'required|in:customer,admin',
+            'pan_number' => 'required_if:role,admin|string|nullable'
         ]);
+
+        $isAdmin = $request->role === 'admin';
 
         $user = User::create([
             'name' => $request->name,
@@ -27,15 +30,17 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
             'address' => $request->address,
-            'role' => $request->role ?? 'user'
+            'role' => $request->role,
+            'pan_number' => $request->pan_number,
+            'is_approved' => $isAdmin ? false : true,
+            'registration_status' => $isAdmin ? 'pending' : 'active'
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $user->sendEmailVerificationNotification();
 
         return response()->json([
-            'message' => 'User registered successfully',
-            'user' => $user,
-            'token' => $token
+            'message' => 'User registered successfully. Please verify your email.',
+            'user' => $user
         ], 201);
     }
 
@@ -53,6 +58,26 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
+        // Check email verification
+        if (! $user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Your email address is not verified.',
+                'needs_verification' => true
+            ], 403);
+        }
+
+        // Check manager approval
+        if ($user->role === 'admin' && ! $user->is_approved) {
+            return response()->json([
+                'message' => 'Your account is pending approval by the Super Admin.',
+                'is_pending' => true
+            ], 403);
+        }
+
+        if ($user->registration_status === 'rejected') {
+            return response()->json(['message' => 'Your registration has been rejected.'], 403);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -60,6 +85,38 @@ class AuthController extends Controller
             'user' => $user,
             'token' => $token
         ]);
+    }
+
+    // Email Verification
+    public function verifyEmail(Request $request, $id, $hash)
+    {
+        $user = User::findOrFail($id);
+
+        if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+            return response()->json(['message' => 'Invalid verification link.'], 403);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return redirect('http://localhost:5173/login?message=Email already verified.');
+        }
+
+        if ($user->markEmailAsVerified()) {
+            event(new \Illuminate\Auth\Events\Verified($user));
+        }
+
+        return redirect('http://localhost:5173/login?message=Email verified successfully. You can now login.');
+    }
+
+    // Resend Verification Email
+    public function resendVerificationEmail(Request $request)
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email already verified.']);
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return response()->json(['message' => 'Verification link sent.']);
     }
 
     // Logout

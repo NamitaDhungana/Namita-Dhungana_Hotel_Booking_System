@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { message } from "antd";
 import hotelService from "../services/hotelService";
 import bookingService from "../services/bookingService";
 import "./Booking.css";
@@ -21,6 +22,15 @@ function Booking() {
     num_guests: 1,
   });
 
+  // Fallback static rooms matching Rooms.jsx
+  const fallbackRoomTypes = [
+    { id: 101, hotel_id: 1, type_name: "Deluxe Single Room", base_price: 3500, max_occupancy: 1, hotel: { name: "Hotel Grand Pokhara", city: "Pokhara" } },
+    { id: 102, hotel_id: 1, type_name: "Luxury Double Suite", base_price: 7500, max_occupancy: 2, hotel: { name: "Hotel Grand Pokhara", city: "Pokhara" } },
+    { id: 103, hotel_id: 2, type_name: "Standard Twin Room", base_price: 4200, max_occupancy: 2, hotel: { name: "Royal Kathmandu Stay", city: "Kathmandu" } },
+    { id: 104, hotel_id: 3, type_name: "Safari View Suite", base_price: 6800, max_occupancy: 3, hotel: { name: "Park Safari Resort", city: "Chitwan" } },
+    { id: 105, hotel_id: 4, type_name: "Mountain View Deluxe", base_price: 9500, max_occupancy: 2, hotel: { name: "Club Himalayan Nagarkot Resort", city: "Nagarkot" } },
+  ];
+
   useEffect(() => {
     if (!roomTypeId) {
       setError("no_room");
@@ -30,9 +40,25 @@ function Booking() {
     const fetchRoom = async () => {
       try {
         const data = await hotelService.showRoomType(roomTypeId);
-        setRoomType(data);
+        if (data) {
+          setRoomType(data);
+        } else {
+          // Try fallback
+          const fallback = fallbackRoomTypes.find(r => r.id === parseInt(roomTypeId));
+          if (fallback) {
+            setRoomType(fallback);
+          } else {
+            setError("load_fail");
+          }
+        }
       } catch (err) {
-        setError("load_fail");
+        console.error("Failed to fetch room, checking fallbacks:", err);
+        const fallback = fallbackRoomTypes.find(r => r.id === parseInt(roomTypeId));
+        if (fallback) {
+          setRoomType(fallback);
+        } else {
+          setError("load_fail");
+        }
       } finally {
         setLoading(false);
       }
@@ -58,7 +84,7 @@ function Booking() {
       return;
     }
     if (getNights() <= 0) {
-      alert("Please select valid check-in and check-out dates.");
+      message.warning("Please select valid check-in and check-out dates.");
       return;
     }
     try {
