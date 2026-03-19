@@ -25,6 +25,11 @@ function Booking() {
     num_guests: 1,
   });
 
+  // Khalti modal state
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [pendingBooking, setPendingBooking] = useState(null);
+  const [khaltiLoading, setKhaltiLoading] = useState(false);
+
   // Fallback static rooms matching Rooms.jsx
   const fallbackRoomTypes = [
     { id: 101, hotel_id: 1, type_name: "Deluxe Single Room", base_price: 3500, max_occupancy: 1, hotel: { name: "Hotel Grand Pokhara", city: "Pokhara" } },
@@ -92,8 +97,14 @@ function Booking() {
       message.warning("Please select valid check-in and check-out dates.");
       return;
     }
+    // Open payment modal — booking is created only after user picks payment
+    setShowPayModal(true);
+  };
+
+  const handleKhaltiPay = async () => {
     try {
-      setSubmitting(true);
+      setKhaltiLoading(true);
+      // Step 1: create booking with payment_method=khalti
       const result = await bookingService.createBooking({
         hotel_id: roomType.hotel_id,
         room_type_id: parseInt(roomTypeId),
@@ -101,10 +112,18 @@ function Booking() {
         check_out_date: formData.check_out_date,
         num_guests: parseInt(formData.num_guests),
         total_amount: getTotal(),
+        payment_method: "khalti",
       });
-      setBookingSuccess(result);
+
+      if (result.payment_url) {
+        // Step 2: redirect to Khalti
+        window.location.href = result.payment_url;
+      } else {
+        setShowPayModal(false);
+        setError("book_fail:Khalti payment URL not received. Please try again.");
+      }
     } catch (err) {
-      console.error("Booking submission error:", err);
+      setShowPayModal(false);
       const msg = err?.message || "Booking failed. Please try again.";
       if (msg.toLowerCase().includes("unauthenticated") || err?.status === 401) {
         setError("auth_fail");
@@ -112,7 +131,7 @@ function Booking() {
         setError("book_fail:" + msg);
       }
     } finally {
-      setSubmitting(false);
+      setKhaltiLoading(false);
     }
   };
 
@@ -358,6 +377,78 @@ function Booking() {
           </div>
         </div>
       </div>
+
+      {/* ── Khalti Payment Modal ── */}
+      {showPayModal && (
+        <div className="bk-modal-overlay" onClick={() => !khaltiLoading && setShowPayModal(false)}>
+          <div className="bk-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="bk-modal-close"
+              onClick={() => setShowPayModal(false)}
+              disabled={khaltiLoading}
+            >
+              ✕
+            </button>
+
+            <div className="bk-modal-header">
+              <div className="bk-modal-icon">💳</div>
+              <h2>Complete Your Payment</h2>
+              <p>Review your booking and pay securely via Khalti</p>
+            </div>
+
+            <div className="bk-modal-summary">
+              <div className="bk-modal-row">
+                <span>Room</span>
+                <strong>{roomType?.type_name}</strong>
+              </div>
+              <div className="bk-modal-row">
+                <span>Hotel</span>
+                <strong>{roomType?.hotel?.name}</strong>
+              </div>
+              <div className="bk-modal-row">
+                <span>Check-in</span>
+                <strong>{formData.check_in_date}</strong>
+              </div>
+              <div className="bk-modal-row">
+                <span>Check-out</span>
+                <strong>{formData.check_out_date}</strong>
+              </div>
+              <div className="bk-modal-row">
+                <span>Guests</span>
+                <strong>{formData.num_guests}</strong>
+              </div>
+              <div className="bk-modal-row bk-modal-total">
+                <span>Total Amount</span>
+                <strong>Rs. {getTotal().toLocaleString()}</strong>
+              </div>
+            </div>
+
+            <button
+              className="bk-btn-khalti"
+              onClick={handleKhaltiPay}
+              disabled={khaltiLoading}
+            >
+              {khaltiLoading ? (
+                <><span className="bk-btn-spinner"></span> Redirecting to Khalti...</>
+              ) : (
+                <>
+                  <img
+                    src="https://khalti.com/static/khalti-logo.png"
+                    alt="Khalti"
+                    className="bk-khalti-logo"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  Pay Rs. {getTotal().toLocaleString()} via Khalti
+                </>
+              )}
+            </button>
+
+            <p className="bk-modal-note">
+              🔒 You will be redirected to Khalti's secure payment page
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

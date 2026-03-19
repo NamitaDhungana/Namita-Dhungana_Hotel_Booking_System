@@ -461,3 +461,168 @@
     padding: 30px 20px;
   }
 }
+
+/* ─── KHALTI PAYMENT MODAL ───────────────────── */
+.bk-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 10, 60, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.bk-modal {
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px 36px 32px;
+  max-width: 460px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 24px 80px rgba(108, 92, 231, 0.2);
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.bk-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  background: #f0f0f8;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.bk-modal-close:hover:not(:disabled) { background: #e0e0f0; }
+.bk-modal-close:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.bk-modal-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.bk-modal-icon {
+  font-size: 2.8rem;
+  margin-bottom: 12px;
+}
+.bk-modal-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  color: #2D1B69;
+  margin: 0 0 6px;
+}
+.bk-modal-header p {
+  color: #888;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.bk-modal-summary {
+  background: #fafbff;
+  border: 2px solid #ebf0ff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bk-modal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #666;
+  border-bottom: 1px solid #f0f0f8;
+  padding-bottom: 10px;
+}
+.bk-modal-row:last-child {
+  border: none;
+  padding: 0;
+}
+.bk-modal-row strong {
+  color: #2D1B69;
+  font-weight: 600;
+}
+
+.bk-modal-total {
+  margin-top: 4px;
+  padding-top: 14px !important;
+  border-top: 2px dashed #dde3f8 !important;
+  border-bottom: none !important;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.bk-modal-total strong {
+  font-size: 1.2rem;
+  color: #6C5CE7;
+}
+
+.bk-btn-khalti {
+  width: 100%;
+  background: linear-gradient(135deg, #5C2D91 0%, #7B3FBE 100%);
+  color: #fff;
+  border: none;
+  padding: 16px 20px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.25s;
+  box-shadow: 0 4px 18px rgba(92, 45, 145, 0.35);
+  letter-spacing: 0.3px;
+}
+.bk-btn-khalti:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(92, 45, 145, 0.45);
+}
+.bk-btn-khalti:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.bk-khalti-logo {
+  height: 22px;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+
+.bk-modal-note {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #aaa;
+  margin: 14px 0 0;
+}
+
+@media (max-width: 500px) {
+  .bk-modal {
+    padding: 30px 20px 24px;
+  }
+}

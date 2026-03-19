@@ -53,6 +53,10 @@ Route::get('/room-types/{id}', [RoomController::class, 'showRoomType']);
 Route::get('/room-types/{id}/unavailable-dates', [RoomController::class, 'getUnavailableDates']);
 Route::post('/rooms/availability', [RoomController::class, 'checkAvailability']);
 
+// Khalti return_url callback — public (Khalti redirects here with ?pidx=...)
+Route::get('/payments/khalti/verify', [PaymentController::class, 'verifyPayment'])
+    ->name('khalti.verify');
+
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
@@ -68,7 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Payments
     Route::post('/payments/initiate', [PaymentController::class, 'initiatePayment'])->middleware('role:customer');
-    Route::post('/payments/verify', [PaymentController::class, 'verifyPayment'])->middleware('role:customer');
+    Route::get('/payments/verify', [PaymentController::class, 'verifyPayment'])->middleware('role:customer');
 
     // Reviews
     Route::post('/reviews', [ReviewController::class, 'store'])->middleware('role:customer');

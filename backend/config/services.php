@@ -31,4 +31,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'khalti' => [
+        'secret_key'   => env('KHALTI_SECRET_KEY'),
+        'initiate_url' => env('KHALTI_INITIATE_URL', 'https://a.khalti.com/api/v2/epayment/initiate/'),
+        'lookup_url'   => env('KHALTI_LOOKUP_URL', 'https://a.khalti.com/api/v2/epayment/lookup/'),
+        'return_url'   => env('KHALTI_RETURN_URL', env('APP_URL') . '/api/payments/khalti/verify'),
+    ],
+
 ];

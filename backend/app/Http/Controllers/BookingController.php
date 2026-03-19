@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BookingConfirmationMail;
+use App\Services\KhaltiService;
 
 class BookingController extends Controller
 {
+    public function __construct(private KhaltiService $khalti) {}
+
     // Create new booking
     public function store(Request $request)
     {
@@ -19,6 +22,7 @@ class BookingController extends Controller
             'check_out_date' => 'required|date|after:check_in_date',
             'num_guests'     => 'required|integer|min:1',
             'total_amount'   => 'required|numeric',
+            'payment_method' => 'nullable|in:khalti,cash,card',
         ]);
 
         $checkIn  = $request->check_in_date;
@@ -26,7 +30,6 @@ class BookingController extends Controller
 
         try {
             $booking = \Illuminate\Support\Facades\DB::transaction(function () use ($request, $checkIn, $checkOut) {
-                // Find an available room of this type that is not booked for these dates, with pessimistic locking
                 $availableRoom = \App\Models\Room::where('hotel_id', $request->hotel_id)
                     ->where('room_type_id', $request->room_type_id)
                     ->where('status', 'available')
@@ -56,16 +59,45 @@ class BookingController extends Controller
                 ]);
             });
 
-            // Send Email Confirmation
+            // Send booking email (soft fail)
             $hotel = \App\Models\Hotel::find($request->hotel_id);
             try {
                 Mail::to($request->user()->email)->send(new BookingConfirmationMail($booking, $request->user(), $hotel));
             } catch (\Exception $mailEx) {
-                \Illuminate\Support\Facades\Log::error("Mail failed to send: " . $mailEx->getMessage());
-                // Soft fail: do not abort the booking just because Mailtrap is down/slow
+                \Illuminate\Support\Facades\Log::error("Mail failed: " . $mailEx->getMessage());
+            }
+
+            // If payment_method is khalti, auto-initiate and return payment_url
+            if ($request->payment_method === 'khalti') {
+                try {
+                    $booking->load('hotel');
+                    $khaltiResult = $this->khalti->initiate($booking, $request->user());
+
+                    return response()->json([
+                        'message'        => 'Booking created. Complete payment via Khalti.',
+                        'booking'        => $booking,
+                        'payment_method' => 'khalti',
+                        'payment_url'    => $khaltiResult['payment_url'],
+                        'pidx'           => $khaltiResult['pidx'],
+                        'order_id'       => $khaltiResult['order_id'],
+                    ], 201);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Khalti auto-initiate failed after booking', [
+                        'booking_id' => $booking->id,
+                        'error'      => $e->getMessage(),
+                    ]);
+                    // Booking is created but payment initiation failed — return booking with error hint
+                    return response()->json([
+                        'message'        => 'Booking created but Khalti initiation failed. Retry payment.',
+                        'booking'        => $booking,
+                        'payment_method' => 'khalti',
+                        'payment_error'  => $e->getMessage(),
+                    ], 201);
+                }
             }
 
             return response()->json($booking, 201);
+
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }

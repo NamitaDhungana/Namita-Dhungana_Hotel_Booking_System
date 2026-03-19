@@ -24,6 +24,7 @@ import AdminReviews from "./pages/admin/AdminReviews";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageUsers from "./pages/admin/ManageUsers";
 import NotificationCenter from "./components/NotificationCenter";
+import KhaltiReturn from "./pages/KhaltiReturn";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const user = authService.getCurrentUser();
@@ -73,6 +74,7 @@ function App() {
               <Route path="/hotel-list" element={<HotelList />} />
               <Route path="/notifications" element={<NotificationCenter />} />
               <Route path="/userProfile" element={<UserProfile />} />
+              <Route path="/payment/khalti/return" element={<KhaltiReturn />} />
             </Route>
 
             {/* Admin routes */}
