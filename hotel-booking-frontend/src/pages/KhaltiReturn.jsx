@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import axios from "axios";
 import "./KhaltiReturn.css";
@@ -7,50 +7,70 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api
 
 function KhaltiReturn() {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState("verifying");
+  const [status, setStatus] = useState("verifying"); // verifying | success | pending | failed | error
   const [data, setData] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
-  useEffect(() => {
-    const pidx = searchParams.get("pidx");
+  const pidx = searchParams.get("pidx");
 
+  const verify = useCallback((attempt = 1) => {
     if (!pidx) {
       setStatus("error");
       setErrorMsg("Missing payment reference (pidx). Please contact support.");
       return;
     }
 
-    // Use plain axios — no auth header needed, route is public
+    setStatus("verifying");
+
     axios
       .get(`${BASE_URL}/payments/khalti/verify`, {
         params: { pidx },
         headers: { Accept: "application/json" },
       })
       .then((res) => {
-        setData(res.data);
-        if (res.data.status === "completed") {
+        const resStatus = res.data.status;
+
+        if (resStatus === "completed") {
+          setData(res.data);
           setStatus("success");
+        } else if (res.status === 202 && attempt <= 3) {
+          // Still pending — auto-retry with backoff (1s, 2s, 3s)
+          setTimeout(() => verify(attempt + 1), attempt * 1000);
         } else {
-          setErrorMsg(res.data.message || "Payment was not completed.");
-          setStatus("failed");
+          // Exhausted retries — show pending state with manual retry
+          setStatus("pending");
         }
       })
       .catch((err) => {
-        const responseData = err.response?.data;
         const httpStatus = err.response?.status;
         const msg =
-          responseData?.message ||
-          responseData?.error ||
-          "Payment verification failed. Please contact support.";
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Payment verification failed.";
 
-        console.error("Khalti verify error:", httpStatus, responseData);
-        setErrorMsg(msg);
-
-        // 400 = payment failed/expired, anything else = unexpected error
-        setStatus(httpStatus === 400 ? "failed" : "error");
+        if (httpStatus === 400) {
+          setErrorMsg(msg);
+          setStatus("failed");
+        } else if (attempt <= 3) {
+          setTimeout(() => verify(attempt + 1), attempt * 1000);
+        } else {
+          setErrorMsg(msg);
+          setStatus("error");
+        }
       });
-  }, []);
+  }, [pidx]);
 
+  useEffect(() => {
+    verify(1);
+  }, [verify]);
+
+  const handleManualRetry = () => {
+    setRetryCount((c) => c + 1);
+    verify(1);
+  };
+
+  // ── Verifying ──────────────────────────────────────────
   if (status === "verifying") {
     return (
       <div className="kr-page">
@@ -63,16 +83,24 @@ function KhaltiReturn() {
     );
   }
 
+  // ── Success ────────────────────────────────────────────
   if (status === "success") {
     return (
       <div className="kr-page">
         <div className="kr-card">
           <div className="kr-icon">✅</div>
           <h2>Payment Successful!</h2>
-          <p>Your booking has been confirmed.</p>
+          <p>Your booking is confirmed and the dates are reserved.</p>
           {data?.transaction_id && (
             <div className="kr-ref">
-              Transaction ID: <strong>{data.transaction_id}</strong>
+              Transaction ID
+              <strong>{data.transaction_id}</strong>
+            </div>
+          )}
+          {data?.booking_id && (
+            <div className="kr-ref kr-ref--booking">
+              Booking #{data.booking_id}
+              <strong>✅ Confirmed</strong>
             </div>
           )}
           <div className="kr-actions">
@@ -88,6 +116,40 @@ function KhaltiReturn() {
     );
   }
 
+  // ── Still Pending (Khalti not yet processed) ───────────
+  if (status === "pending") {
+    return (
+      <div className="kr-page">
+        <div className="kr-card">
+          <div className="kr-icon">⏳</div>
+          <h2>Payment Processing</h2>
+          <p>
+            Your payment is being processed by Khalti. This can take a few
+            moments.
+          </p>
+          <p className="kr-note">
+            If you completed the payment, click "Check Status" to verify.
+          </p>
+          <div className="kr-actions">
+            <button className="kr-btn kr-btn--primary" onClick={handleManualRetry}>
+              {retryCount > 0 ? "Check Again" : "Check Status"}
+            </button>
+            <Link to="/userProfile" className="kr-btn kr-btn--outline">
+              My Bookings
+            </Link>
+          </div>
+          {retryCount >= 3 && (
+            <p className="kr-note kr-note--warn">
+              Still not confirmed? Your booking is saved. Check "My Bookings"
+              or contact support with your transaction details.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Failed ─────────────────────────────────────────────
   if (status === "failed") {
     return (
       <div className="kr-page">
@@ -95,6 +157,7 @@ function KhaltiReturn() {
           <div className="kr-icon">❌</div>
           <h2>Payment Failed</h2>
           <p>{errorMsg}</p>
+          <p className="kr-note">No charges were made. You can try booking again.</p>
           <div className="kr-actions">
             <Link to="/hotels" className="kr-btn kr-btn--primary">
               Try Again
@@ -105,16 +168,23 @@ function KhaltiReturn() {
     );
   }
 
-  // error state
+  // ── Error ──────────────────────────────────────────────
   return (
     <div className="kr-page">
       <div className="kr-card">
         <div className="kr-icon">⚠️</div>
-        <h2>Something Went Wrong</h2>
-        <p>{errorMsg}</p>
+        <h2>Verification Error</h2>
+        <p>{errorMsg || "Could not reach the payment server."}</p>
+        <p className="kr-note">
+          If your payment was deducted, your booking is saved. Check "My
+          Bookings" or contact support.
+        </p>
         <div className="kr-actions">
-          <Link to="/" className="kr-btn kr-btn--primary">
-            Go Home
+          <button className="kr-btn kr-btn--primary" onClick={handleManualRetry}>
+            Retry
+          </button>
+          <Link to="/userProfile" className="kr-btn kr-btn--outline">
+            My Bookings
           </Link>
         </div>
       </div>

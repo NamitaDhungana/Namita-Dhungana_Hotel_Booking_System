@@ -30,11 +30,28 @@ class BookingController extends Controller
 
         try {
             $booking = \Illuminate\Support\Facades\DB::transaction(function () use ($request, $checkIn, $checkOut) {
+                // Expire stale pending bookings (>30 min, unpaid) for this room type
+                \App\Models\Booking::whereHas('room', function ($q) use ($request) {
+                        $q->where('room_type_id', $request->room_type_id);
+                    })
+                    ->where('status', 'pending')
+                    ->where('created_at', '<', now()->subMinutes(30))
+                    ->update(['status' => 'cancelled']);
+
+                // Block confirmed + recent pending (within 30 min payment window)
                 $availableRoom = \App\Models\Room::where('hotel_id', $request->hotel_id)
                     ->where('room_type_id', $request->room_type_id)
                     ->where('status', 'available')
                     ->whereDoesntHave('bookings', function ($query) use ($checkIn, $checkOut) {
-                        $query->where('status', '!=', 'cancelled')
+                        $query->where(function ($q) {
+                                // Always block confirmed/active bookings
+                                $q->whereIn('status', ['confirmed', 'checked_in', 'checked_out'])
+                                  ->orWhere(function ($q2) {
+                                      // Also block recent pending (payment in progress)
+                                      $q2->where('status', 'pending')
+                                         ->where('created_at', '>=', now()->subMinutes(30));
+                                  });
+                            })
                               ->where('check_in_date', '<', $checkOut)
                               ->where('check_out_date', '>', $checkIn);
                     })
