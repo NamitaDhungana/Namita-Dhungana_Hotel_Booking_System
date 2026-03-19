@@ -50,6 +50,7 @@ Route::get('/hotels/{id}/reviews', [ReviewController::class, 'index']);
 Route::get('/hotels/{hotelId}/room-types', [RoomController::class, 'getRoomTypes']);
 Route::get('/room-types', [RoomController::class, 'getAllRoomTypes']);
 Route::get('/room-types/{id}', [RoomController::class, 'showRoomType']);
+Route::get('/room-types/{id}/unavailable-dates', [RoomController::class, 'getUnavailableDates']);
 Route::post('/rooms/availability', [RoomController::class, 'checkAvailability']);
 
 // Protected Routes

@@ -13,7 +13,7 @@ const bookingService = {
     getUserBookings: async () => {
         try {
             const response = await apiClient.get('/user/bookings');
-            return response.data;
+            return response.data.data || response.data;
         } catch (error) {
             throw error.response?.data || error.message;
         }

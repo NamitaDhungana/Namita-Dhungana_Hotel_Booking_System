@@ -134,18 +134,31 @@ const ManageRooms = () => {
                             </div>
                             <div className="form-group">
                                 <label>Room Type Name</label>
-                                <input
-                                    type="text" required
+                                <select
+                                    required
                                     value={formData.type_name}
                                     onChange={(e) => setFormData({ ...formData, type_name: e.target.value })}
-                                />
+                                    style={{ width: '100%', padding: '10px', borderRadius: '6px' }}
+                                >
+                                    <option value="">Choose a room type...</option>
+                                    <option value="Single Room">Single Room</option>
+                                    <option value="Double Room">Double Room</option>
+                                    <option value="Suite">Suite</option>
+                                    <option value="Deluxe Room">Deluxe Room</option>
+                                    <option value="Family Room">Family Room</option>
+                                    <option value="Presidential Suite">Presidential Suite</option>
+                                </select>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                 <div className="form-group">
                                     <label>Price / Night</label>
                                     <input
                                         type="number" required
+                                        min="0" step="0.01"
                                         value={formData.base_price}
+                                        onKeyDown={(e) => {
+                                            if (['-', '=', '+', 'e', 'E'].includes(e.key)) e.preventDefault();
+                                        }}
                                         onChange={(e) => setFormData({ ...formData, base_price: e.target.value })}
                                     />
                                 </div>
@@ -153,7 +166,11 @@ const ManageRooms = () => {
                                     <label>Capacity</label>
                                     <input
                                         type="number" required
+                                        min="1"
                                         value={formData.max_occupancy}
+                                        onKeyDown={(e) => {
+                                            if (['-', '=', '+', 'e', 'E', '.'].includes(e.key)) e.preventDefault();
+                                        }}
                                         onChange={(e) => setFormData({ ...formData, max_occupancy: e.target.value })}
                                     />
                                 </div>

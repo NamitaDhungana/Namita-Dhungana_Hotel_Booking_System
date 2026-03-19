@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Booking;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingConfirmationMail;
 
 class BookingController extends Controller
 {
@@ -22,35 +24,51 @@ class BookingController extends Controller
         $checkIn  = $request->check_in_date;
         $checkOut = $request->check_out_date;
 
-        // Find an available room of this type that is not booked for these dates
-        $availableRoom = \App\Models\Room::where('hotel_id', $request->hotel_id)
-            ->where('room_type_id', $request->room_type_id)
-            ->where('status', 'available')
-            ->whereDoesntHave('bookings', function ($query) use ($checkIn, $checkOut) {
-                $query->where('status', '!=', 'cancelled')
-                      ->where('check_in_date', '<', $checkOut)
-                      ->where('check_out_date', '>', $checkIn);
-            })
-            ->first();
+        try {
+            $booking = \Illuminate\Support\Facades\DB::transaction(function () use ($request, $checkIn, $checkOut) {
+                // Find an available room of this type that is not booked for these dates, with pessimistic locking
+                $availableRoom = \App\Models\Room::where('hotel_id', $request->hotel_id)
+                    ->where('room_type_id', $request->room_type_id)
+                    ->where('status', 'available')
+                    ->whereDoesntHave('bookings', function ($query) use ($checkIn, $checkOut) {
+                        $query->where('status', '!=', 'cancelled')
+                              ->where('check_in_date', '<', $checkOut)
+                              ->where('check_out_date', '>', $checkIn);
+                    })
+                    ->lockForUpdate()
+                    ->first();
 
-        if (!$availableRoom) {
-            return response()->json(['message' => 'No available rooms for the selected dates.'], 422);
+                if (!$availableRoom) {
+                    throw new \Exception('No available rooms for the selected dates. Another user may have just booked it.');
+                }
+
+                return Booking::create([
+                    'user_id'           => $request->user()->id,
+                    'hotel_id'          => $request->hotel_id,
+                    'room_id'           => $availableRoom->id,
+                    'booking_reference' => 'BK-' . strtoupper(uniqid()),
+                    'check_in_date'     => $checkIn,
+                    'check_out_date'    => $checkOut,
+                    'num_guests'        => $request->num_guests,
+                    'num_adults'        => $request->num_adults ?? 1,
+                    'total_amount'      => $request->total_amount,
+                    'status'            => 'pending',
+                ]);
+            });
+
+            // Send Email Confirmation
+            $hotel = \App\Models\Hotel::find($request->hotel_id);
+            try {
+                Mail::to($request->user()->email)->send(new BookingConfirmationMail($booking, $request->user(), $hotel));
+            } catch (\Exception $mailEx) {
+                \Illuminate\Support\Facades\Log::error("Mail failed to send: " . $mailEx->getMessage());
+                // Soft fail: do not abort the booking just because Mailtrap is down/slow
+            }
+
+            return response()->json($booking, 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         }
-
-        $booking = Booking::create([
-            'user_id'           => $request->user()->id,
-            'hotel_id'          => $request->hotel_id,
-            'room_id'           => $availableRoom->id,
-            'booking_reference' => 'BK-' . strtoupper(uniqid()),
-            'check_in_date'     => $checkIn,
-            'check_out_date'    => $checkOut,
-            'num_guests'        => $request->num_guests,
-            'num_adults'        => $request->num_adults ?? 1,
-            'total_amount'      => $request->total_amount,
-            'status'            => 'pending',
-        ]);
-
-        return response()->json($booking, 201);
     }
 
     // Get user bookings

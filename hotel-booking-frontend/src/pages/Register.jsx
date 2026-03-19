@@ -40,9 +40,9 @@ function Register() {
         pan_number: formData.role === "admin" ? formData.pan_number : null,
       });
 
-      message.success("Registration successful! Check your email.");
+      message.success("Registration successful! Please check your email and verify your account before logging in.", 4);
       setTimeout(() => {
-        navigate("/login?message=Registration successful! Please check your email and verify your account before logging in.");
+        navigate("/login");
       }, 1500);
     } catch (error) {
       console.error("Registration failed:", error);

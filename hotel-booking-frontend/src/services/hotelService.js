@@ -56,6 +56,16 @@ const hotelService = {
         }
     },
 
+    getUnavailableDates: async (id) => {
+        try {
+            const response = await apiClient.get(`/room-types/${id}/unavailable-dates`);
+            return response.data; // Array of date strings
+        } catch (error) {
+            console.error("Failed to fetch unavailable dates", error);
+            return [];
+        }
+    },
+
     getAllRoomTypes: async () => {
         try {
             const response = await apiClient.get('/room-types');

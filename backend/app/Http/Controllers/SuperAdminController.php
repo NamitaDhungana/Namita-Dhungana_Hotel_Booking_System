@@ -57,6 +57,14 @@ class SuperAdminController extends Controller
             'registration_status' => 'active'
         ]);
 
+        if ($user->role === 'admin' && !\App\Models\Admin::where('user_id', $user->id)->exists()) {
+            \App\Models\Admin::create([
+                'user_id' => $user->id,
+                'permissions' => json_encode(['all']),
+                'status' => 'active'
+            ]);
+        }
+
         return response()->json([
             'message' => 'User approved successfully',
             'user' => $user

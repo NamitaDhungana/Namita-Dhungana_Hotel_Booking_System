@@ -61,16 +61,16 @@ function UserProfile() {
               <div key={booking.id} className="booking-card">
                 <div className="booking-meta">
                   <h3>{booking.hotel?.name || 'Hotel'}</h3>
-                  <p><strong>Room:</strong> {booking.room_type?.type_name || 'Room'}</p>
-                  <p>📅 {booking.check_in} TO {booking.check_out}</p>
-                  <p>👥 {booking.guests} Guests</p>
+                  <p><strong>Room:</strong> {booking.room?.roomType?.type_name || 'Room'}</p>
+                  <p>📅 {booking.check_in_date} TO {booking.check_out_date}</p>
+                  <p>👥 {booking.num_guests} Guests</p>
                 </div>
                 <div className="booking-status">
                   <span className={`status-badge status-${booking.status}`}>
                     {booking.status}
                   </span>
                   <div className="price-box">
-                    Total: Rs. {booking.total_price?.toLocaleString()}
+                    Total: Rs. {booking.total_amount?.toLocaleString()}
                   </div>
                 </div>
               </div>

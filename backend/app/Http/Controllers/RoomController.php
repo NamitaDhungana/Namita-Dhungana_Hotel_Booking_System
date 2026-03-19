@@ -37,7 +37,7 @@ class RoomController extends Controller
         $request->validate([
             'hotel_id' => 'required|exists:hotels,id',
             'type_name' => 'required|string',
-            'base_price' => 'required|numeric',
+            'base_price' => 'required|numeric|min:0',
             'max_occupancy' => 'required|integer',
         ]);
 
@@ -94,17 +94,40 @@ class RoomController extends Controller
         $availableRooms = Room::where('hotel_id', $request->hotel_id)
             ->where('status', 'available')
             ->whereDoesntHave('bookings', function ($query) use ($checkIn, $checkOut) {
-                $query->where(function ($q) use ($checkIn, $checkOut) {
-                    $q->whereBetween('check_in_date', [$checkIn, $checkOut])
-                      ->orWhereBetween('check_out_date', [$checkIn, $checkOut])
-                      ->orWhere(function ($sq) use ($checkIn, $checkOut) {
-                          $sq->where('check_in_date', '<=', $checkIn)
-                             ->where('check_out_date', '>=', $checkOut);
-                      });
-                });
+                $query->where('status', '!=', 'cancelled')
+                      ->where('check_in_date', '<', $checkOut)
+                      ->where('check_out_date', '>', $checkIn);
             })
             ->count();
 
         return response()->json(['available_rooms' => $availableRooms]);
+    }
+
+    public function getUnavailableDates($id)
+    {
+        $roomType = \App\Models\RoomType::findOrFail($id);
+        $totalRooms = \App\Models\Room::where('room_type_id', $id)->where('status', 'available')->count();
+        
+        $unavailableDates = [];
+        $startDate = date('Y-m-d'); // Today
+        
+        // Scan a full year ahead to universally sync the UI calendar
+        for ($i = 0; $i < 365; $i++) {
+            $checkDate = date('Y-m-d', strtotime("+$i days", strtotime($startDate)));
+            
+            $bookedCount = \App\Models\Booking::whereHas('room', function($q) use ($id) {
+                $q->where('room_type_id', $id);
+            })
+            ->where('status', '!=', 'cancelled')
+            ->where('check_in_date', '<=', $checkDate)
+            ->where('check_out_date', '>', $checkDate)
+            ->count();
+            
+            if ($totalRooms == 0 || $bookedCount >= $totalRooms) {
+                $unavailableDates[] = $checkDate;
+            }
+        }
+        
+        return response()->json($unavailableDates);
     }
 }

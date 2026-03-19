@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { message as staticMessage, App } from "antd";
 import "./Login.css";
@@ -9,12 +9,21 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
   const successMessage = searchParams.get("message");
+
+  useEffect(() => {
+    if (successMessage) {
+      message.success(successMessage);
+      // Remove the message from URL after displaying to prevent it from showing again on refresh
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("message");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [successMessage, message, searchParams, setSearchParams]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -23,7 +32,6 @@ function Login() {
     }
     try {
       setLoading(true);
-      setError("");
       const response = await authService.login({ email, password });
 
       setLoading(false);
@@ -44,7 +52,6 @@ function Login() {
     } catch (err) {
       console.error("Login failed:", err);
       const errorMsg = err.message || "Invalid email or password!";
-      setError(errorMsg);
       message.error(errorMsg);
       setLoading(false);
     }
@@ -56,18 +63,6 @@ function Login() {
         <h2 className="login-title">Welcome Back</h2>
         <p className="login-subtitle">Sign in to your account to continue</p>
         
-        {successMessage && (
-          <div className="login-success-msg">
-            {successMessage}
-          </div>
-        )}
-
-        {error && (
-          <div className="login-error-msg">
-            {error}
-          </div>
-        )}
-
         {/* Email */}
         <input
           type="email"
@@ -113,4 +108,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Login;

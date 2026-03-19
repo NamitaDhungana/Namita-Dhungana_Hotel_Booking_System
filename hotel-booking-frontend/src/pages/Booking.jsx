@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { message, App } from "antd";
+import { DatePicker, message, App } from "antd";
+import dayjs from "dayjs";
 import hotelService from "../services/hotelService";
 import bookingService from "../services/bookingService";
 import "./Booking.css";
@@ -16,6 +17,7 @@ function Booking() {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(null);
+  const [unavailableDates, setUnavailableDates] = useState([]);
 
   const [formData, setFormData] = useState({
     check_in_date: "",
@@ -43,6 +45,8 @@ function Booking() {
         const data = await hotelService.showRoomType(roomTypeId);
         if (data) {
           setRoomType(data);
+          const dates = await hotelService.getUnavailableDates(roomTypeId);
+          setUnavailableDates(dates || []);
         } else {
           // Try fallback
           const fallback = fallbackRoomTypes.find(r => r.id === parseInt(roomTypeId));
@@ -226,22 +230,31 @@ function Booking() {
               <div className="bk-field-group">
                 <div className="bk-field">
                   <label>📅 Check-in Date</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     required
-                    min={today}
-                    value={formData.check_in_date}
-                    onChange={(e) => setFormData({ ...formData, check_in_date: e.target.value, check_out_date: "" })}
+                    style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ebf0ff" }}
+                    disabledDate={(current) => {
+                      if (!current) return false;
+                      if (current.isBefore(dayjs(), 'day')) return true;
+                      return unavailableDates.includes(current.format('YYYY-MM-DD'));
+                    }}
+                    value={formData.check_in_date ? dayjs(formData.check_in_date) : null}
+                    onChange={(date, dateString) => setFormData({ ...formData, check_in_date: dateString, check_out_date: "" })}
                   />
                 </div>
                 <div className="bk-field">
                   <label>📅 Check-out Date</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     required
-                    min={formData.check_in_date || today}
-                    value={formData.check_out_date}
-                    onChange={(e) => setFormData({ ...formData, check_out_date: e.target.value })}
+                    style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ebf0ff" }}
+                    disabledDate={(current) => {
+                      if (!current) return false;
+                      if (formData.check_in_date && current.isBefore(dayjs(formData.check_in_date).add(1, 'day'), 'day')) return true;
+                      if (!formData.check_in_date && current.isBefore(dayjs(), 'day')) return true;
+                      return unavailableDates.includes(current.format('YYYY-MM-DD'));
+                    }}
+                    value={formData.check_out_date ? dayjs(formData.check_out_date) : null}
+                    onChange={(date, dateString) => setFormData({ ...formData, check_out_date: dateString })}
                   />
                 </div>
               </div>

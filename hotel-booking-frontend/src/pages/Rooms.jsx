@@ -52,6 +52,7 @@ function Rooms() {
   const [capacityFilter, setCapacityFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState([]);
+  const [locationFilter, setLocationFilter] = useState("all");
 
   // Fallback static rooms
   const fallbackRoomTypes = [
@@ -112,6 +113,12 @@ function Rooms() {
     if (capacityFilter !== "all" && room.max_occupancy < parseInt(capacityFilter)) return false;
     if (searchText && !room.type_name?.toLowerCase().includes(searchText.toLowerCase()) &&
         !room.hotel?.name?.toLowerCase().includes(searchText.toLowerCase())) return false;
+        
+    if (locationFilter && locationFilter !== "all") {
+        const cityMatch = room.hotel?.city?.toLowerCase() === locationFilter.toLowerCase();
+        if (!cityMatch) return false;
+    }
+
     if (selectedAmenities.length > 0) {
       const roomAmenityLabels = getAmenities(room.id).map((a) => a.label);
       if (!selectedAmenities.every((a) => roomAmenityLabels.includes(a))) return false;
@@ -161,6 +168,23 @@ function Rooms() {
         {/* Sidebar Filters */}
         <aside className="rm-filters">
           <h3>🎛️ Filters</h3>
+
+          {/* Location Search */}
+          <div className="rm-filter-group" style={{ marginBottom: "20px" }}>
+            <label>Location / City</label>
+            <div style={{ marginTop: "8px" }}>
+              <select
+                value={locationFilter}
+                onChange={(e) => setLocationFilter(e.target.value)}
+                style={{ width: '100%', padding: '10px', border: '1px solid #ebf0ff', borderRadius: '8px', outline: 'none', background: '#fff' }}
+              >
+                <option value="all">All Locations in Nepal</option>
+                {[...new Set(roomTypes.map(room => room?.hotel?.city).filter(Boolean))].sort().map(city => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           {/* Price Range */}
           <div className="rm-filter-group">
@@ -220,6 +244,7 @@ function Rooms() {
             setCapacityFilter("all");
             setSearchText("");
             setSelectedAmenities([]);
+            setLocationFilter("all");
           }}>
             Clear All Filters
           </button>

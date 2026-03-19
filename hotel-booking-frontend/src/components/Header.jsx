@@ -34,7 +34,7 @@ function Header() {
           <Link to="/rooms">Rooms</Link>
           
           {/* Role-based Links */}
-          {isCustomer && <Link to="/booking">My Bookings</Link>}
+          {isCustomer && <Link to="/userProfile">My Bookings</Link>}
           {isAdmin && <Link to="/admin" className="admin-link">Dashboard</Link>}
           
           {!user && <Link to="/contact">Contact</Link>}
