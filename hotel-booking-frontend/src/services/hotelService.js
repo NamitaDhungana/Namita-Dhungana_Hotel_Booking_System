@@ -20,9 +20,15 @@ const hotelService = {
         }
     },
 
-    getRoomTypesByHotel: async (hotelId) => {
+    getRoomTypesByHotel: async (hotelId, filters = {}) => {
         try {
-            const response = await apiClient.get(`/hotels/${hotelId}/room-types`);
+            const params = new URLSearchParams();
+            if (filters.min_price) params.append('min_price', filters.min_price);
+            if (filters.max_price) params.append('max_price', filters.max_price);
+            if (filters.min_guests) params.append('min_guests', filters.min_guests);
+            if (filters.amenity) params.append('amenity', filters.amenity);
+            const query = params.toString() ? `?${params.toString()}` : '';
+            const response = await apiClient.get(`/hotels/${hotelId}/room-types${query}`);
             return response.data.data || response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -73,7 +79,16 @@ const hotelService = {
         } catch (error) {
             throw error.response?.data || error.message;
         }
-    }
+    },
+
+    getAmenities: async () => {
+        try {
+            const response = await apiClient.get('/amenities');
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
 };
 
 export default hotelService;

@@ -76,14 +76,6 @@ class BookingController extends Controller
                 ]);
             });
 
-            // Send booking email (soft fail)
-            $hotel = \App\Models\Hotel::find($request->hotel_id);
-            try {
-                Mail::to($request->user()->email)->send(new BookingConfirmationMail($booking, $request->user(), $hotel));
-            } catch (\Exception $mailEx) {
-                \Illuminate\Support\Facades\Log::error("Mail failed: " . $mailEx->getMessage());
-            }
-
             // If payment_method is khalti, auto-initiate and return payment_url
             if ($request->payment_method === 'khalti') {
                 try {
@@ -130,12 +122,27 @@ class BookingController extends Controller
         return response()->json($bookings);
     }
 
-    // Get all bookings (Admin)
+    // Get all bookings (Admin — scoped to own hotels; Super Admin — all)
     public function getAllBookings(Request $request)
     {
-        $bookings = Booking::with(['user', 'hotel', 'room', 'room.roomType'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $user = $request->user();
+
+        if ($user->role === 'super_admin') {
+            $bookings = Booking::with(['user', 'hotel', 'room', 'room.roomType'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            $admin = \App\Models\Admin::where('user_id', $user->id)->first();
+            if (!$admin) {
+                return response()->json(['message' => 'Admin record not found'], 403);
+            }
+            $hotelIds = \App\Models\Hotel::where('admin_id', $admin->id)->pluck('id');
+            $bookings = Booking::with(['user', 'hotel', 'room', 'room.roomType'])
+                ->whereIn('hotel_id', $hotelIds)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
         return response()->json($bookings);
     }
 
@@ -147,7 +154,7 @@ class BookingController extends Controller
         if (!$booking) return response()->json(['message' => 'Not found'], 404);
 
         // Check ownership
-        if ($request->user()->id !== $booking->user_id && $request->user()->role !== 'admin') {
+        if ($request->user()->id !== $booking->user_id && !in_array($request->user()->role, ['admin', 'super_admin'])) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

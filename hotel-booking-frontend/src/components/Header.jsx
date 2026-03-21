@@ -31,11 +31,10 @@ function Header() {
         <nav className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/hotels">Hotels</Link>
-          <Link to="/rooms">Rooms</Link>
           
           {/* Role-based Links */}
           {isCustomer && <Link to="/userProfile">My Bookings</Link>}
-          {isAdmin && <Link to="/admin" className="admin-link">Dashboard</Link>}
+          {isAdmin && <Link to={user.role === 'super_admin' ? '/super-admin' : '/admin'} className="admin-link">Dashboard</Link>}
           
           {!user && <Link to="/contact">Contact</Link>}
         </nav>

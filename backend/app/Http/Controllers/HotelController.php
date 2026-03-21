@@ -55,7 +55,23 @@ class HotelController extends Controller
             return response()->json(['message' => 'Hotel not found'], 404);
         }
 
+        // Attach hotel reference to each roomType so frontend can use it
+        $hotel->roomTypes->each(function ($rt) use ($hotel) {
+            $rt->hotel = $hotel->only(['id', 'name', 'city']);
+        });
+
         return response()->json($hotel);
+    }
+
+    // Get hotels belonging to the authenticated admin only
+    public function myHotels(Request $request)
+    {
+        $admin = \App\Models\Admin::where('user_id', $request->user()->id)->first();
+        if (!$admin) {
+            return response()->json(['message' => 'Not an admin'], 403);
+        }
+        $hotels = Hotel::where('admin_id', $admin->id)->get();
+        return response()->json($hotels);
     }
 
     // Create new hotel
@@ -91,17 +107,35 @@ class HotelController extends Controller
         if (!$hotel) {
             return response()->json(['message' => 'Hotel not found'], 404);
         }
+
+        // Admins can only update their own hotels
+        if ($request->user()->role === 'admin') {
+            $admin = \App\Models\Admin::where('user_id', $request->user()->id)->first();
+            if (!$admin || $hotel->admin_id !== $admin->id) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+        }
+
         $hotel->update($request->all());
         return response()->json($hotel);
     }
 
     // Delete hotel
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $hotel = Hotel::find($id);
         if (!$hotel) {
             return response()->json(['message' => 'Hotel not found'], 404);
         }
+
+        // Admins can only delete their own hotels
+        if ($request->user()->role === 'admin') {
+            $admin = \App\Models\Admin::where('user_id', $request->user()->id)->first();
+            if (!$admin || $hotel->admin_id !== $admin->id) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+        }
+
         $hotel->delete();
         return response()->json(['message' => 'Hotel deleted successfully']);
     }

@@ -27,6 +27,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'pan_number',
         'is_approved',
         'registration_status',
+        'email_verification_code',
+        'email_verification_expires_at',
     ];
 
     /**
@@ -46,6 +48,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'email_verification_expires_at' => 'datetime',
     ];
     public function reviews()
     {

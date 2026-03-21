@@ -8,25 +8,52 @@ use App\Models\RoomType;
 
 class RoomController extends Controller
 {
-    // Get room types for a hotel
-    public function getRoomTypes($hotelId)
+    // Get room types for a hotel — with optional filters
+    public function getRoomTypes(Request $request, $hotelId)
     {
-        $roomTypes = RoomType::where('hotel_id', $hotelId)->get();
-        // Calculate availability count - simplified for now
-        return response()->json($roomTypes);
+        $query = RoomType::where('hotel_id', $hotelId)->with(['hotel']);
+
+        // Price filter
+        if ($request->has('min_price')) {
+            $query->where('base_price', '>=', $request->min_price);
+        }
+        if ($request->has('max_price')) {
+            $query->where('base_price', '<=', $request->max_price);
+        }
+
+        // Capacity filter
+        if ($request->has('min_guests')) {
+            $query->where('max_occupancy', '>=', $request->min_guests);
+        }
+
+        // Amenity/feature filter (JSON column contains value)
+        if ($request->has('amenity')) {
+            $query->whereJsonContains('amenities', $request->amenity);
+        }
+
+        return response()->json($query->get());
     }
 
-    // Get all room types
-    public function getAllRoomTypes()
+    // Get all room types (admin sees only their hotels' rooms)
+    public function getAllRoomTypes(Request $request)
     {
-        $roomTypes = RoomType::with(['hotel'])->get();
-        return response()->json($roomTypes);
+        $query = \App\Models\RoomType::with(['hotel'])->withCount('rooms');
+
+        // If authenticated admin, filter to their hotels only
+        if ($request->user() && in_array($request->user()->role, ['admin'])) {
+            $admin = \App\Models\Admin::where('user_id', $request->user()->id)->first();
+            if ($admin) {
+                $query->whereHas('hotel', fn($q) => $q->where('admin_id', $admin->id));
+            }
+        }
+
+        return response()->json($query->get());
     }
 
     // Get specific room type details
     public function showRoomType($id)
     {
-        $roomType = RoomType::find($id);
+        $roomType = RoomType::with(['hotel'])->find($id);
         if (!$roomType) return response()->json(['message' => 'Room Type not found'], 404);
         return response()->json($roomType);
     }
@@ -35,14 +62,31 @@ class RoomController extends Controller
     public function storeRoomType(Request $request)
     {
         $request->validate([
-            'hotel_id' => 'required|exists:hotels,id',
-            'type_name' => 'required|string',
-            'base_price' => 'required|numeric|min:0',
-            'max_occupancy' => 'required|integer',
+            'hotel_id'      => 'required|exists:hotels,id',
+            'type_name'     => 'required|string',
+            'base_price'    => 'required|numeric|min:0',
+            'max_occupancy' => 'required|integer|min:1',
+            'area_sqft'     => 'nullable|numeric|min:0',
+            'max_adults'    => 'nullable|integer|min:1',
+            'max_children'  => 'nullable|integer|min:0',
+            'description'   => 'nullable|string',
+            'quantity'      => 'nullable|integer|min:1',
         ]);
 
-        $roomType = RoomType::create($request->all());
-        return response()->json($roomType, 201);
+        $roomType = RoomType::create($request->except('quantity'));
+
+        // Auto-create individual room records based on quantity
+        $quantity = $request->quantity ?? 1;
+        for ($i = 1; $i <= $quantity; $i++) {
+            Room::create([
+                'hotel_id'     => $request->hotel_id,
+                'room_type_id' => $roomType->id,
+                'room_number'  => strtoupper(substr(preg_replace('/\s+/', '', $request->type_name), 0, 3)) . '-' . str_pad($i, 2, '0', STR_PAD_LEFT),
+                'status'       => 'available',
+            ]);
+        }
+
+        return response()->json($roomType->loadCount('rooms'), 201);
     }
 
     // Update room type
@@ -50,8 +94,17 @@ class RoomController extends Controller
     {
         $roomType = RoomType::find($id);
         if (!$roomType) return response()->json(['message' => 'Not found'], 404);
-        $roomType->update($request->all());
-        return response()->json($roomType);
+
+        $request->validate([
+            'base_price'    => 'sometimes|numeric|min:0',
+            'max_occupancy' => 'sometimes|integer|min:1',
+            'area_sqft'     => 'nullable|numeric|min:0',
+            'max_adults'    => 'nullable|integer|min:1',
+            'max_children'  => 'nullable|integer|min:0',
+        ]);
+
+        $roomType->update($request->except('quantity'));
+        return response()->json($roomType->loadCount('rooms'));
     }
 
     // Add individual room

@@ -1,63 +1,78 @@
 import React, { useState, useEffect } from 'react';
-import { message, App } from 'antd';
-import { FaPlus, FaEdit, FaCheckCircle, FaTimesCircle, FaSearch } from 'react-icons/fa';
+import { App } from 'antd';
+import { FaPlus, FaEdit } from 'react-icons/fa';
 import adminService from '../../services/adminService';
 import hotelService from '../../services/hotelService';
-import './ManageHotels.css'; // Reusing table and modal styles
+import './ManageRooms.css';
+
+const ROOM_TYPES = ['Single Room', 'Double Room', 'Deluxe Room', 'Suite', 'Family Room', 'Presidential Suite'];
+
+const defaultForm = {
+    hotel_id: '', type_name: '', base_price: '', area_sqft: '',
+    max_adults: '', max_children: '', quantity: '', description: '',
+    amenities: [],
+};
 
 const ManageRooms = () => {
     const { message } = App.useApp();
     const [roomTypes, setRoomTypes] = useState([]);
     const [hotels, setHotels] = useState([]);
+    const [allAmenities, setAllAmenities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingRoom, setEditingRoom] = useState(null);
-    const [formData, setFormData] = useState({
-        hotel_id: '',
-        type_name: '',
-        base_price: '',
-        max_occupancy: '',
-        description: '',
-        amenities: '',
-        image: ''
-    });
+    const [formData, setFormData] = useState(defaultForm);
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+    useEffect(() => { fetchData(); }, []);
 
     const fetchData = async () => {
         try {
-            const [roomsData, hotelsData] = await Promise.all([
+            const [roomsData, hotelsData, amenitiesData] = await Promise.all([
                 hotelService.getAllRoomTypes(),
-                hotelService.getHotels()
+                adminService.getMyHotels(),
+                hotelService.getAmenities(),
             ]);
-            console.log("Hotels loaded:", hotelsData);
-            console.log("Rooms loaded:", roomsData);
             setRoomTypes(Array.isArray(roomsData) ? roomsData : []);
             setHotels(Array.isArray(hotelsData) ? hotelsData : []);
-        } catch (error) {
-            console.error("Failed to fetch room data:", error);
-            message.error("Failed to load data");
+            setAllAmenities(Array.isArray(amenitiesData) ? amenitiesData : []);
+        } catch {
+            message.error('Failed to load data');
         } finally {
             setLoading(false);
         }
     };
 
+    const set = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+
+    const toggleAmenity = (name) => {
+        setFormData(prev => ({
+            ...prev,
+            amenities: prev.amenities.includes(name)
+                ? prev.amenities.filter(a => a !== name)
+                : [...prev.amenities, name],
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const payload = {
+            ...formData,
+            max_occupancy: parseInt(formData.max_adults || 1) + parseInt(formData.max_children || 0),
+        };
         try {
             if (editingRoom) {
-                await adminService.updateRoomType(editingRoom.id, formData);
-                message.success("Room type updated!");
+                await adminService.updateRoomType(editingRoom.id, payload);
+                message.success('Room type updated!');
             } else {
-                await adminService.createRoomType(formData);
-                message.success("Room type created!");
+                await adminService.createRoomType(payload);
+                message.success('Room type created!');
             }
             setShowModal(false);
+            setFormData(defaultForm);
+            setEditingRoom(null);
             fetchData();
         } catch (error) {
-            message.error("Action failed: " + (error.message || "Unknown error"));
+            message.error('Action failed: ' + (error.message || 'Unknown error'));
         }
     };
 
@@ -67,191 +82,199 @@ const ManageRooms = () => {
             hotel_id: room.hotel_id,
             type_name: room.type_name,
             base_price: room.base_price,
-            max_occupancy: room.max_occupancy,
-            description: room.description,
-            amenities: room.amenities,
-            image: room.image
+            area_sqft: room.area_sqft || '',
+            max_adults: room.max_adults || '',
+            max_children: room.max_children ?? '',
+            quantity: room.rooms_count || '',
+            description: room.description || '',
+            amenities: Array.isArray(room.amenities) ? room.amenities : [],
         });
         setShowModal(true);
     };
 
+    const openAdd = () => { setEditingRoom(null); setFormData(defaultForm); setShowModal(true); };
+
+    const statusBadge = (count) => (
+        <span className={`rm-badge ${count > 0 ? 'available' : 'none'}`}>
+            {count > 0 ? `${count} Available` : 'No Rooms'}
+        </span>
+    );
+
     return (
-        <div className="manage-rooms">
-            <div className="page-actions">
-                <h2>Manage Room Types</h2>
-                <button className="add-btn" onClick={() => { setShowModal(true); setEditingRoom(null); }}>
-                    <FaPlus /> Add Room Type
-                </button>
+        <div className="manage-rooms-page">
+            <div className="rm-header">
+                <h2>Manage Rooms</h2>
+                <button className="rm-add-btn" onClick={openAdd}><FaPlus /> Add Room Type</button>
             </div>
 
-            <div className="hotels-table-container">
-                <table className="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Hotel Name</th>
-                            <th>Room Type</th>
-                            <th>Base Price</th>
-                            <th>Max Occupancy</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {roomTypes.map(room => (
-                            <tr key={room.id}>
-                                <td style={{ fontWeight: 600, color: '#6C5CE7' }}>{room.hotel?.name || 'N/A'}</td>
-                                <td>{room.type_name}</td>
-                                <td style={{ fontWeight: 700, color: '#F5C518' }}>Rs. {room.base_price}</td>
-                                <td>
-                                    <span style={{ background: '#f8f9fc', padding: '4px 10px', borderRadius: '20px', fontSize: '12px' }}>
-                                        {room.max_occupancy} Persons
-                                    </span>
-                                </td>
-                                <td className="actions">
-                                    <button className="edit-icon" title="Edit" onClick={() => openEdit(room)}><FaEdit /></button>
-                                </td>
+            {loading ? <p className="rm-loading">Loading...</p> : (
+                <div className="rm-table-wrap">
+                    <table className="rm-table">
+                        <thead>
+                            <tr>
+                                <th>Hotel</th>
+                                <th>Room Name</th>
+                                <th>Price / Night</th>
+                                <th>Area</th>
+                                <th>Adults</th>
+                                <th>Children</th>
+                                <th>Quantity</th>
+                                <th>Facilities & Features</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {roomTypes.length === 0 ? (
+                                <tr><td colSpan={10} className="rm-empty">No room types found.</td></tr>
+                            ) : roomTypes.map(room => (
+                                <tr key={room.id}>
+                                    <td className="rm-hotel-name">{room.hotel?.name || '—'}</td>
+                                    <td className="rm-type-name">{room.type_name}</td>
+                                    <td className="rm-price">Rs. {Number(room.base_price).toLocaleString()}</td>
+                                    <td>{room.area_sqft ? `${room.area_sqft} m²` : '—'}</td>
+                                    <td>{room.max_adults ?? '—'}</td>
+                                    <td>{room.max_children ?? '—'}</td>
+                                    <td>{room.rooms_count ?? 0}</td>
+                                    <td>
+                                        <div className="rm-amenity-tags">
+                                            {Array.isArray(room.amenities) && room.amenities.length > 0
+                                                ? room.amenities.slice(0, 3).map(a => (
+                                                    <span key={a} className="rm-amenity-tag">{a}</span>
+                                                ))
+                                                : <span style={{ color: '#aaa', fontSize: 12 }}>None</span>
+                                            }
+                                            {Array.isArray(room.amenities) && room.amenities.length > 3 && (
+                                                <span className="rm-amenity-tag">+{room.amenities.length - 3}</span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td>{statusBadge(room.rooms_count ?? 0)}</td>
+                                    <td>
+                                        <button className="rm-edit-btn" onClick={() => openEdit(room)} title="Edit"><FaEdit /></button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
             {showModal && (
-                <div className="modal-overlay">
-                    <div className="admin-modal">
-                        <h2>{editingRoom ? 'Edit Room Type' : 'Add Room Type'}</h2>
+                <div className="rm-overlay" onClick={() => setShowModal(false)}>
+                    <div className="rm-modal" onClick={e => e.stopPropagation()}>
+                        <h3>{editingRoom ? 'Edit Room Type' : 'Add Room Type'}</h3>
                         <form onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label>Select Hotel</label>
-                                <select
-                                    required
-                                    value={formData.hotel_id}
-                                    onChange={(e) => setFormData({ ...formData, hotel_id: e.target.value })}
-                                    style={{ width: '100%', padding: '10px', borderRadius: '6px' }}
-                                >
-                                    <option value="">Choose a hotel...</option>
-                                    {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Room Type Name</label>
-                                <select
-                                    required
-                                    value={formData.type_name}
-                                    onChange={(e) => setFormData({ ...formData, type_name: e.target.value })}
-                                    style={{ width: '100%', padding: '10px', borderRadius: '6px' }}
-                                >
-                                    <option value="">Choose a room type...</option>
-                                    <option value="Single Room">Single Room</option>
-                                    <option value="Double Room">Double Room</option>
-                                    <option value="Suite">Suite</option>
-                                    <option value="Deluxe Room">Deluxe Room</option>
-                                    <option value="Family Room">Family Room</option>
-                                    <option value="Presidential Suite">Presidential Suite</option>
-                                </select>
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                                <div className="form-group">
-                                    <label>Price / Night</label>
-                                    <input
-                                        type="number" required
-                                        min="0" step="0.01"
+                            <div className="rm-form-grid">
+                                <div className="rm-field full">
+                                    <label>Hotel</label>
+                                    <select required value={formData.hotel_id} onChange={e => set('hotel_id', e.target.value)}>
+                                        <option value="">Select hotel...</option>
+                                        {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                                    </select>
+                                </div>
+
+                                <div className="rm-field full">
+                                    <label>Room Name</label>
+                                    <select required value={formData.type_name} onChange={e => set('type_name', e.target.value)}>
+                                        <option value="">Select room type...</option>
+                                        {ROOM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                </div>
+
+                                <div className="rm-field">
+                                    <label>Price / Night (Rs.)</label>
+                                    <input type="number" required min="0" step="0.01"
                                         value={formData.base_price}
-                                        onKeyDown={(e) => {
-                                            if (['-', '=', '+', 'e', 'E'].includes(e.key)) e.preventDefault();
-                                        }}
-                                        onChange={(e) => setFormData({ ...formData, base_price: e.target.value })}
-                                    />
+                                        onKeyDown={e => ['-','e','E','+'].includes(e.key) && e.preventDefault()}
+                                        onChange={e => set('base_price', e.target.value)} />
                                 </div>
-                                <div className="form-group">
-                                    <label>Capacity</label>
-                                    <input
-                                        type="number" required
-                                        min="1"
-                                        value={formData.max_occupancy}
-                                        onKeyDown={(e) => {
-                                            if (['-', '=', '+', 'e', 'E', '.'].includes(e.key)) e.preventDefault();
-                                        }}
-                                        onChange={(e) => setFormData({ ...formData, max_occupancy: e.target.value })}
-                                    />
+
+                                <div className="rm-field">
+                                    <label>Area (m²)</label>
+                                    <input type="number" min="0" step="0.1" placeholder="e.g. 25"
+                                        value={formData.area_sqft}
+                                        onKeyDown={e => ['-','e','E','+'].includes(e.key) && e.preventDefault()}
+                                        onChange={e => set('area_sqft', e.target.value)} />
                                 </div>
+
+                                <div className="rm-field">
+                                    <label>Max Adults</label>
+                                    <input type="number" required min="1"
+                                        value={formData.max_adults}
+                                        onKeyDown={e => ['-','e','E','+','.'].includes(e.key) && e.preventDefault()}
+                                        onChange={e => set('max_adults', e.target.value)} />
+                                </div>
+
+                                <div className="rm-field">
+                                    <label>Max Children</label>
+                                    <input type="number" min="0"
+                                        value={formData.max_children}
+                                        onKeyDown={e => ['-','e','E','+','.'].includes(e.key) && e.preventDefault()}
+                                        onChange={e => set('max_children', e.target.value)} />
+                                </div>
+
+                                {!editingRoom && (
+                                    <div className="rm-field">
+                                        <label>Quantity (no. of rooms)</label>
+                                        <input type="number" required min="1"
+                                            value={formData.quantity}
+                                            onKeyDown={e => ['-','e','E','+','.'].includes(e.key) && e.preventDefault()}
+                                            onChange={e => set('quantity', e.target.value)} />
+                                    </div>
+                                )}
+
+                                <div className="rm-field full">
+                                    <label>Description</label>
+                                    <textarea rows={3} value={formData.description}
+                                        onChange={e => set('description', e.target.value)} />
+                                </div>
+
+                                {allAmenities.length > 0 && (
+                                    <div className="rm-field full">
+                                        <label>Facilities</label>
+                                        <div className="rm-amenity-checks">
+                                            {allAmenities.filter(a => a.type === 'facility').map(a => (
+                                                <label key={a.amenity_id} className="rm-check-label">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.amenities.includes(a.name)}
+                                                        onChange={() => toggleAmenity(a.name)}
+                                                    />
+                                                    {a.name}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {allAmenities.filter(a => a.type === 'feature').length > 0 && (
+                                    <div className="rm-field full">
+                                        <label>Features</label>
+                                        <div className="rm-amenity-checks">
+                                            {allAmenities.filter(a => a.type === 'feature').map(a => (
+                                                <label key={a.amenity_id} className="rm-check-label">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.amenities.includes(a.name)}
+                                                        onChange={() => toggleAmenity(a.name)}
+                                                    />
+                                                    {a.name}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            <div className="form-group">
-                                <label>Description</label>
-                                <textarea
-                                    required
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                />
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>
-                                <button type="submit" className="save-btn">Save</button>
+
+                            <div className="rm-modal-footer">
+                                <button type="button" className="rm-cancel" onClick={() => setShowModal(false)}>Cancel</button>
+                                <button type="submit" className="rm-save">{editingRoom ? 'Update' : 'Create'}</button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
-            <style>{`
-                .manage-rooms {
-                    background: #fff;
-                    padding: 30px;
-                    border-radius: 16px;
-                    box-shadow: 0 0.15rem 1.75rem 0 rgba(108, 92, 231, 0.1);
-                }
-                .page-actions {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 30px;
-                }
-                .page-actions h2 {
-                    color: #2D1B69;
-                    margin: 0;
-                    font-weight: 700;
-                }
-                .add-btn {
-                    background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
-                    border: none;
-                    color: white;
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-                .save-btn {
-                    background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
-                    border: none;
-                    color: white;
-                    padding: 10px 25px;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-                .save-btn:hover {
-                    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
-                }
-                .cancel-btn {
-                    background: #eaecf4;
-                    border: none;
-                    color: #858796;
-                    padding: 10px 25px;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    cursor: pointer;
-                }
-                .edit-icon {
-                    color: #6C5CE7;
-                    font-size: 18px;
-                    transition: transform 0.2s;
-                }
-                .edit-icon:hover {
-                    transform: scale(1.2);
-                }
-            `}</style>
         </div>
     );
 };

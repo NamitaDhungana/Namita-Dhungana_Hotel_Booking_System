@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { message, Modal, App } from 'antd';
 import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 import adminService from '../../services/adminService';
-import hotelService from '../../services/hotelService';
+import authService from '../../services/authService';
+import apiClient from '../../services/apiClient';
 import './ManageHotels.css';
 
 const ManageHotels = () => {
     const { message, modal } = App.useApp();
+    const user = authService.getCurrentUser();
+    const isSuperAdmin = user?.role === 'super_admin';
     const [hotels, setHotels] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -28,8 +31,15 @@ const ManageHotels = () => {
 
     const fetchHotels = async () => {
         try {
-            const data = await hotelService.getHotels();
-            setHotels(data);
+            let data;
+            if (isSuperAdmin) {
+                // Super admin fetches all hotels via public endpoint
+                const res = await apiClient.get('/hotels?per_page=1000');
+                data = res.data?.data ?? res.data;
+            } else {
+                data = await adminService.getMyHotels();
+            }
+            setHotels(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Failed to fetch hotels", error);
             message.error("Failed to fetch hotels");

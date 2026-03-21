@@ -52,7 +52,25 @@ const authService = {
     getCurrentUser: () => {
         const user = localStorage.getItem('user');
         return user ? JSON.parse(user) : null;
-    }
+    },
+
+    verifyEmailCode: async (userId, code) => {
+        try {
+            const response = await apiClient.post('/email/verify-code', { user_id: userId, code });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    resendVerificationCode: async (userId) => {
+        try {
+            const response = await apiClient.post('/email/resend-code', { user_id: userId });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
 };
 
 export default authService;

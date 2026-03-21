@@ -1,13 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FaChartLine, FaHotel, FaBed, FaCalendarCheck, FaSignOutAlt, FaBell, FaStar, FaUsers } from 'react-icons/fa';
+import {
+    FaChartLine, FaHotel, FaBed, FaCalendarCheck,
+    FaSignOutAlt, FaStar, FaUsers, FaConciergeBell,
+    FaCog, FaBars, FaTimes, FaUserShield
+} from 'react-icons/fa';
 import authService from '../services/authService';
 import './AdminLayout.css';
 
-const AdminLayout = () => {
+const ADMIN_MENU = [
+    { to: '/admin',            label: 'Dashboard',           icon: <FaChartLine />,    end: true },
+    { to: '/admin/hotels',     label: 'Manage Hotels',       icon: <FaHotel /> },
+    { to: '/admin/rooms',      label: 'Manage Rooms',        icon: <FaBed /> },
+    { to: '/admin/facilities', label: 'Features & Facilities', icon: <FaConciergeBell /> },
+    { to: '/admin/bookings',   label: 'Bookings',            icon: <FaCalendarCheck /> },
+    { to: '/admin/reviews',    label: 'Reviews & Ratings',   icon: <FaStar /> },
+];
+
+const SUPER_ADMIN_MENU = [
+    { to: '/super-admin',          label: 'Dashboard',        icon: <FaChartLine />,   end: true },
+    { to: '/super-admin/users',    label: 'User Management',  icon: <FaUsers /> },
+    { to: '/super-admin/settings', label: 'System Settings',  icon: <FaCog /> },
+    { to: '/super-admin/hotels',   label: 'Hotel Management', icon: <FaHotel /> },
+    { to: '/super-admin/bookings', label: 'All Bookings',     icon: <FaCalendarCheck /> },
+    { to: '/super-admin/reviews',  label: 'Reviews & Ratings',icon: <FaStar /> },
+];
+
+const AdminLayout = ({ role }) => {
     const navigate = useNavigate();
     const user = authService.getCurrentUser();
-    const isSuperAdmin = user && user.role === 'super_admin';
+    const isSuperAdmin = role === 'super_admin' || (user && user.role === 'super_admin');
+    const [collapsed, setCollapsed] = useState(false);
+
+    const menuItems = isSuperAdmin ? SUPER_ADMIN_MENU : ADMIN_MENU;
+    const portalLabel = isSuperAdmin ? 'Super Admin' : 'Admin Portal';
+    const welcomeLabel = isSuperAdmin ? `Welcome, ${user?.name || 'Super Admin'}` : `Welcome, ${user?.name || 'Admin'}`;
 
     const handleLogout = async () => {
         await authService.logout();
@@ -16,50 +43,51 @@ const AdminLayout = () => {
     };
 
     return (
-        <div className="admin-container">
+        <div className={`admin-container${collapsed ? ' sidebar-collapsed' : ''}`}>
             <aside className="admin-sidebar">
-                <div className="admin-logo">StayHub Admin</div>
-                <nav className="sidebar-nav">
-                    <NavLink to="/admin" end className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <i><FaChartLine /></i>
-                        <span>Dashboard</span>
-                    </NavLink>
-                    
-                    {isSuperAdmin && (
-                        <NavLink to="/admin/users" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                            <i><FaUsers /></i>
-                            <span>Manage Users</span>
-                        </NavLink>
-                    )}
+                <div className="sidebar-top">
+                    <div className="admin-logo">
+                        {isSuperAdmin ? <FaUserShield className="logo-icon" /> : <FaHotel className="logo-icon" />}
+                        {!collapsed && <span>{portalLabel}</span>}
+                    </div>
+                    <button className="collapse-btn" onClick={() => setCollapsed(c => !c)} aria-label="Toggle sidebar">
+                        {collapsed ? <FaBars /> : <FaTimes />}
+                    </button>
+                </div>
 
-                    <NavLink to="/admin/hotels" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <i><FaHotel /></i>
-                        <span>Manage Hotels</span>
-                    </NavLink>
-                    <NavLink to="/admin/rooms" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <i><FaBed /></i>
-                        <span>Manage Rooms</span>
-                    </NavLink>
-                    <NavLink to="/admin/bookings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <i><FaCalendarCheck /></i>
-                        <span>Bookings</span>
-                    </NavLink>
-                    <NavLink to="/admin/notifications" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <i><FaBell /></i>
-                        <span>Notifications</span>
-                    </NavLink>
-                    <NavLink to="/admin/reviews" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <i><FaStar /></i>
-                        <span>Reviews</span>
-                    </NavLink>
+                <nav className="sidebar-nav">
+                    {menuItems.map(item => (
+                        <NavLink
+                            key={item.to}
+                            to={item.to}
+                            end={item.end}
+                            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+                            title={collapsed ? item.label : undefined}
+                        >
+                            <span className="nav-icon">{item.icon}</span>
+                            {!collapsed && <span className="nav-label">{item.label}</span>}
+                        </NavLink>
+                    ))}
                 </nav>
+
+                <button onClick={handleLogout} className="sidebar-logout" title={collapsed ? 'Logout' : undefined}>
+                    <FaSignOutAlt />
+                    {!collapsed && <span>Logout</span>}
+                </button>
             </aside>
 
             <main className="admin-main">
                 <header className="admin-header">
-                    <h1>Admin Portal</h1>
+                    <div className="header-left">
+                        <button className="mobile-menu-btn" onClick={() => setCollapsed(c => !c)}>
+                            <FaBars />
+                        </button>
+                    </div>
                     <div className="user-info">
-                        <span className="user-name">Welcome, Admin</span>
+                        <span className={`role-badge ${isSuperAdmin ? 'badge-super' : 'badge-admin'}`}>
+                            {isSuperAdmin ? 'Super Admin' : 'Admin'}
+                        </span>
+                        <span className="user-name">{welcomeLabel}</span>
                         <button onClick={handleLogout} className="logout-btn">
                             <FaSignOutAlt /> <span>Logout</span>
                         </button>

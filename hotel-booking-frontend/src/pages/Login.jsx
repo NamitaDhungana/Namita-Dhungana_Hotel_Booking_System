@@ -42,7 +42,9 @@ function Login() {
           navigate(decodeURIComponent(redirectTo));
         } else {
           const user = response.user;
-          if (user.role === 'admin' || user.role === 'super_admin') {
+          if (user.role === 'super_admin') {
+            navigate("/super-admin");
+          } else if (user.role === 'admin') {
             navigate("/admin");
           } else {
             navigate("/");
@@ -108,4 +110,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Login;

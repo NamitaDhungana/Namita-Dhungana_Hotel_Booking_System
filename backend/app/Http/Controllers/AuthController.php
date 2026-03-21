@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EmailVerificationCodeMail;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -23,6 +25,7 @@ class AuthController extends Controller
         ]);
 
         $isAdmin = $request->role === 'admin';
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         $user = User::create([
             'name' => $request->name,
@@ -33,15 +36,79 @@ class AuthController extends Controller
             'role' => $request->role,
             'pan_number' => $request->pan_number,
             'is_approved' => $isAdmin ? false : true,
-            'registration_status' => $isAdmin ? 'pending' : 'active'
+            'registration_status' => $isAdmin ? 'pending' : 'active',
+            'email_verification_code' => $code,
+            'email_verification_expires_at' => now()->addMinutes(10),
         ]);
 
-        $user->sendEmailVerificationNotification();
+        Mail::to($user->email)->send(new EmailVerificationCodeMail($code, $user->name));
+
+        // Create admins table record for hotel managers
+        if ($isAdmin) {
+            \App\Models\Admin::create(['user_id' => $user->id]);
+        }
 
         return response()->json([
-            'message' => 'User registered successfully. Please verify your email.',
-            'user' => $user
+            'message' => 'Registration successful. A 6-digit verification code has been sent to your email.',
+            'user_id' => $user->id,
         ], 201);
+    }
+
+    // Verify email with 6-digit code
+    public function verifyEmailCode(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'code' => 'required|string|size:6',
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email already verified.']);
+        }
+
+        if ($user->email_verification_code !== $request->code) {
+            return response()->json(['message' => 'Invalid verification code.'], 422);
+        }
+
+        if (now()->isAfter($user->email_verification_expires_at)) {
+            return response()->json(['message' => 'Verification code has expired. Please request a new one.'], 422);
+        }
+
+        $user->markEmailAsVerified();
+        $user->update([
+            'email_verification_code' => null,
+            'email_verification_expires_at' => null,
+        ]);
+
+        event(new \Illuminate\Auth\Events\Verified($user));
+
+        return response()->json(['message' => 'Email verified successfully. You can now login.']);
+    }
+
+    // Resend verification code
+    public function resendVerificationCode(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email already verified.']);
+        }
+
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $user->update([
+            'email_verification_code' => $code,
+            'email_verification_expires_at' => now()->addMinutes(10),
+        ]);
+
+        Mail::to($user->email)->send(new EmailVerificationCodeMail($code, $user->name));
+
+        return response()->json(['message' => 'A new verification code has been sent to your email.']);
     }
 
     // User login
@@ -87,7 +154,7 @@ class AuthController extends Controller
         ]);
     }
 
-    // Email Verification
+    // Email Verification (legacy link-based — kept for backward compat)
     public function verifyEmail(Request $request, $id, $hash)
     {
         $user = User::findOrFail($id);

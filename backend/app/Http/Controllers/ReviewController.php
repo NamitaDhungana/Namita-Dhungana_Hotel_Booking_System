@@ -39,4 +39,36 @@ class ReviewController extends Controller
             ->paginate(10);
         return response()->json($reviews);
     }
+
+    // Get reviews for admin panel — scoped to own hotels for admin, all for super_admin
+    public function adminIndex(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role === 'super_admin') {
+            $reviews = Review::with(['user', 'hotel'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            $admin = \App\Models\Admin::where('user_id', $user->id)->first();
+            if (!$admin) {
+                return response()->json(['message' => 'Admin record not found'], 403);
+            }
+            $hotelIds = \App\Models\Hotel::where('admin_id', $admin->id)->pluck('id');
+            $reviews = Review::with(['user', 'hotel'])
+                ->whereIn('hotel_id', $hotelIds)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return response()->json($reviews);
+    }
+
+    // Update review status (approve/reject)
+    public function updateStatus(Request $request, $id)
+    {
+        $review = Review::findOrFail($id);
+        $review->update(['status' => $request->status]);
+        return response()->json($review);
+    }
 }

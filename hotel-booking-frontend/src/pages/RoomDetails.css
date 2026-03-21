@@ -1,49 +1,280 @@
-.room-details-page {
-  display: flex;
-  gap: 30px;
-  padding: 40px;
-  flex-wrap: wrap;
-  color: #2D1B69;
+.rd-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+    font-family: 'Outfit', sans-serif;
 }
 
-.image-box img {
-  width: 550px;
-  height: 350px;
-  object-fit: cover;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(108, 92, 231, 0.15);
+/* Breadcrumb */
+.rd-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
 }
 
-.details-box {
-  max-width: 500px;
+.rd-breadcrumb a {
+    color: #6C5CE7;
+    text-decoration: none;
+    font-weight: 500;
 }
 
-.details-box ul {
-  margin: 10px 0;
-  color: #555;
+.rd-breadcrumb a:hover { text-decoration: underline; }
+.rd-bc-current { color: #555; font-weight: 600; }
+
+/* Layout */
+.rd-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
 }
 
-.price {
-  margin-top: 20px;
-  font-size: 24px;
-  font-weight: bold;
-  color: #F5C518;
+/* Left column */
+.rd-hero-img {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(108,92,231,0.12);
+    margin-bottom: 20px;
 }
 
-.book-btn {
-  margin-top: 15px;
-  padding: 12px 30px;
-  background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
-  color: white;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+.rd-hero-img img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    display: block;
 }
 
-.book-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+.rd-quick-facts {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.rd-fact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rd-fact-icon {
+    font-size: 22px;
+    width: 40px;
+    height: 40px;
+    background: #f0edff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.rd-fact-label {
+    font-size: 11px;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.rd-fact-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2D1B69;
+}
+
+.rd-price small {
+    font-size: 12px;
+    font-weight: 400;
+    color: #888;
+    margin-left: 3px;
+}
+
+/* Right column */
+.rd-hotel-name {
+    font-size: 14px;
+    color: #888;
+    margin: 0 0 8px;
+}
+
+.rd-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: #2D1B69;
+    margin: 0 0 16px;
+    line-height: 1.2;
+}
+
+.rd-desc {
+    color: #666;
+    line-height: 1.8;
+    font-size: 15px;
+    margin-bottom: 24px;
+}
+
+/* Amenities */
+.rd-amenities { margin-bottom: 28px; }
+
+.rd-amenities h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2D1B69;
+    margin-bottom: 14px;
+}
+
+.rd-amenities-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.rd-amenity-tag {
+    background: #f0edff;
+    color: #6C5CE7;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Pricing box */
+.rd-pricing-box {
+    background: linear-gradient(135deg, #f8f7ff, #f0edff);
+    border: 1px solid #e0d9ff;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+}
+
+.rd-pricing-amount {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #2D1B69;
+}
+
+.rd-pricing-amount span {
+    font-size: 14px;
+    font-weight: 400;
+    color: #888;
+    margin-left: 4px;
+}
+
+.rd-pricing-note {
+    font-size: 13px;
+    color: #888;
+    margin: 6px 0 0;
+}
+
+/* Actions */
+.rd-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.rd-btn-book {
+    display: inline-flex;
+    align-items: center;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 4px 16px rgba(108,92,231,0.35);
+    transition: all 0.25s ease;
+}
+
+.rd-btn-book:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(108,92,231,0.45);
+}
+
+.rd-btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.rd-btn-disabled:hover { transform: none; box-shadow: none; }
+
+.rd-btn-back {
+    display: inline-flex;
+    align-items: center;
+    padding: 14px 24px;
+    border: 2px solid #6C5CE7;
+    color: #6C5CE7;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+.rd-btn-back:hover { background: #6C5CE7; color: #fff; }
+
+/* Loading / Not Found */
+.rd-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    gap: 16px;
+    color: #888;
+}
+
+.rd-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e0d9ff;
+    border-top-color: #6C5CE7;
+    border-radius: 50%;
+    animation: rd-spin 0.8s linear infinite;
+}
+
+@keyframes rd-spin { to { transform: rotate(360deg); } }
+
+.rd-not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    gap: 12px;
+    text-align: center;
+    color: #555;
+}
+
+.rd-nf-icon { font-size: 56px; }
+.rd-not-found h2 { font-size: 1.6rem; color: #2D1B69; margin: 0; }
+.rd-not-found p { color: #888; margin: 0; }
+
+.rd-btn-primary {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
+    color: #fff;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .rd-layout { grid-template-columns: 1fr; gap: 24px; }
+    .rd-hero-img img { height: 240px; }
+    .rd-title { font-size: 1.6rem; }
 }

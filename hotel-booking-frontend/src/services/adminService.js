@@ -92,7 +92,45 @@ const adminService = {
         } catch (error) {
             throw error.response?.data || error.message;
         }
-    }
+    },
+
+    // My Hotels (admin-scoped)
+    getMyHotels: async () => {
+        try {
+            const response = await apiClient.get('/admin/my-hotels');
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    // Facilities / Amenities
+    createAmenity: async (data) => {
+        try {
+            const response = await apiClient.post('/admin/amenities', data);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    updateAmenity: async (id, data) => {
+        try {
+            const response = await apiClient.put(`/admin/amenities/${id}`, data);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    deleteAmenity: async (id) => {
+        try {
+            const response = await apiClient.delete(`/admin/amenities/${id}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
 };
 
 export default adminService;

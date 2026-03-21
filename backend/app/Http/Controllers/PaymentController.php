@@ -7,7 +7,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\Payment;
 use App\Models\Booking;
+use App\Models\User;
 use App\Services\KhaltiService;
+use App\Mail\BookingConfirmationMail;
+use Illuminate\Support\Facades\Mail;
 
 class PaymentController extends Controller
 {
@@ -113,6 +116,19 @@ class PaymentController extends Controller
                 });
 
                 session()->forget(['khalti_pidx', 'khalti_order_id', 'khalti_booking_id', 'khalti_payment_id']);
+
+                // Send booking confirmation email after successful payment
+                try {
+                    $confirmedBooking = Booking::with('hotel')->find($payment->booking_id);
+                    $bookingUser = User::find($confirmedBooking->user_id);
+                    if ($confirmedBooking && $bookingUser) {
+                        Mail::to($bookingUser->email)->send(
+                            new BookingConfirmationMail($confirmedBooking, $bookingUser, $confirmedBooking->hotel)
+                        );
+                    }
+                } catch (\Exception $mailEx) {
+                    Log::error('Booking confirmation mail failed after payment: ' . $mailEx->getMessage());
+                }
 
                 return response()->json([
                     'message'        => 'Payment verified. Booking confirmed.',

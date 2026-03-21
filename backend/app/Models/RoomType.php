@@ -15,6 +15,9 @@ class RoomType extends Model
         'description',
         'base_price',
         'max_occupancy',
+        'area_sqft',
+        'max_adults',
+        'max_children',
         'amenities',
     ];
 

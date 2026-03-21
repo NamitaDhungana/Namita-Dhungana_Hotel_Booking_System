@@ -30,7 +30,7 @@ function Register() {
 
     try {
       setLoading(true);
-      await authService.register({
+      const response = await authService.register({
         name: formData.name,
         email: formData.email,
         password: formData.password,
@@ -40,10 +40,8 @@ function Register() {
         pan_number: formData.role === "admin" ? formData.pan_number : null,
       });
 
-      message.success("Registration successful! Please check your email and verify your account before logging in.", 4);
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      message.success("Verification code sent to your email!", 3);
+      navigate("/verify-email", { state: { userId: response.user_id } });
     } catch (error) {
       console.error("Registration failed:", error);
       

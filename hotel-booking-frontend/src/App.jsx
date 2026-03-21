@@ -5,7 +5,6 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Hotels from "./pages/Hotels";
-import Rooms from "./pages/Rooms";
 import RoomDetails from "./pages/RoomDetails";
 import HotelDetails from "./pages/HotelDetails";
 import Booking from "./pages/Booking";
@@ -23,8 +22,12 @@ import ManageBookings from "./pages/admin/ManageBookings";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageUsers from "./pages/admin/ManageUsers";
+import ManageFacilities from "./pages/admin/ManageFacilities";
 import NotificationCenter from "./components/NotificationCenter";
 import KhaltiReturn from "./pages/KhaltiReturn";
+import VerifyEmail from "./pages/VerifyEmail";
+import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
+import SystemSettings from "./pages/superadmin/SystemSettings";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const user = authService.getCurrentUser();
@@ -49,7 +52,7 @@ function App() {
       <AntdApp>
         <main style={{ flex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           <Routes>
-            {/* Parent layout route */}
+            {/* Public layout */}
             <Route
               element={
                 <>
@@ -63,7 +66,6 @@ function App() {
               }
             >
               <Route path="/" element={<Home />} />
-              <Route path="/rooms" element={<Rooms />} />
               <Route path="/rooms/:id" element={<RoomDetails />} />
               <Route path="/hotels" element={<Hotels />} />
               <Route path="/hotels/:id" element={<HotelDetails />} />
@@ -75,23 +77,40 @@ function App() {
               <Route path="/notifications" element={<NotificationCenter />} />
               <Route path="/userProfile" element={<UserProfile />} />
               <Route path="/payment/khalti/return" element={<KhaltiReturn />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
             </Route>
 
-            {/* Admin routes */}
-            <Route 
-              path="/admin" 
+            {/* Admin routes — Hotel Manager only */}
+            <Route
+              path="/admin"
               element={
-                <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
+                <ProtectedRoute allowedRoles={["admin"]}>
                   <AdminLayout />
                 </ProtectedRoute>
               }
             >
               <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<ManageUsers />} />
               <Route path="hotels" element={<ManageHotels />} />
               <Route path="rooms" element={<ManageRooms />} />
+              <Route path="facilities" element={<ManageFacilities />} />
               <Route path="bookings" element={<ManageBookings />} />
-              <Route path="notifications" element={<NotificationCenter />} />
+              <Route path="reviews" element={<AdminReviews />} />
+            </Route>
+
+            {/* Super Admin routes */}
+            <Route
+              path="/super-admin"
+              element={
+                <ProtectedRoute allowedRoles={["super_admin"]}>
+                  <AdminLayout role="super_admin" />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<SuperAdminDashboard />} />
+              <Route path="users" element={<ManageUsers />} />
+              <Route path="settings" element={<SystemSettings />} />
+              <Route path="hotels" element={<ManageHotels />} />
+              <Route path="bookings" element={<ManageBookings />} />
               <Route path="reviews" element={<AdminReviews />} />
             </Route>
 

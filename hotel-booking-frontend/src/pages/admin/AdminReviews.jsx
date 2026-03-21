@@ -15,17 +15,10 @@ const AdminReviews = () => {
 
     const fetchReviews = async () => {
         try {
-            // This might need a custom admin endpoint in actual backend, 
-            // but fetching what we can for now.
-            const response = await apiClient.get('/reviews');
+            const response = await apiClient.get('/admin/reviews');
             setReviews(response.data);
         } catch (error) {
             console.error("Failed to fetch reviews", error);
-            // Dummy data
-            setReviews([
-                { id: 1, user: { name: 'Alice' }, rating: 5, comment: 'Amazing stay!', hotel: { name: 'Grand Plaza' } },
-                { id: 2, user: { name: 'Bob' }, rating: 2, comment: 'Staff was rude.', hotel: { name: 'Cheap Inn' } }
-            ]);
         } finally {
             setLoading(false);
         }
