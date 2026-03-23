@@ -50,11 +50,52 @@ class RoomController extends Controller
         return response()->json($query->get());
     }
 
+    // Get all individual rooms (admin-scoped)
+    public function getRooms(Request $request)
+    {
+        $query = Room::with(['hotel', 'roomType']);
+
+        if ($request->user() && $request->user()->role === 'admin') {
+            $admin = \App\Models\Admin::where('user_id', $request->user()->id)->first();
+            if ($admin) {
+                $query->whereHas('hotel', fn($q) => $q->where('admin_id', $admin->id));
+            }
+        }
+
+        return response()->json($query->orderBy('hotel_id')->orderBy('room_number')->get());
+    }
+
+    // Delete individual room
+    public function destroyRoom(Request $request, $id)
+    {
+        $room = Room::find($id);
+        if (!$room) return response()->json(['message' => 'Room not found'], 404);
+
+        // Prevent deletion if room has active bookings
+        $hasActive = $room->bookings()
+            ->whereIn('status', ['confirmed', 'checked_in'])
+            ->exists();
+
+        if ($hasActive) {
+            return response()->json(['message' => 'Cannot delete a room with active bookings'], 422);
+        }
+
+        $room->delete();
+        return response()->json(['message' => 'Room deleted']);
+    }
+
     // Get specific room type details
     public function showRoomType($id)
     {
-        $roomType = RoomType::with(['hotel'])->find($id);
+        $roomType = RoomType::with(['hotel:id,name,city,featured_image'])->find($id);
         if (!$roomType) return response()->json(['message' => 'Room Type not found'], 404);
+
+        // Attach first available room image
+        $firstRoom = \App\Models\Room::where('room_type_id', $id)
+            ->whereNotNull('image_url')
+            ->value('image_url');
+        $roomType->room_image_url = $firstRoom;
+
         return response()->json($roomType);
     }
 
@@ -73,7 +114,11 @@ class RoomController extends Controller
             'quantity'      => 'nullable|integer|min:1',
         ]);
 
-        $roomType = RoomType::create($request->except('quantity'));
+        $data = $request->except('quantity');
+        $data['max_children'] = $request->input('max_children') ?? 0;
+        $data['max_adults']   = $request->input('max_adults') ?? 1;
+
+        $roomType = RoomType::create($data);
 
         // Auto-create individual room records based on quantity
         $quantity = $request->quantity ?? 1;
@@ -103,7 +148,11 @@ class RoomController extends Controller
             'max_children'  => 'nullable|integer|min:0',
         ]);
 
-        $roomType->update($request->except('quantity'));
+        $data = $request->except('quantity');
+        if (array_key_exists('max_children', $data) && $data['max_children'] === null) {
+            $data['max_children'] = 0;
+        }
+        $roomType->update($data);
         return response()->json($roomType->loadCount('rooms'));
     }
 
@@ -111,23 +160,54 @@ class RoomController extends Controller
     public function storeRoom(Request $request)
     {
         $request->validate([
-            'hotel_id' => 'required|exists:hotels,id',
+            'hotel_id'     => 'required|exists:hotels,id',
             'room_type_id' => 'required|exists:room_types,id',
-            'room_number' => 'required|string',
+            'room_number'  => [
+                'required',
+                'string',
+                \Illuminate\Validation\Rule::unique('rooms')->where('hotel_id', $request->hotel_id),
+            ],
+            'floor'        => 'nullable|integer',
+            'image_url'    => 'nullable|string',
+            'notes'        => 'nullable|string',
+        ], [
+            'room_number.unique' => 'Room number already exists in this hotel.',
         ]);
 
-        $room = Room::create($request->all());
-        return response()->json($room, 201);
+        $room = Room::create($request->only(['hotel_id', 'room_type_id', 'room_number', 'floor', 'image_url', 'notes']));
+        return response()->json($room->load('roomType'), 201);
     }
 
-    // Update room status
-    public function updateRoomStatus(Request $request, $id)
+    // Update individual room (status, image, notes)
+    public function updateRoom(Request $request, $id)
     {
         $room = Room::find($id);
         if (!$room) return response()->json(['message' => 'Not found'], 404);
-        
-        $request->validate(['status' => 'required|in:available,occupied,maintenance']);
-        $room->update(['status' => $request->status]);
+
+        $request->validate([
+            'room_number'  => [
+                'sometimes',
+                'string',
+                \Illuminate\Validation\Rule::unique('rooms')->where('hotel_id', $room->hotel_id)->ignore($id),
+            ],
+            'room_type_id' => 'sometimes|exists:room_types,id',
+            'floor'        => 'nullable|integer',
+            'status'       => 'sometimes|in:available,occupied,maintenance',
+            'image_url'    => 'nullable|string',
+            'notes'        => 'nullable|string',
+        ], [
+            'room_number.unique' => 'Room number already exists in this hotel.',
+        ]);
+
+        $room->update($request->only(['room_type_id', 'room_number', 'floor', 'status', 'image_url', 'notes']));
+        return response()->json($room->load('roomType'));
+    }
+
+    // Get single room details (for customer room detail page)
+    public function showRoom($id)
+    {
+        $room = Room::with(['roomType.hotel', 'hotel'])->find($id);
+        if (!$room) return response()->json(['message' => 'Room not found'], 404);
         return response()->json($room);
     }
 

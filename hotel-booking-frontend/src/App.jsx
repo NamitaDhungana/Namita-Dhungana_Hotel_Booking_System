@@ -15,9 +15,11 @@ import Register from "./pages/Register";
 import About from "./pages/About";
 import HotelList from "./components/HotelList";
 import UserProfile from "./pages/UserProfile";
+import MyBookings from "./pages/MyBookings";
 import AdminLayout from "./components/AdminLayout";
 import ManageHotels from "./pages/admin/ManageHotels";
 import ManageRooms from "./pages/admin/ManageRooms";
+import ManageRoomTypes from "./pages/admin/ManageRoomTypes";
 import ManageBookings from "./pages/admin/ManageBookings";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -76,6 +78,7 @@ function App() {
               <Route path="/hotel-list" element={<HotelList />} />
               <Route path="/notifications" element={<NotificationCenter />} />
               <Route path="/userProfile" element={<UserProfile />} />
+              <Route path="/my-bookings" element={<MyBookings />} />
               <Route path="/payment/khalti/return" element={<KhaltiReturn />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
             </Route>
@@ -91,6 +94,7 @@ function App() {
             >
               <Route index element={<AdminDashboard />} />
               <Route path="hotels" element={<ManageHotels />} />
+              <Route path="room-types" element={<ManageRoomTypes />} />
               <Route path="rooms" element={<ManageRooms />} />
               <Route path="facilities" element={<ManageFacilities />} />
               <Route path="bookings" element={<ManageBookings />} />

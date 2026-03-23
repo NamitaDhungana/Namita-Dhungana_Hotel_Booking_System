@@ -22,6 +22,8 @@ const FALLBACK_HOTEL = {
     roomTypes: [],
 };
 
+const FALLBACK_ROOM_IMG = "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=600&q=80";
+
 function HotelDetails() {
     const { id } = useParams();
     const user = authService.getCurrentUser();
@@ -30,7 +32,6 @@ function HotelDetails() {
     const [hotel, setHotel] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Room filters — null means "not set" (show all rooms by default)
     const [maxPrice, setMaxPrice] = useState(null);
     const [minGuests, setMinGuests] = useState(null);
     const [selectedAmenity, setSelectedAmenity] = useState("");
@@ -39,10 +40,7 @@ function HotelDetails() {
         hotelService.getHotelDetails(id)
             .then(data => {
                 if (data) {
-                    // Normalize snake_case room_types → roomTypes
-                    if (data.room_types && !data.roomTypes) {
-                        data.roomTypes = data.room_types;
-                    }
+                    if (data.room_types && !data.roomTypes) data.roomTypes = data.room_types;
                     setHotel(data);
                 } else {
                     setHotel({ ...FALLBACK_HOTEL, id });
@@ -52,7 +50,24 @@ function HotelDetails() {
             .finally(() => setLoading(false));
     }, [id]);
 
-    // Collect all unique amenity names across this hotel's room types
+    // Flatten all individual rooms from all room types
+    const allRooms = useMemo(() => {
+        if (!hotel?.roomTypes) return [];
+        const rooms = [];
+        hotel.roomTypes.forEach(rt => {
+            if (Array.isArray(rt.rooms) && rt.rooms.length > 0) {
+                rt.rooms.forEach(room => {
+                    // Only show available rooms to customers
+                    if (room.status === 'available') {
+                        rooms.push({ ...room, roomType: rt });
+                    }
+                });
+            }
+        });
+        return rooms;
+    }, [hotel]);
+
+    // Collect all unique amenity names across room types for filter
     const allRoomAmenities = useMemo(() => {
         if (!hotel?.roomTypes) return [];
         const set = new Set();
@@ -62,24 +77,21 @@ function HotelDetails() {
         return [...set].sort();
     }, [hotel]);
 
-    // Max price ceiling from actual rooms
     const priceCeiling = useMemo(() => {
         if (!hotel?.roomTypes?.length) return 50000;
         return Math.max(...hotel.roomTypes.map(r => parseFloat(r.base_price || 0)), 50000);
     }, [hotel]);
 
-    // Filtered rooms — all shown by default, filters only apply when set
     const filteredRooms = useMemo(() => {
-        if (!hotel?.roomTypes) return [];
-        return hotel.roomTypes.filter(room => {
-            if (maxPrice !== null && parseFloat(room.base_price) > maxPrice) return false;
-            if (minGuests !== null && room.max_occupancy < minGuests) return false;
-            if (selectedAmenity && !(Array.isArray(room.amenities) && room.amenities.includes(selectedAmenity))) return false;
+        return allRooms.filter(room => {
+            const rt = room.roomType;
+            if (maxPrice !== null && parseFloat(rt.base_price) > maxPrice) return false;
+            if (minGuests !== null && rt.max_occupancy < minGuests) return false;
+            if (selectedAmenity && !(Array.isArray(rt.amenities) && rt.amenities.includes(selectedAmenity))) return false;
             return true;
         });
-    }, [hotel, maxPrice, minGuests, selectedAmenity]);
+    }, [allRooms, maxPrice, minGuests, selectedAmenity]);
 
-    // Hotel-level amenities (JSON column on hotel)
     const hotelAmenities = useMemo(() => {
         if (!hotel) return [];
         if (Array.isArray(hotel.amenities)) return hotel.amenities;
@@ -128,9 +140,7 @@ function HotelDetails() {
                         {hotelAmenities.length > 0 ? (
                             <div className="amenities-grid">
                                 {hotelAmenities.map((name, i) => (
-                                    <span key={i}>
-                                        {AMENITY_ICONS[name] || '✓'} {name}
-                                    </span>
+                                    <span key={i}>{AMENITY_ICONS[name] || '✓'} {name}</span>
                                 ))}
                             </div>
                         ) : (
@@ -144,7 +154,7 @@ function HotelDetails() {
                     </div>
                 </div>
 
-                {/* Rooms Section with sidebar filter */}
+                {/* Rooms Section */}
                 <div className="hotel-rooms-wrapper">
                     {/* Filter Sidebar */}
                     <aside className="rooms-filter-sidebar">
@@ -155,12 +165,7 @@ function HotelDetails() {
                             {maxPrice === null ? (
                                 <div className="filter-unset">
                                     <span>Any price</span>
-                                    <button
-                                        className="filter-activate"
-                                        onClick={() => setMaxPrice(priceCeiling)}
-                                    >
-                                        Set
-                                    </button>
+                                    <button className="filter-activate" onClick={() => setMaxPrice(priceCeiling)}>Set</button>
                                 </div>
                             ) : (
                                 <>
@@ -169,10 +174,7 @@ function HotelDetails() {
                                         <span className="price-active">Rs. {maxPrice.toLocaleString()}</span>
                                     </div>
                                     <input
-                                        type="range"
-                                        min="0"
-                                        max={priceCeiling}
-                                        step="500"
+                                        type="range" min="0" max={priceCeiling} step="500"
                                         value={maxPrice}
                                         onChange={e => setMaxPrice(parseInt(e.target.value))}
                                         className="filter-range"
@@ -221,7 +223,7 @@ function HotelDetails() {
                         )}
 
                         <p className="filter-count">
-                            {filteredRooms.length} of {hotel.roomTypes?.length ?? 0} room{hotel.roomTypes?.length !== 1 ? "s" : ""}
+                            {filteredRooms.length} of {allRooms.length} room{allRooms.length !== 1 ? "s" : ""}
                         </p>
                     </aside>
 
@@ -232,65 +234,84 @@ function HotelDetails() {
 
                         <div className="rooms-list">
                             {filteredRooms.length > 0 ? (
-                                filteredRooms.map(room => (
-                                    <div key={room.id} className="room-item-card">
-                                        <div className="room-image-wrap">
-                                            <img
-                                                src={room.featured_image || "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=600&q=80"}
-                                                alt={room.type_name}
-                                            />
-                                        </div>
-                                        <div className="room-item-info">
-                                            <div className="room-item-header">
-                                                <h3>{room.type_name}</h3>
-                                                <div className="room-price-box">
-                                                    <span className="price-tag">Rs. {parseFloat(room.base_price).toLocaleString()}</span>
-                                                    <span className="per-night">/ night</span>
+                                filteredRooms.map(room => {
+                                    const rt = room.roomType;
+                                    const amenities = Array.isArray(rt.amenities) ? rt.amenities : [];
+                                    return (
+                                        <div key={room.id} className="room-item-card">
+                                            <div className="room-image-wrap">
+                                                <img
+                                                    src={room.image_url || rt.featured_image || FALLBACK_ROOM_IMG}
+                                                    alt={`Room ${room.room_number}`}
+                                                />
+                                            </div>
+                                            <div className="room-item-info">
+                                                <div className="room-item-header">
+                                                    <div>
+                                                        <h3>{rt.type_name}</h3>
+                                                        <span className="room-number-badge">🚪 Room {room.room_number}</span>
+                                                    </div>
+                                                    <div className="room-price-box">
+                                                        <span className="price-tag">Rs. {parseFloat(rt.base_price).toLocaleString()}</span>
+                                                        <span className="per-night">/ night</span>
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="room-features">
-                                                <span>👥 {room.max_occupancy} Guests</span>
-                                                {room.area_sqft && <span>📐 {room.area_sqft} sqft</span>}
-                                                {room.bed_type && <span>🛏️ {room.bed_type}</span>}
-                                            </div>
+                                                <div className="room-features">
+                                                    <span>👥 {rt.max_occupancy} Guests</span>
+                                                    {rt.area_sqft && <span>📐 {rt.area_sqft} sqft</span>}
+                                                    {rt.bed_type && <span>🛏️ {rt.bed_type}</span>}
+                                                    {room.floor && <span>🏢 Floor {room.floor}</span>}
+                                                </div>
 
-                                            {/* Real amenities from DB */}
-                                            {Array.isArray(room.amenities) && room.amenities.length > 0 && (
-                                                <div className="room-amenity-tags">
-                                                    {room.amenities.slice(0, 4).map((a, i) => (
-                                                        <span key={i} className="room-amenity-chip">
-                                                            {AMENITY_ICONS[a] || '✓'} {a}
-                                                        </span>
-                                                    ))}
-                                                    {room.amenities.length > 4 && (
-                                                        <span className="room-amenity-chip room-amenity-more">
-                                                            +{room.amenities.length - 4} more
-                                                        </span>
+                                                {room.notes && (
+                                                    <p className="room-notes">{room.notes}</p>
+                                                )}
+
+                                                {amenities.length > 0 && (
+                                                    <div className="room-amenity-tags">
+                                                        {amenities.slice(0, 4).map((a, i) => (
+                                                            <span key={i} className="room-amenity-chip">
+                                                                {AMENITY_ICONS[a] || '✓'} {a}
+                                                            </span>
+                                                        ))}
+                                                        {amenities.length > 4 && (
+                                                            <span className="room-amenity-chip room-amenity-more">
+                                                                +{amenities.length - 4} more
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                <div className="room-action">
+                                                    <Link to={`/rooms/${room.id}`} className="btn-details">
+                                                        View Details
+                                                    </Link>
+                                                    {canBook ? (
+                                                        <Link to={`/booking?roomTypeId=${rt.id}`}>
+                                                            <button className="btn-reserve">Book Now</button>
+                                                        </Link>
+                                                    ) : (
+                                                        <button className="btn-reserve btn-reserve--disabled" disabled>
+                                                            Managers Restricted
+                                                        </button>
                                                     )}
                                                 </div>
-                                            )}
-
-                                            <div className="room-action">
-                                                <Link to={`/rooms/${room.id}`} className="btn-details">
-                                                    View Details
-                                                </Link>
-                                                {canBook ? (
-                                                    <Link to={`/booking?roomTypeId=${room.id}`}>
-                                                        <button className="btn-reserve">Book Now</button>
-                                                    </Link>
-                                                ) : (
-                                                    <button className="btn-reserve btn-reserve--disabled" disabled>
-                                                        Managers Restricted
-                                                    </button>
-                                                )}
                                             </div>
                                         </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             ) : (
                                 <div className="no-rooms">
-                                    <p>No rooms match your filters. <button onClick={() => { setMaxPrice(null); setMinGuests(null); setSelectedAmenity(""); }} style={{ background: 'none', border: 'none', color: '#6C5CE7', cursor: 'pointer', fontWeight: 600 }}>Clear filters</button></p>
+                                    <p>
+                                        No rooms match your filters.{" "}
+                                        <button
+                                            onClick={() => { setMaxPrice(null); setMinGuests(null); setSelectedAmenity(""); }}
+                                            style={{ background: 'none', border: 'none', color: '#6C5CE7', cursor: 'pointer', fontWeight: 600 }}
+                                        >
+                                            Clear filters
+                                        </button>
+                                    </p>
                                 </div>
                             )}
                         </div>

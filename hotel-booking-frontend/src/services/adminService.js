@@ -66,9 +66,45 @@ const adminService = {
         }
     },
 
+    getRooms: async () => {
+        try {
+            const response = await apiClient.get('/admin/rooms');
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    createRoom: async (data) => {
+        try {
+            const response = await apiClient.post('/admin/rooms', data);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    deleteRoom: async (id) => {
+        try {
+            const response = await apiClient.delete(`/admin/rooms/${id}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
     updateRoomStatus: async (id, status) => {
         try {
-            const response = await apiClient.put(`/admin/rooms/${id}/status`, { status });
+            const response = await apiClient.put(`/admin/rooms/${id}`, { status });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    updateRoom: async (id, data) => {
+        try {
+            const response = await apiClient.put(`/admin/rooms/${id}`, data);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;

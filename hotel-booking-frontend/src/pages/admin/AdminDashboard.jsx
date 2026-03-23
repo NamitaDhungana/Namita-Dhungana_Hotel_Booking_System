@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaDollarSign, FaHotel, FaUsers, FaCalendarCheck, FaCheckCircle } from 'react-icons/fa';
+import { FaRupeeSign, FaHotel, FaUsers, FaCalendarCheck, FaCheckCircle } from 'react-icons/fa';
 import adminService from '../../services/adminService';
 import authService from '../../services/authService';
 
@@ -27,7 +27,7 @@ const AdminDashboard = () => {
         {
             label: 'Total Revenue',
             value: `Rs. ${Number(stats.total_revenue).toLocaleString()}`,
-            icon: <FaDollarSign />,
+            icon: <FaRupeeSign />,
             cls: 'icon-blue',
         },
         {

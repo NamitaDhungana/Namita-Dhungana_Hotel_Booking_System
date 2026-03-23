@@ -62,6 +62,15 @@ const hotelService = {
         }
     },
 
+    showRoom: async (id) => {
+        try {
+            const response = await apiClient.get(`/rooms/${id}`);
+            return response.data.data || response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
     getUnavailableDates: async (id) => {
         try {
             const response = await apiClient.get(`/room-types/${id}/unavailable-dates`);

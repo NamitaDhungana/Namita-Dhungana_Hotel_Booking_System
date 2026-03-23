@@ -49,7 +49,7 @@ class HotelController extends Controller
     // Get single hotel details
     public function show($id)
     {
-        $hotel = Hotel::with(['roomTypes', 'reviews', 'images'])->find($id);
+        $hotel = Hotel::with(['roomTypes.rooms', 'reviews', 'images'])->find($id);
         
         if (!$hotel) {
             return response()->json(['message' => 'Hotel not found'], 404);

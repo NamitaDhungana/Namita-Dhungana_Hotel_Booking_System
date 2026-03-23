@@ -104,7 +104,7 @@ function KhaltiReturn() {
             </div>
           )}
           <div className="kr-actions">
-            <Link to="/userProfile" className="kr-btn kr-btn--primary">
+            <Link to="/my-bookings" className="kr-btn kr-btn--primary">
               View My Bookings
             </Link>
             <Link to="/hotels" className="kr-btn kr-btn--outline">
@@ -134,7 +134,7 @@ function KhaltiReturn() {
             <button className="kr-btn kr-btn--primary" onClick={handleManualRetry}>
               {retryCount > 0 ? "Check Again" : "Check Status"}
             </button>
-            <Link to="/userProfile" className="kr-btn kr-btn--outline">
+            <Link to="/my-bookings" className="kr-btn kr-btn--outline">
               My Bookings
             </Link>
           </div>
@@ -183,7 +183,7 @@ function KhaltiReturn() {
           <button className="kr-btn kr-btn--primary" onClick={handleManualRetry}>
             Retry
           </button>
-          <Link to="/userProfile" className="kr-btn kr-btn--outline">
+          <Link to="/my-bookings" className="kr-btn kr-btn--outline">
             My Bookings
           </Link>
         </div>

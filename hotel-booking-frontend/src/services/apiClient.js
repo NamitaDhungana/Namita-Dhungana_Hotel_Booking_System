@@ -10,7 +10,7 @@ const apiClient = axios.create({
 
 // Add a request interceptor to include the auth token if available
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -27,7 +27,8 @@ apiClient.interceptors.response.use(
       console.warn("Session expired or unauthenticated. Clearing token.");
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // We don't force redirect here to allow components to handle it gracefully
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
     }
     return Promise.reject(error);
   }

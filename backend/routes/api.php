@@ -34,6 +34,7 @@ Route::get('/hotels/{hotelId}/room-types',      [RoomController::class, 'getRoom
 Route::get('/room-types',                        [RoomController::class, 'getAllRoomTypes'])->middleware('auth:sanctum');
 Route::get('/room-types/{id}',                   [RoomController::class, 'showRoomType']);
 Route::get('/room-types/{id}/unavailable-dates', [RoomController::class, 'getUnavailableDates']);
+Route::get('/rooms/{id}',                        [RoomController::class, 'showRoom']);
 Route::post('/rooms/availability',               [RoomController::class, 'checkAvailability']);
 
 Route::get('/amenities', [AmenityController::class, 'index']);
@@ -73,10 +74,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/amenities/{id}',    [AmenityController::class, 'update']);
         Route::delete('/amenities/{id}', [AmenityController::class, 'destroy']);
 
-        Route::post('/room-types',          [RoomController::class, 'storeRoomType']);
-        Route::put('/room-types/{id}',      [RoomController::class, 'updateRoomType']);
-        Route::post('/rooms',               [RoomController::class, 'storeRoom']);
-        Route::put('/rooms/{id}/status',    [RoomController::class, 'updateRoomStatus']);
+        Route::post('/room-types',       [RoomController::class, 'storeRoomType']);
+        Route::put('/room-types/{id}',   [RoomController::class, 'updateRoomType']);
+        Route::get('/rooms',             [RoomController::class, 'getRooms']);
+        Route::post('/rooms',            [RoomController::class, 'storeRoom']);
+        Route::put('/rooms/{id}',        [RoomController::class, 'updateRoom']);
+        Route::delete('/rooms/{id}',     [RoomController::class, 'destroyRoom']);
 
         Route::get('/bookings',             [BookingController::class, 'getAllBookings']);
         Route::put('/bookings/{id}/status', [BookingController::class, 'updateStatus']);

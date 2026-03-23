@@ -8,6 +8,7 @@ function Login() {
   const { message } = App.useApp();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ function Login() {
     }
     try {
       setLoading(true);
-      const response = await authService.login({ email, password });
+      const response = await authService.login({ email, password }, rememberMe);
 
       setLoading(false);
       message.success("Login successful!");
@@ -86,7 +87,7 @@ function Login() {
         {/* Options */}
         <div className="login-options">
           <label>
-            <input type="checkbox" /> Remember Me
+            <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} /> Remember Me
           </label>
           <a href="#" className="forgot">Forgot Password?</a>
         </div>

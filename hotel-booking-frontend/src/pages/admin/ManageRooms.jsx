@@ -1,110 +1,128 @@
-import React, { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { App } from 'antd';
-import { FaPlus, FaEdit } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
 import adminService from '../../services/adminService';
 import hotelService from '../../services/hotelService';
 import './ManageRooms.css';
 
-const ROOM_TYPES = ['Single Room', 'Double Room', 'Deluxe Room', 'Suite', 'Family Room', 'Presidential Suite'];
+const STATUS_OPTIONS = ['available', 'occupied', 'maintenance'];
 
-const defaultForm = {
-    hotel_id: '', type_name: '', base_price: '', area_sqft: '',
-    max_adults: '', max_children: '', quantity: '', description: '',
-    amenities: [],
+const STATUS_COLORS = {
+    available:   { bg: '#d4edda', color: '#155724' },
+    occupied:    { bg: '#fff3cd', color: '#856404' },
+    maintenance: { bg: '#f8d7da', color: '#721c24' },
 };
 
+const defaultAddForm  = { hotel_id: '', room_type_id: '', room_number: '', floor: '', status: 'available', image_url: '', notes: '' };
+const defaultEditForm = { room_type_id: '', room_number: '', floor: '', status: 'available', image_url: '', notes: '' };
+
 const ManageRooms = () => {
-    const { message } = App.useApp();
-    const [roomTypes, setRoomTypes] = useState([]);
+    const { message, modal } = App.useApp();
+    const [rooms, setRooms] = useState([]);
     const [hotels, setHotels] = useState([]);
-    const [allAmenities, setAllAmenities] = useState([]);
+    const [allRoomTypes, setAllRoomTypes] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
+
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [addForm, setAddForm] = useState(defaultAddForm);
+
+    const [showEditModal, setShowEditModal] = useState(false);
     const [editingRoom, setEditingRoom] = useState(null);
-    const [formData, setFormData] = useState(defaultForm);
+    const [editForm, setEditForm] = useState(defaultEditForm);
 
     useEffect(() => { fetchData(); }, []);
 
     const fetchData = async () => {
         try {
-            const [roomsData, hotelsData, amenitiesData] = await Promise.all([
-                hotelService.getAllRoomTypes(),
+            const [roomsData, hotelsData, roomTypesData] = await Promise.all([
+                adminService.getRooms(),
                 adminService.getMyHotels(),
-                hotelService.getAmenities(),
+                hotelService.getAllRoomTypes(),
             ]);
-            setRoomTypes(Array.isArray(roomsData) ? roomsData : []);
+            setRooms(Array.isArray(roomsData) ? roomsData : []);
             setHotels(Array.isArray(hotelsData) ? hotelsData : []);
-            setAllAmenities(Array.isArray(amenitiesData) ? amenitiesData : []);
+            setAllRoomTypes(Array.isArray(roomTypesData) ? roomTypesData : []);
         } catch {
-            message.error('Failed to load data');
+            message.error('Failed to load rooms');
         } finally {
             setLoading(false);
         }
     };
 
-    const set = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+    const setAdd = (field, value) => setAddForm(prev => ({ ...prev, [field]: value }));
+    const setEdit = (field, value) => setEditForm(prev => ({ ...prev, [field]: value }));
 
-    const toggleAmenity = (name) => {
-        setFormData(prev => ({
-            ...prev,
-            amenities: prev.amenities.includes(name)
-                ? prev.amenities.filter(a => a !== name)
-                : [...prev.amenities, name],
-        }));
+    const handleHotelChange = (hotelId) => {
+        setAddForm(prev => ({ ...prev, hotel_id: hotelId, room_type_id: '' }));
     };
 
-    const handleSubmit = async (e) => {
+    const filteredRoomTypes = allRoomTypes.filter(
+        rt => String(rt.hotel_id) === String(addForm.hotel_id)
+    );
+
+    const handleAdd = async (e) => {
         e.preventDefault();
-        const payload = {
-            ...formData,
-            max_occupancy: parseInt(formData.max_adults || 1) + parseInt(formData.max_children || 0),
-        };
         try {
-            if (editingRoom) {
-                await adminService.updateRoomType(editingRoom.id, payload);
-                message.success('Room type updated!');
-            } else {
-                await adminService.createRoomType(payload);
-                message.success('Room type created!');
-            }
-            setShowModal(false);
-            setFormData(defaultForm);
-            setEditingRoom(null);
+            await adminService.createRoom(addForm);
+            message.success('Room added!');
+            setShowAddModal(false);
+            setAddForm(defaultAddForm);
             fetchData();
         } catch (error) {
-            message.error('Action failed: ' + (error.message || 'Unknown error'));
+            message.error('Failed to add room: ' + (error.message || 'Unknown error'));
         }
     };
 
     const openEdit = (room) => {
         setEditingRoom(room);
-        setFormData({
-            hotel_id: room.hotel_id,
-            type_name: room.type_name,
-            base_price: room.base_price,
-            area_sqft: room.area_sqft || '',
-            max_adults: room.max_adults || '',
-            max_children: room.max_children ?? '',
-            quantity: room.rooms_count || '',
-            description: room.description || '',
-            amenities: Array.isArray(room.amenities) ? room.amenities : [],
+        setEditForm({
+            room_type_id: room.room_type_id || '',
+            room_number:  room.room_number || '',
+            floor:        room.floor ?? '',
+            status:       room.status || 'available',
+            image_url:    room.image_url || '',
+            notes:        room.notes || '',
         });
-        setShowModal(true);
+        setShowEditModal(true);
     };
 
-    const openAdd = () => { setEditingRoom(null); setFormData(defaultForm); setShowModal(true); };
+    const handleEdit = async (e) => {
+        e.preventDefault();
+        try {
+            await adminService.updateRoom(editingRoom.id, editForm);
+            message.success('Room updated!');
+            setShowEditModal(false);
+            setEditingRoom(null);
+            fetchData();
+        } catch {
+            message.error('Failed to update room');
+        }
+    };
 
-    const statusBadge = (count) => (
-        <span className={`rm-badge ${count > 0 ? 'available' : 'none'}`}>
-            {count > 0 ? `${count} Available` : 'No Rooms'}
-        </span>
-    );
+    const handleDelete = (room) => {
+        modal.confirm({
+            title: `Delete room "${room.room_number}"?`,
+            content: 'This cannot be undone. Rooms with active bookings cannot be deleted.',
+            okText: 'Delete', okType: 'danger', cancelText: 'Cancel',
+            onOk: async () => {
+                try {
+                    await adminService.deleteRoom(room.id);
+                    message.success('Room deleted!');
+                    fetchData();
+                } catch (err) {
+                    message.error(err.message || 'Delete failed');
+                }
+            },
+        });
+    };
 
     return (
         <div className="manage-rooms-page">
             <div className="rm-header">
                 <h2>Manage Rooms</h2>
-                <button className="rm-add-btn" onClick={openAdd}><FaPlus /> Add Room Type</button>
+                <button className="rm-add-btn" onClick={() => { setAddForm(defaultAddForm); setShowAddModal(true); }}>
+                    <FaPlus /> Add Room
+                </button>
             </div>
 
             {loading ? <p className="rm-loading">Loading...</p> : (
@@ -112,46 +130,43 @@ const ManageRooms = () => {
                     <table className="rm-table">
                         <thead>
                             <tr>
+                                <th>#</th>
+                                <th>Room No.</th>
                                 <th>Hotel</th>
-                                <th>Room Name</th>
-                                <th>Price / Night</th>
-                                <th>Area</th>
-                                <th>Adults</th>
-                                <th>Children</th>
-                                <th>Quantity</th>
-                                <th>Facilities & Features</th>
+                                <th>Room Type</th>
+                                <th>Floor</th>
+                                <th>Image</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {roomTypes.length === 0 ? (
-                                <tr><td colSpan={10} className="rm-empty">No room types found.</td></tr>
-                            ) : roomTypes.map(room => (
+                            {rooms.length === 0 ? (
+                                <tr><td colSpan={8} className="rm-empty">No rooms found.</td></tr>
+                            ) : rooms.map((room, i) => (
                                 <tr key={room.id}>
+                                    <td style={{ color: '#aaa', width: 40 }}>{i + 1}</td>
+                                    <td className="rm-type-name">{room.room_number}</td>
                                     <td className="rm-hotel-name">{room.hotel?.name || '—'}</td>
-                                    <td className="rm-type-name">{room.type_name}</td>
-                                    <td className="rm-price">Rs. {Number(room.base_price).toLocaleString()}</td>
-                                    <td>{room.area_sqft ? `${room.area_sqft} m²` : '—'}</td>
-                                    <td>{room.max_adults ?? '—'}</td>
-                                    <td>{room.max_children ?? '—'}</td>
-                                    <td>{room.rooms_count ?? 0}</td>
+                                    <td>{room.room_type?.type_name || '—'}</td>
+                                    <td>{room.floor ?? '—'}</td>
                                     <td>
-                                        <div className="rm-amenity-tags">
-                                            {Array.isArray(room.amenities) && room.amenities.length > 0
-                                                ? room.amenities.slice(0, 3).map(a => (
-                                                    <span key={a} className="rm-amenity-tag">{a}</span>
-                                                ))
-                                                : <span style={{ color: '#aaa', fontSize: 12 }}>None</span>
-                                            }
-                                            {Array.isArray(room.amenities) && room.amenities.length > 3 && (
-                                                <span className="rm-amenity-tag">+{room.amenities.length - 3}</span>
-                                            )}
-                                        </div>
+                                        {room.image_url
+                                            ? <img src={room.image_url} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />
+                                            : <span style={{ color: '#bbb', fontSize: 12 }}>None</span>
+                                        }
                                     </td>
-                                    <td>{statusBadge(room.rooms_count ?? 0)}</td>
                                     <td>
+                                        <span className="rm-badge" style={{
+                                            background: STATUS_COLORS[room.status]?.bg,
+                                            color: STATUS_COLORS[room.status]?.color,
+                                        }}>
+                                            {room.status.charAt(0).toUpperCase() + room.status.slice(1)}
+                                        </span>
+                                    </td>
+                                    <td style={{ display: 'flex', gap: 6 }}>
                                         <button className="rm-edit-btn" onClick={() => openEdit(room)} title="Edit"><FaEdit /></button>
+                                        <button className="rm-edit-btn" onClick={() => handleDelete(room)} title="Delete" style={{ color: '#e74c3c' }}><FaTrash /></button>
                                     </td>
                                 </tr>
                             ))}
@@ -160,116 +175,107 @@ const ManageRooms = () => {
                 </div>
             )}
 
-            {showModal && (
-                <div className="rm-overlay" onClick={() => setShowModal(false)}>
-                    <div className="rm-modal" onClick={e => e.stopPropagation()}>
-                        <h3>{editingRoom ? 'Edit Room Type' : 'Add Room Type'}</h3>
-                        <form onSubmit={handleSubmit}>
-                            <div className="rm-form-grid">
-                                <div className="rm-field full">
+            {/* Add Room Modal */}
+            {showAddModal && (
+                <div className="rm-overlay" onClick={() => setShowAddModal(false)}>
+                    <div className="rm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
+                        <h3>Add Room</h3>
+                        <form onSubmit={handleAdd}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div className="rm-field">
                                     <label>Hotel</label>
-                                    <select required value={formData.hotel_id} onChange={e => set('hotel_id', e.target.value)}>
+                                    <select required value={addForm.hotel_id} onChange={e => handleHotelChange(e.target.value)}>
                                         <option value="">Select hotel...</option>
                                         {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                                     </select>
                                 </div>
-
-                                <div className="rm-field full">
-                                    <label>Room Name</label>
-                                    <select required value={formData.type_name} onChange={e => set('type_name', e.target.value)}>
+                                <div className="rm-field">
+                                    <label>Room Type</label>
+                                    <select required value={addForm.room_type_id} onChange={e => setAdd('room_type_id', e.target.value)} disabled={!addForm.hotel_id}>
                                         <option value="">Select room type...</option>
-                                        {ROOM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        {filteredRoomTypes.map(rt => <option key={rt.id} value={rt.id}>{rt.type_name}</option>)}
                                     </select>
                                 </div>
-
                                 <div className="rm-field">
-                                    <label>Price / Night (Rs.)</label>
-                                    <input type="number" required min="0" step="0.01"
-                                        value={formData.base_price}
-                                        onKeyDown={e => ['-','e','E','+'].includes(e.key) && e.preventDefault()}
-                                        onChange={e => set('base_price', e.target.value)} />
+                                    <label>Room Number</label>
+                                    <input required placeholder="e.g. 101" value={addForm.room_number} onChange={e => setAdd('room_number', e.target.value)} />
                                 </div>
-
                                 <div className="rm-field">
-                                    <label>Area (m²)</label>
-                                    <input type="number" min="0" step="0.1" placeholder="e.g. 25"
-                                        value={formData.area_sqft}
-                                        onKeyDown={e => ['-','e','E','+'].includes(e.key) && e.preventDefault()}
-                                        onChange={e => set('area_sqft', e.target.value)} />
+                                    <label>Floor (optional)</label>
+                                    <input type="number" min="0" placeholder="e.g. 2" value={addForm.floor} onChange={e => setAdd('floor', e.target.value)} />
                                 </div>
-
                                 <div className="rm-field">
-                                    <label>Max Adults</label>
-                                    <input type="number" required min="1"
-                                        value={formData.max_adults}
-                                        onKeyDown={e => ['-','e','E','+','.'].includes(e.key) && e.preventDefault()}
-                                        onChange={e => set('max_adults', e.target.value)} />
+                                    <label>Status</label>
+                                    <select value={addForm.status} onChange={e => setAdd('status', e.target.value)}>
+                                        {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                                    </select>
                                 </div>
-
                                 <div className="rm-field">
-                                    <label>Max Children</label>
-                                    <input type="number" min="0"
-                                        value={formData.max_children}
-                                        onKeyDown={e => ['-','e','E','+','.'].includes(e.key) && e.preventDefault()}
-                                        onChange={e => set('max_children', e.target.value)} />
+                                    <label>Room Image URL (optional)</label>
+                                    <input placeholder="https://..." value={addForm.image_url} onChange={e => setAdd('image_url', e.target.value)} />
+                                    {addForm.image_url && (
+                                        <img src={addForm.image_url} alt="preview" style={{ marginTop: 8, width: '100%', height: 140, objectFit: 'cover', borderRadius: 8 }} onError={e => e.target.style.display = 'none'} />
+                                    )}
                                 </div>
-
-                                {!editingRoom && (
-                                    <div className="rm-field">
-                                        <label>Quantity (no. of rooms)</label>
-                                        <input type="number" required min="1"
-                                            value={formData.quantity}
-                                            onKeyDown={e => ['-','e','E','+','.'].includes(e.key) && e.preventDefault()}
-                                            onChange={e => set('quantity', e.target.value)} />
-                                    </div>
-                                )}
-
-                                <div className="rm-field full">
-                                    <label>Description</label>
-                                    <textarea rows={3} value={formData.description}
-                                        onChange={e => set('description', e.target.value)} />
+                                <div className="rm-field">
+                                    <label>Room Notes (optional)</label>
+                                    <textarea rows={3} placeholder="e.g. Corner room with mountain view..." value={addForm.notes} onChange={e => setAdd('notes', e.target.value)} />
                                 </div>
-
-                                {allAmenities.length > 0 && (
-                                    <div className="rm-field full">
-                                        <label>Facilities</label>
-                                        <div className="rm-amenity-checks">
-                                            {allAmenities.filter(a => a.type === 'facility').map(a => (
-                                                <label key={a.amenity_id} className="rm-check-label">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={formData.amenities.includes(a.name)}
-                                                        onChange={() => toggleAmenity(a.name)}
-                                                    />
-                                                    {a.name}
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {allAmenities.filter(a => a.type === 'feature').length > 0 && (
-                                    <div className="rm-field full">
-                                        <label>Features</label>
-                                        <div className="rm-amenity-checks">
-                                            {allAmenities.filter(a => a.type === 'feature').map(a => (
-                                                <label key={a.amenity_id} className="rm-check-label">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={formData.amenities.includes(a.name)}
-                                                        onChange={() => toggleAmenity(a.name)}
-                                                    />
-                                                    {a.name}
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
-
                             <div className="rm-modal-footer">
-                                <button type="button" className="rm-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-                                <button type="submit" className="rm-save">{editingRoom ? 'Update' : 'Create'}</button>
+                                <button type="button" className="rm-cancel" onClick={() => setShowAddModal(false)}>Cancel</button>
+                                <button type="submit" className="rm-save">Add Room</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Room Modal */}
+            {showEditModal && editingRoom && (
+                <div className="rm-overlay" onClick={() => setShowEditModal(false)}>
+                    <div className="rm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+                        <h3>Edit Room {editingRoom.room_number}</h3>
+                        <form onSubmit={handleEdit}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div className="rm-field">
+                                    <label>Room Type</label>
+                                    <select required value={editForm.room_type_id} onChange={e => setEdit('room_type_id', e.target.value)}>
+                                        <option value="">Select room type...</option>
+                                        {allRoomTypes.filter(rt => String(rt.hotel_id) === String(editingRoom.hotel_id)).map(rt => (
+                                            <option key={rt.id} value={rt.id}>{rt.type_name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="rm-field">
+                                    <label>Room Number</label>
+                                    <input required placeholder="e.g. 101" value={editForm.room_number} onChange={e => setEdit('room_number', e.target.value)} />
+                                </div>
+                                <div className="rm-field">
+                                    <label>Floor (optional)</label>
+                                    <input type="number" min="0" placeholder="e.g. 2" value={editForm.floor} onChange={e => setEdit('floor', e.target.value)} />
+                                </div>
+                                <div className="rm-field">
+                                    <label>Status</label>
+                                    <select value={editForm.status} onChange={e => setEdit('status', e.target.value)}>
+                                        {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                                    </select>
+                                </div>
+                                <div className="rm-field">
+                                    <label>Room Image URL (optional)</label>
+                                    <input placeholder="https://..." value={editForm.image_url} onChange={e => setEdit('image_url', e.target.value)} />
+                                    {editForm.image_url && (
+                                        <img src={editForm.image_url} alt="preview" style={{ marginTop: 8, width: '100%', height: 140, objectFit: 'cover', borderRadius: 8 }} onError={e => e.target.style.display = 'none'} />
+                                    )}
+                                </div>
+                                <div className="rm-field">
+                                    <label>Room Notes (optional)</label>
+                                    <textarea rows={3} placeholder="e.g. Corner room with mountain view..." value={editForm.notes} onChange={e => setEdit('notes', e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="rm-modal-footer">
+                                <button type="button" className="rm-cancel" onClick={() => setShowEditModal(false)}>Cancel</button>
+                                <button type="submit" className="rm-save">Save Changes</button>
                             </div>
                         </form>
                     </div>

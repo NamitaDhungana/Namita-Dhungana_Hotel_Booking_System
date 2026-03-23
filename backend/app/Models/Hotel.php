@@ -38,6 +38,11 @@ class Hotel extends Model
         'is_featured' => 'boolean',
     ];
 
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class);
+    }
+
     public function reviews()
     {
         return $this->hasMany(Review::class);

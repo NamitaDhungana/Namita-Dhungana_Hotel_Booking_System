@@ -13,7 +13,10 @@ class Room extends Model
         'hotel_id',
         'room_type_id',
         'room_number',
+        'floor',
         'status',
+        'image_url',
+        'notes',
     ];
 
     public function hotel()

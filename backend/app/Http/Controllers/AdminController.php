@@ -35,7 +35,7 @@ class AdminController extends Controller
             $hotelIds = Hotel::where('admin_id', $admin->id)->pluck('id');
         }
 
-        $totalHotels   = $hotelIds->count();
+        $totalHotels   = $hotelIds->count(); 
         $totalBookings = Booking::whereIn('hotel_id', $hotelIds)->count();
         $activeBookings = Booking::whereIn('hotel_id', $hotelIds)
             ->whereIn('status', ['confirmed', 'checked_in'])->count();

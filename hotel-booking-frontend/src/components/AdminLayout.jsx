@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
-    FaChartLine, FaHotel, FaBed, FaCalendarCheck,
+    FaChartLine, FaHotel, FaBed, FaDoorOpen, FaCalendarCheck,
     FaSignOutAlt, FaStar, FaUsers, FaConciergeBell,
     FaCog, FaBars, FaTimes, FaUserShield
 } from 'react-icons/fa';
@@ -9,12 +9,13 @@ import authService from '../services/authService';
 import './AdminLayout.css';
 
 const ADMIN_MENU = [
-    { to: '/admin',            label: 'Dashboard',           icon: <FaChartLine />,    end: true },
-    { to: '/admin/hotels',     label: 'Manage Hotels',       icon: <FaHotel /> },
-    { to: '/admin/rooms',      label: 'Manage Rooms',        icon: <FaBed /> },
-    { to: '/admin/facilities', label: 'Features & Facilities', icon: <FaConciergeBell /> },
-    { to: '/admin/bookings',   label: 'Bookings',            icon: <FaCalendarCheck /> },
-    { to: '/admin/reviews',    label: 'Reviews & Ratings',   icon: <FaStar /> },
+    { to: '/admin',              label: 'Dashboard',           icon: <FaChartLine />,    end: true },
+    { to: '/admin/hotels',       label: 'Manage Hotels',       icon: <FaHotel /> },
+    { to: '/admin/room-types',   label: 'Manage Room Types',   icon: <FaBed /> },
+    { to: '/admin/rooms',        label: 'Manage Rooms',        icon: <FaDoorOpen /> },
+    { to: '/admin/facilities',   label: 'Features & Facilities', icon: <FaConciergeBell /> },
+    { to: '/admin/bookings',     label: 'Bookings',            icon: <FaCalendarCheck /> },
+    { to: '/admin/reviews',      label: 'Reviews & Ratings',   icon: <FaStar /> },
 ];
 
 const SUPER_ADMIN_MENU = [

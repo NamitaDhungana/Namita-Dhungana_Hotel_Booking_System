@@ -4,13 +4,8 @@ import hotelService from "../services/hotelService";
 import authService from "../services/authService";
 import "./roomDetails.css";
 
-const ROOM_IMAGES = [
-    "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
-];
+const FALLBACK_IMG = "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=80";
 
-// Map amenity names to emojis
 const AMENITY_ICONS = {
     "Air Conditioner": "❄️", "TV": "📺", "Coffee Maker": "☕", "Room Heater": "🔥",
     "Free WiFi": "📶", "Gym": "🏋️", "Swimming Pool": "🏊", "Spa": "💆",
@@ -29,7 +24,7 @@ function RoomDetails() {
     const [notFound, setNotFound] = useState(false);
 
     useEffect(() => {
-        hotelService.showRoomType(id)
+        hotelService.showRoom(id)
             .then(data => {
                 if (data && data.id) {
                     setRoom(data);
@@ -37,10 +32,7 @@ function RoomDetails() {
                     setNotFound(true);
                 }
             })
-            .catch(err => {
-                console.error("Room fetch failed:", err);
-                setNotFound(true);
-            })
+            .catch(() => setNotFound(true))
             .finally(() => setLoading(false));
     }, [id]);
 
@@ -60,51 +52,70 @@ function RoomDetails() {
         </div>
     );
 
-    const amenities = Array.isArray(room.amenities) ? room.amenities : [];
-    const heroImg = room.featured_image || ROOM_IMAGES[room.id % ROOM_IMAGES.length];
+    // room.room_type holds the RoomType data (price, amenities, etc.)
+    const rt = room.room_type || {};
+    const amenities = Array.isArray(rt.amenities) ? rt.amenities : [];
+    const hotel = room.hotel || rt.hotel || {};
+    const heroImg = room.image_url || rt.featured_image || FALLBACK_IMG;
 
     return (
         <div className="rd-page">
             {/* Breadcrumb */}
             <div className="rd-breadcrumb">
                 <Link to="/hotels">Hotels</Link>
-                {room.hotel && (
-                    <><span>›</span><Link to={`/hotels/${room.hotel_id}`}>{room.hotel.name}</Link></>
+                {hotel.id && (
+                    <><span>›</span><Link to={`/hotels/${hotel.id}`}>{hotel.name}</Link></>
                 )}
                 <span>›</span>
-                <span className="rd-bc-current">{room.type_name}</span>
+                <span className="rd-bc-current">Room {room.room_number}</span>
             </div>
 
             <div className="rd-layout">
                 {/* Left — Image + quick facts */}
                 <div className="rd-left">
                     <div className="rd-hero-img">
-                        <img src={heroImg} alt={room.type_name} />
+                        <img src={heroImg} alt={`Room ${room.room_number}`} />
                     </div>
 
                     <div className="rd-quick-facts">
                         <div className="rd-fact">
+                            <span className="rd-fact-icon">🚪</span>
+                            <div>
+                                <div className="rd-fact-label">Room Number</div>
+                                <div className="rd-fact-value">{room.room_number}</div>
+                            </div>
+                        </div>
+                        {room.floor && (
+                            <div className="rd-fact">
+                                <span className="rd-fact-icon">🏢</span>
+                                <div>
+                                    <div className="rd-fact-label">Floor</div>
+                                    <div className="rd-fact-value">{room.floor}</div>
+                                </div>
+                            </div>
+                        )}
+                        <div className="rd-fact">
                             <span className="rd-fact-icon">👥</span>
                             <div>
                                 <div className="rd-fact-label">Max Guests</div>
-                                <div className="rd-fact-value">{room.max_occupancy}</div>
+                                <div className="rd-fact-value">{rt.max_occupancy ?? '—'}</div>
                             </div>
                         </div>
-                        {room.area_sqft && (
+                        {rt.area_sqft && (
                             <div className="rd-fact">
                                 <span className="rd-fact-icon">📐</span>
                                 <div>
                                     <div className="rd-fact-label">Room Size</div>
-                                    <div className="rd-fact-value">{room.area_sqft} sqft</div>
+                                    <div className="rd-fact-value">{rt.area_sqft} sqft</div>
                                 </div>
                             </div>
                         )}
-                        {room.bed_type && (
+                        {rt.bed_type && (
                             <div className="rd-fact">
                                 <span className="rd-fact-icon">🛏️</span>
                                 <div>
                                     <div className="rd-fact-label">Bed Type</div>
-                                    <div className="rd-fact-value">{room.bed_type}</div>
+                                    <div className="rd-fact-value">{rt.bed_type}</div>
                                 </div>
                             </div>
                         )}
@@ -112,7 +123,10 @@ function RoomDetails() {
                             <span className="rd-fact-icon">💰</span>
                             <div>
                                 <div className="rd-fact-label">Price</div>
-                                <div className="rd-fact-value rd-price">Rs. {parseFloat(room.base_price || 0).toLocaleString()}<small>/night</small></div>
+                                <div className="rd-fact-value rd-price">
+                                    Rs. {parseFloat(rt.base_price || 0).toLocaleString()}
+                                    <small>/night</small>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -120,16 +134,14 @@ function RoomDetails() {
 
                 {/* Right — Details */}
                 <div className="rd-right">
-                    {room.hotel && (
-                        <p className="rd-hotel-name">🏨 {room.hotel.name} · {room.hotel.city}</p>
+                    {hotel.name && (
+                        <p className="rd-hotel-name">🏨 {hotel.name}{hotel.city ? ` · ${hotel.city}` : ''}</p>
                     )}
-                    <h1 className="rd-title">{room.type_name}</h1>
+                    <h1 className="rd-title">{rt.type_name} — Room {room.room_number}</h1>
 
-                    {room.description && (
-                        <p className="rd-desc">{room.description}</p>
-                    )}
+                    {room.notes && <p className="rd-desc">{room.notes}</p>}
+                    {!room.notes && rt.description && <p className="rd-desc">{rt.description}</p>}
 
-                    {/* Amenities from DB */}
                     {amenities.length > 0 && (
                         <div className="rd-amenities">
                             <h3>Room Amenities & Features</h3>
@@ -143,19 +155,17 @@ function RoomDetails() {
                         </div>
                     )}
 
-                    {/* Pricing */}
                     <div className="rd-pricing-box">
                         <div className="rd-pricing-amount">
-                            Rs. {parseFloat(room.base_price || 0).toLocaleString()}
+                            Rs. {parseFloat(rt.base_price || 0).toLocaleString()}
                             <span>/night</span>
                         </div>
                         <p className="rd-pricing-note">Taxes & fees included · Free cancellation</p>
                     </div>
 
-                    {/* Actions */}
                     <div className="rd-actions">
                         {canBook ? (
-                            <Link to={`/booking?roomTypeId=${room.id}`} className="rd-btn-book">
+                            <Link to={`/booking?roomTypeId=${rt.id}`} className="rd-btn-book">
                                 Book Now
                             </Link>
                         ) : (
@@ -163,8 +173,8 @@ function RoomDetails() {
                                 Managers Cannot Book
                             </button>
                         )}
-                        {room.hotel && (
-                            <Link to={`/hotels/${room.hotel_id}`} className="rd-btn-back">
+                        {hotel.id && (
+                            <Link to={`/hotels/${hotel.id}`} className="rd-btn-back">
                                 ← Back to Hotel
                             </Link>
                         )}

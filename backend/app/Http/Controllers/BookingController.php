@@ -149,7 +149,7 @@ class BookingController extends Controller
     // Get booking details
     public function show(Request $request, $id)
     {
-        $booking = Booking::with(['hotel', 'room', 'payment'])->find($id);
+        $booking = Booking::with(['hotel', 'room', 'room.roomType', 'payment', 'user'])->find($id);
 
         if (!$booking) return response()->json(['message' => 'Not found'], 404);
 

@@ -119,12 +119,20 @@ class PaymentController extends Controller
 
                 // Send booking confirmation email after successful payment
                 try {
-                    $confirmedBooking = Booking::with('hotel')->find($payment->booking_id);
+                    $confirmedBooking = Booking::with(['hotel.admin.user', 'payment'])->find($payment->booking_id);
                     $bookingUser = User::find($confirmedBooking->user_id);
                     if ($confirmedBooking && $bookingUser) {
+                        // Email to customer
                         Mail::to($bookingUser->email)->send(
                             new BookingConfirmationMail($confirmedBooking, $bookingUser, $confirmedBooking->hotel)
                         );
+                        // Email to hotel admin
+                        $hotelAdmin = $confirmedBooking->hotel?->admin?->user;
+                        if ($hotelAdmin && $hotelAdmin->email) {
+                            Mail::to($hotelAdmin->email)->send(
+                                new \App\Mail\HotelBookingNotificationMail($confirmedBooking, $bookingUser, $confirmedBooking->hotel)
+                            );
+                        }
                     }
                 } catch (\Exception $mailEx) {
                     Log::error('Booking confirmation mail failed after payment: ' . $mailEx->getMessage());

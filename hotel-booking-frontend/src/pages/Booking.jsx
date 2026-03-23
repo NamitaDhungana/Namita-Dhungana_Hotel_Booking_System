@@ -337,7 +337,8 @@ function Booking() {
           <div className="bk-room-card">
             <img
               src={
-                roomType?.featured_image ||
+                roomType?.room_image_url ||
+                roomType?.hotel?.featured_image ||
                 "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80"
               }
               alt={roomType?.type_name}

@@ -1,5 +1,10 @@
 import apiClient from './apiClient';
 
+// Use localStorage if remember me, else sessionStorage
+const getStorage = () => {
+    return localStorage.getItem('rememberMe') === 'true' ? localStorage : sessionStorage;
+};
+
 const authService = {
     register: async (userData) => {
         try {
@@ -14,12 +19,15 @@ const authService = {
         }
     },
 
-    login: async (credentials) => {
+    login: async (credentials, rememberMe = false) => {
         try {
             const response = await apiClient.post('/login', credentials);
             if (response.data.token) {
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('user', JSON.stringify(response.data.user));
+                // Always persist rememberMe flag in localStorage so getStorage() works
+                localStorage.setItem('rememberMe', rememberMe ? 'true' : 'false');
+                const storage = rememberMe ? localStorage : sessionStorage;
+                storage.setItem('token', response.data.token);
+                storage.setItem('user', JSON.stringify(response.data.user));
             }
             return response.data;
         } catch (error) {
@@ -33,6 +41,9 @@ const authService = {
         } finally {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            localStorage.removeItem('rememberMe');
         }
     },
 
@@ -46,12 +57,16 @@ const authService = {
     },
 
     isAuthenticated: () => {
-        return !!localStorage.getItem('token');
+        return !!(localStorage.getItem('token') || sessionStorage.getItem('token'));
     },
 
     getCurrentUser: () => {
-        const user = localStorage.getItem('user');
+        const user = localStorage.getItem('user') || sessionStorage.getItem('user');
         return user ? JSON.parse(user) : null;
+    },
+
+    getToken: () => {
+        return localStorage.getItem('token') || sessionStorage.getItem('token');
     },
 
     verifyEmailCode: async (userId, code) => {
