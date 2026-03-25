@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
     FaChartLine, FaHotel, FaBed, FaDoorOpen, FaCalendarCheck,
     FaSignOutAlt, FaStar, FaUsers, FaConciergeBell,
-    FaCog, FaBars, FaTimes, FaUserShield
+    FaCog, FaBars, FaTimes, FaUserShield, FaEnvelope
 } from 'react-icons/fa';
 import authService from '../services/authService';
 import './AdminLayout.css';
@@ -19,12 +19,13 @@ const ADMIN_MENU = [
 ];
 
 const SUPER_ADMIN_MENU = [
-    { to: '/super-admin',          label: 'Dashboard',        icon: <FaChartLine />,   end: true },
-    { to: '/super-admin/users',    label: 'User Management',  icon: <FaUsers /> },
-    { to: '/super-admin/settings', label: 'System Settings',  icon: <FaCog /> },
-    { to: '/super-admin/hotels',   label: 'Hotel Management', icon: <FaHotel /> },
-    { to: '/super-admin/bookings', label: 'All Bookings',     icon: <FaCalendarCheck /> },
-    { to: '/super-admin/reviews',  label: 'Reviews & Ratings',icon: <FaStar /> },
+    { to: '/super-admin',                  label: 'Dashboard',         icon: <FaChartLine />,   end: true },
+    { to: '/super-admin/users',            label: 'User Management',   icon: <FaUsers /> },
+    { to: '/super-admin/settings',         label: 'System Settings',   icon: <FaCog /> },
+    { to: '/super-admin/hotels',           label: 'Hotel Management',  icon: <FaHotel /> },
+    { to: '/super-admin/bookings',         label: 'All Bookings',      icon: <FaCalendarCheck /> },
+    { to: '/super-admin/reviews',          label: 'Reviews & Ratings', icon: <FaStar /> },
+    { to: '/super-admin/contact-queries',  label: 'Contact Queries',   icon: <FaEnvelope /> },
 ];
 
 const AdminLayout = ({ role }) => {

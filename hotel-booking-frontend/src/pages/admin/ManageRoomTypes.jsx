@@ -9,7 +9,7 @@ const ROOM_TYPES = ['Single Room', 'Double Room', 'Deluxe Room', 'Suite', 'Famil
 
 const defaultForm = {
     hotel_id: '', type_name: '', base_price: '', area_sqft: '',
-    max_adults: '', max_children: '', quantity: '', description: '',
+    max_adults: '', max_children: '', description: '',
     amenities: [],
 };
 
@@ -85,7 +85,6 @@ const ManageRoomTypes = () => {
             area_sqft: room.area_sqft || '',
             max_adults: room.max_adults || '',
             max_children: room.max_children ?? '',
-            quantity: room.rooms_count || '',
             description: room.description || '',
             amenities: Array.isArray(room.amenities) ? room.amenities : [],
         });
@@ -211,16 +210,6 @@ const ManageRoomTypes = () => {
                                         onKeyDown={e => ['-','e','E','+','.'].includes(e.key) && e.preventDefault()}
                                         onChange={e => set('max_children', e.target.value)} />
                                 </div>
-
-                                {!editingRoom && (
-                                    <div className="rm-field">
-                                        <label>Quantity (no. of rooms)</label>
-                                        <input type="number" required min="1"
-                                            value={formData.quantity}
-                                            onKeyDown={e => ['-','e','E','+','.'].includes(e.key) && e.preventDefault()}
-                                            onChange={e => set('quantity', e.target.value)} />
-                                    </div>
-                                )}
 
                                 <div className="rm-field full">
                                     <label>Description</label>

@@ -4,6 +4,7 @@ import { DatePicker, message, App } from "antd";
 import dayjs from "dayjs";
 import hotelService from "../services/hotelService";
 import bookingService from "../services/bookingService";
+import settingsService from "../services/settingsService";
 import "./Booking.css";
 
 function Booking() {
@@ -18,6 +19,7 @@ function Booking() {
   const [submitting, setSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(null);
   const [unavailableDates, setUnavailableDates] = useState([]);
+  const [isShutdown, setIsShutdown] = useState(false);
 
   const [formData, setFormData] = useState({
     check_in_date: "",
@@ -38,6 +40,12 @@ function Booking() {
     { id: 104, hotel_id: 3, type_name: "Safari View Suite", base_price: 6800, max_occupancy: 3, hotel: { name: "Park Safari Resort", city: "Chitwan" } },
     { id: 105, hotel_id: 4, type_name: "Mountain View Deluxe", base_price: 9500, max_occupancy: 2, hotel: { name: "Club Himalayan Nagarkot Resort", city: "Nagarkot" } },
   ];
+
+  useEffect(() => {
+    settingsService.get().then(s => {
+      if (s.shutdown_website === '1') setIsShutdown(true);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!roomTypeId) {
@@ -136,6 +144,56 @@ function Booking() {
   };
 
   const today = new Date().toISOString().split("T")[0];
+
+  // ── Shutdown ─────────────────────────────────────────────
+  if (isShutdown) {
+    return (
+      <div style={{
+        minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '40px 20px',
+      }}>
+        <div style={{
+          textAlign: 'center', maxWidth: 520,
+          background: '#fff', borderRadius: 16,
+          padding: '52px 40px',
+          boxShadow: '0 8px 40px rgba(108,92,231,0.10)',
+          border: '1px solid #f0eeff',
+        }}>
+          <div style={{ fontSize: 64, marginBottom: 20 }}>🔧</div>
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: '#2D1B69', margin: '0 0 12px' }}>
+            Bookings Temporarily Unavailable
+          </h2>
+          <p style={{ fontSize: 15, color: '#666', lineHeight: 1.7, margin: '0 0 28px' }}>
+            We're currently performing scheduled maintenance to improve your experience.
+            New bookings are paused during this time. Please check back soon — we'll be up shortly.
+          </p>
+          <div style={{
+            background: '#fdf6ff', border: '1px solid #e8d5ff',
+            borderRadius: 10, padding: '14px 20px',
+            fontSize: 13, color: '#6C5CE7', marginBottom: 32,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}>
+            🕐 We apologize for the inconvenience. Thank you for your patience.
+          </div>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/hotels" style={{
+              background: '#6C5CE7', color: '#fff', padding: '11px 24px',
+              borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 14,
+            }}>
+              Browse Hotels
+            </Link>
+            <Link to="/contact" style={{
+              background: '#fff', color: '#6C5CE7', padding: '11px 24px',
+              borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 14,
+              border: '1.5px solid #6C5CE7',
+            }}>
+              Contact Us
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── Loading ──────────────────────────────────────────────
   if (loading) {

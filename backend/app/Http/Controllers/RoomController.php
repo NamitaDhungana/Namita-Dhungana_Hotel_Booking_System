@@ -47,7 +47,16 @@ class RoomController extends Controller
             }
         }
 
-        return response()->json($query->get());
+        $roomTypes = $query->get();
+
+        // Attach first available room image to each room type
+        $roomTypes->each(function ($rt) {
+            $rt->room_image_url = \App\Models\Room::where('room_type_id', $rt->id)
+                ->whereNotNull('image_url')
+                ->value('image_url');
+        });
+
+        return response()->json($roomTypes);
     }
 
     // Get all individual rooms (admin-scoped)
@@ -119,17 +128,6 @@ class RoomController extends Controller
         $data['max_adults']   = $request->input('max_adults') ?? 1;
 
         $roomType = RoomType::create($data);
-
-        // Auto-create individual room records based on quantity
-        $quantity = $request->quantity ?? 1;
-        for ($i = 1; $i <= $quantity; $i++) {
-            Room::create([
-                'hotel_id'     => $request->hotel_id,
-                'room_type_id' => $roomType->id,
-                'room_number'  => strtoupper(substr(preg_replace('/\s+/', '', $request->type_name), 0, 3)) . '-' . str_pad($i, 2, '0', STR_PAD_LEFT),
-                'status'       => 'available',
-            ]);
-        }
 
         return response()->json($roomType->loadCount('rooms'), 201);
     }

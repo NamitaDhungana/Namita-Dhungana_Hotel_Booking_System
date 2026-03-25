@@ -15,6 +15,11 @@ class BookingController extends Controller
     // Create new booking
     public function store(Request $request)
     {
+        // Check if website is shut down
+        if (\App\Models\SystemSetting::get('shutdown_website') === '1') {
+            return response()->json(['message' => 'Bookings are currently disabled. The website is under maintenance.'], 503);
+        }
+
         $request->validate([
             'hotel_id'       => 'required|exists:hotels,id',
             'room_type_id'   => 'required|exists:room_types,id',

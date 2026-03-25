@@ -30,6 +30,7 @@ import KhaltiReturn from "./pages/KhaltiReturn";
 import VerifyEmail from "./pages/VerifyEmail";
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
 import SystemSettings from "./pages/superadmin/SystemSettings";
+import ContactQueries from "./pages/superadmin/ContactQueries";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const user = authService.getCurrentUser();
@@ -116,6 +117,7 @@ function App() {
               <Route path="hotels" element={<ManageHotels />} />
               <Route path="bookings" element={<ManageBookings />} />
               <Route path="reviews" element={<AdminReviews />} />
+              <Route path="contact-queries" element={<ContactQueries />} />
             </Route>
 
             <Route path="/login" element={<Login />} />

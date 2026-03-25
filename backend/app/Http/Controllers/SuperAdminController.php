@@ -86,9 +86,51 @@ class SuperAdminController extends Controller
         ]);
     }
 
+    // Public settings (no auth — for frontend site title, contact info etc.)
+    public function getPublicSettings()
+    {
+        $keys = ['site_title', 'about_us', 'address', 'phone_numbers',
+                 'facebook_url', 'instagram_url', 'twitter_url',
+                 'google_map', 'map_iframe', 'shutdown_website'];
+        $settings = [];
+        foreach ($keys as $key) {
+            $settings[$key] = \App\Models\SystemSetting::get($key, '');
+        }
+        return response()->json($settings);
+    }
+
     // Get all system settings
     public function getSettings()
     {
-        return response()->json(['message' => 'Settings']);
+        $keys = [
+            'site_title', 'about_us', 'shutdown_website',
+            'address', 'google_map', 'phone_numbers',
+            'facebook_url', 'instagram_url', 'twitter_url', 'map_iframe',
+        ];
+
+        $settings = [];
+        foreach ($keys as $key) {
+            $settings[$key] = \App\Models\SystemSetting::get($key, '');
+        }
+
+        return response()->json($settings);
+    }
+
+    // Update system settings
+    public function updateSettings(Request $request)
+    {
+        $allowed = [
+            'site_title', 'about_us', 'shutdown_website',
+            'address', 'google_map', 'phone_numbers',
+            'facebook_url', 'instagram_url', 'twitter_url', 'map_iframe',
+        ];
+
+        foreach ($allowed as $key) {
+            if ($request->has($key)) {
+                \App\Models\SystemSetting::set($key, $request->input($key));
+            }
+        }
+
+        return response()->json(['message' => 'Settings updated successfully']);
     }
 }

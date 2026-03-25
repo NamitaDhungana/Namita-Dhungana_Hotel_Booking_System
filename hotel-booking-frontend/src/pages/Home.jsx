@@ -115,7 +115,7 @@ function Home() {
           ) : (
             trendingRooms.map((room) => (
               <div className="room-card" key={room.id}>
-                <img src={room.featured_image || "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&w=600&q=390"} alt={room.type_name} />
+                <img src={room.room_image_url || room.hotel?.featured_image || "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&w=600&q=390"} alt={room.type_name} />
                 <div className="room-info">
                   <h3>{room.type_name}</h3>
                   <p>{room.hotel?.name}, {room.hotel?.city}</p>
