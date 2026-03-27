@@ -1,6 +1,7 @@
 import { Routes, Route, Outlet, Navigate } from "react-router-dom";
 import { ConfigProvider, App as AntdApp } from "antd";
 import authService from "./services/authService";
+import { BookingCartProvider } from "./context/BookingCartContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -8,6 +9,7 @@ import Hotels from "./pages/Hotels";
 import RoomDetails from "./pages/RoomDetails";
 import HotelDetails from "./pages/HotelDetails";
 import Booking from "./pages/Booking";
+import MultiBooking from "./pages/MultiBooking";
 import Services from "./pages/Services";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
@@ -28,6 +30,8 @@ import ManageFacilities from "./pages/admin/ManageFacilities";
 import NotificationCenter from "./components/NotificationCenter";
 import KhaltiReturn from "./pages/KhaltiReturn";
 import VerifyEmail from "./pages/VerifyEmail";
+import ReviewPage from "./pages/ReviewPage";
+import SearchResults from "./pages/SearchResults";
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
 import SystemSettings from "./pages/superadmin/SystemSettings";
 import ContactQueries from "./pages/superadmin/ContactQueries";
@@ -53,6 +57,7 @@ function App() {
       }}
     >
       <AntdApp>
+        <BookingCartProvider>
         <main style={{ flex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           <Routes>
             {/* Public layout */}
@@ -73,6 +78,7 @@ function App() {
               <Route path="/hotels" element={<Hotels />} />
               <Route path="/hotels/:id" element={<HotelDetails />} />
               <Route path="/booking" element={<Booking />} />
+              <Route path="/multi-booking" element={<MultiBooking />} />
               <Route path="/services" element={<Services />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
@@ -82,6 +88,8 @@ function App() {
               <Route path="/my-bookings" element={<MyBookings />} />
               <Route path="/payment/khalti/return" element={<KhaltiReturn />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/review/:bookingId" element={<ReviewPage />} />
+              <Route path="/search" element={<SearchResults />} />
             </Route>
 
             {/* Admin routes — Hotel Manager only */}
@@ -124,6 +132,7 @@ function App() {
             <Route path="/register" element={<Register />} />
           </Routes>
         </main>
+        </BookingCartProvider>
       </AntdApp>
     </ConfigProvider>
   );

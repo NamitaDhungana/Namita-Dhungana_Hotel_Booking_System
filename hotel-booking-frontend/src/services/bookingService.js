@@ -28,6 +28,15 @@ const bookingService = {
         }
     },
 
+    createMultiBooking: async (payload) => {
+        try {
+            const response = await apiClient.post('/bookings/multi', payload);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
     cancelBooking: async (id) => {
         try {
             const response = await apiClient.post(`/bookings/${id}/cancel`);

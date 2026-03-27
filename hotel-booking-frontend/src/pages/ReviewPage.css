@@ -1,0 +1,244 @@
+.rp-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    font-size: 16px;
+    color: #888;
+}
+
+.rp-wrapper {
+    min-height: 100vh;
+    background: #f8f9fc;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 16px 60px;
+}
+
+.rp-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(108, 92, 231, 0.1);
+    width: 100%;
+    max-width: 600px;
+    overflow: hidden;
+}
+
+/* Hotel banner */
+.rp-hotel-banner {
+    position: relative;
+    height: 180px;
+    background: #2D1B69;
+    overflow: hidden;
+}
+
+.rp-hotel-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.5;
+}
+
+.rp-hotel-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px 24px;
+    color: #fff;
+}
+
+.rp-hotel-overlay h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.rp-hotel-overlay p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+/* Body */
+.rp-body {
+    padding: 28px 32px 32px;
+}
+
+.rp-stay-info {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.rp-heading {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2D1B69;
+    margin: 0 0 6px;
+}
+
+.rp-subheading {
+    font-size: 14px;
+    color: #888;
+    margin: 0 0 24px;
+}
+
+/* Form */
+.rp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.rp-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rp-field label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.rp-optional {
+    font-weight: 400;
+    color: #aaa;
+    font-size: 12px;
+}
+
+.rp-input,
+.rp-textarea {
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #333;
+    transition: border-color 0.2s;
+    resize: vertical;
+    outline: none;
+}
+
+.rp-input:focus,
+.rp-textarea:focus {
+    border-color: #6C5CE7;
+}
+
+.rp-char-count {
+    font-size: 12px;
+    color: #aaa;
+    text-align: right;
+}
+
+/* Stars */
+.rp-stars {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rp-star {
+    background: none;
+    border: none;
+    font-size: 36px;
+    cursor: pointer;
+    color: #ddd;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s, transform 0.1s;
+}
+
+.rp-star--filled {
+    color: #ffc107;
+}
+
+.rp-star:hover {
+    transform: scale(1.15);
+}
+
+.rp-star-label {
+    font-size: 14px;
+    color: #6C5CE7;
+    font-weight: 600;
+    margin-left: 8px;
+    min-width: 80px;
+}
+
+/* Actions */
+.rp-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.rp-btn {
+    padding: 10px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: #6C5CE7;
+    color: #fff;
+    transition: background 0.2s, opacity 0.2s;
+}
+
+.rp-btn:hover:not(:disabled) {
+    background: #5a4bd1;
+}
+
+.rp-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.rp-btn--ghost {
+    background: transparent;
+    border: 1.5px solid #ddd;
+    color: #555;
+}
+
+.rp-btn--ghost:hover {
+    background: #f5f5f5;
+}
+
+/* Already reviewed */
+.rp-already {
+    text-align: center;
+    padding: 60px 32px;
+}
+
+.rp-already-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #e8f5e9;
+    color: #4caf50;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.rp-already h2 {
+    font-size: 22px;
+    color: #2D1B69;
+    margin-bottom: 10px;
+}
+
+.rp-already p {
+    color: #666;
+    margin-bottom: 24px;
+}

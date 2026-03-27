@@ -626,3 +626,58 @@
     padding: 30px 20px 24px;
   }
 }
+
+/* ── Reserve button ── */
+.bk-btn-reserve {
+  width: 100%;
+  padding: 14px;
+  background: #fff;
+  color: #2D1B69;
+  border: 2px solid #6C5CE7;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.bk-btn-reserve:hover:not(:disabled) {
+  background: #f5f0ff;
+  border-color: #2D1B69;
+}
+.bk-btn-reserve:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Modal divider ── */
+.bk-modal-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  color: #aaa;
+  font-size: 13px;
+}
+.bk-modal-divider::before,
+.bk-modal-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #eee;
+}
+
+/* ── Reserve notice on success page ── */
+.bk-reserve-notice {
+  background: #f0f7ff;
+  border: 1px solid #b3d4ff;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #1a6bbf;
+  margin: 12px 0;
+  text-align: center;
+}

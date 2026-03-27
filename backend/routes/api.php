@@ -27,6 +27,7 @@ Route::get('/hotels/{hotelId}/room-types', [RoomController::class, 'getRoomTypes
 Route::get('/room-types', [RoomController::class, 'getAllRoomTypes'])->middleware('auth:sanctum');
 Route::get('/room-types/{id}', [RoomController::class, 'showRoomType']);
 Route::get('/room-types/{id}/unavailable-dates', [RoomController::class, 'getUnavailableDates']);
+Route::get('/rooms/search', [RoomController::class, 'searchAvailableRooms']);
 Route::get('/rooms/{id}', [RoomController::class, 'showRoom']);
 Route::post('/rooms/availability', [RoomController::class, 'checkAvailability']);
 Route::get('/amenities', [AmenityController::class, 'index']);
@@ -38,13 +39,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/profile', [AuthController::class, 'getProfile']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
+
     Route::post('/bookings', [BookingController::class, 'store'])->middleware('role:customer');
+    Route::post('/bookings/multi', [BookingController::class, 'storeMulti'])->middleware('role:customer');
     Route::get('/user/bookings', [BookingController::class, 'getUserBookings']);
     Route::get('/bookings/{id}', [BookingController::class, 'show']);
     Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel'])->middleware('role:customer');
+
     Route::post('/payments/initiate', [PaymentController::class, 'initiatePayment'])->middleware('role:customer');
     Route::get('/payments/verify', [PaymentController::class, 'verifyPayment'])->middleware('role:customer');
     Route::post('/reviews', [ReviewController::class, 'store'])->middleware('role:customer');
+    Route::get('/review-booking/{bookingId}', [ReviewController::class, 'getBookingForReview'])->middleware('role:customer');
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
@@ -66,6 +71,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/rooms/{id}', [RoomController::class, 'destroyRoom']);
         Route::get('/bookings', [BookingController::class, 'getAllBookings']);
         Route::put('/bookings/{id}/status', [BookingController::class, 'updateStatus']);
+        Route::get('/reviews', [ReviewController::class, 'adminIndex']);
+        Route::put('/reviews/{id}/status', [ReviewController::class, 'updateStatus']);
+        Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
     });
 
     Route::middleware('role:super_admin')->prefix('super-admin')->group(function () {
@@ -81,5 +89,3 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/settings', [SuperAdminController::class, 'updateSettings']);
     });
 });
-
-

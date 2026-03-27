@@ -6,10 +6,11 @@ import settingsService from "../services/settingsService";
 
 function Header() {
   const navigate = useNavigate();
-  const user = authService.getCurrentUser();
+  const [user, setUser] = useState(authService.getCurrentUser());
+  const [siteTitle, setSiteTitle] = useState("StayHub");
+
   const isAdmin = user && (user.role === "admin" || user.role === "super_admin");
   const isCustomer = user && user.role === "customer";
-  const [siteTitle, setSiteTitle] = useState('StayHub');
 
   useEffect(() => {
     settingsService.get().then(s => {
@@ -23,33 +24,36 @@ function Header() {
   const handleLogout = async () => {
     try {
       await authService.logout();
-      navigate("/login");
-      window.location.reload();
-    } catch (error) {
-      console.error("Logout failed:", error);
+    } catch {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      navigate("/login");
-      window.location.reload();
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
     }
+    setUser(null);
+    navigate("/");
   };
 
   return (
     <header className="header">
       <div className="header-container">
-        <h1 className="logo">{siteTitle}</h1>
+        <Link to="/" className="logo">{siteTitle}</Link>
 
         <nav className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/hotels">Hotels</Link>
           {isCustomer && <Link to="/my-bookings">My Bookings</Link>}
-          {isAdmin && <Link to={user.role === 'super_admin' ? '/super-admin' : '/admin'} className="admin-link">Dashboard</Link>}
+          {isAdmin && (
+            <Link to={user.role === "super_admin" ? "/super-admin" : "/admin"} className="admin-link">
+              Dashboard
+            </Link>
+          )}
           {!user && <Link to="/contact">Contact</Link>}
         </nav>
 
         {user ? (
           <div className="user-nav">
-            <span className="user-name">Hello, {user.name}</span>
+            <span className="user-name">👤 {user.name}</span>
             <button className="login-btn" onClick={handleLogout}>Logout</button>
           </div>
         ) : (

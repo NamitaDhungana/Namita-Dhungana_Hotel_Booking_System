@@ -1,61 +1,73 @@
 import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./Home.css";
-import Rating from "./Rating";
-import { Link } from "react-router-dom";
 import hotelService from "../services/hotelService";
+import apiClient from "../services/apiClient";
+
+const FALLBACK_HOTELS = [
+  { id: 1, name: "Pokhara Hotel", city: "Pokhara", featured_image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/f4/24/e2/hotel-pokhara-grande.jpg?w=700" },
+  { id: 2, name: "Lumbini Resort", city: "Lumbini", featured_image: "https://upload.wikimedia.org/wikipedia/commons/1/18/BRP_Lumbini_Mayadevi_temple.jpg" },
+  { id: 3, name: "Kathmandu Inn", city: "Kathmandu", featured_image: "https://www.footprintadventure.com/uploads/media/Monuments%20and%20Culture%20in%20Nepal/boudhanath-stupa-nepal.jpg" },
+  { id: 4, name: "Chitwan Safari", city: "Chitwan", featured_image: "https://www.chitwantourism.com/wp-content/uploads/2023/08/elephant-safari-chitwan.jpg" },
+];
+
+const FALLBACK_ROOMS = [
+  { id: 1, image_url: "https://www.royalorchidhotels.com/images/Rooms/07_58_2020_02_58_06Stay_Club%20Room.jpg", room_type: { type_name: "Royal Orchid Suite", base_price: 4200, max_occupancy: 2, hotel: { name: "Pokhara Hotel", city: "Pokhara" } } },
+  { id: 2, image_url: "https://justallinclusive.com/wp-content/uploads/2018/07/ja-lake-view-hotel-deluxe-resort-course-view-room.jpg", room_type: { type_name: "Lake View Premium", base_price: 3900, max_occupancy: 3, hotel: { name: "Chitwan Safari", city: "Chitwan" } } },
+  { id: 3, image_url: "https://cf.bstatic.com/xdata/images/hotel/max1024x768/528089496.jpg?k=aeb80e18992018606ffce5856bceb9c1f4bb2254dbff5c226b94a32eb6274a72&o", room_type: { type_name: "Modern Paradise", base_price: 3500, max_occupancy: 4, hotel: { name: "Kathmandu Inn", city: "Kathmandu" } } },
+];
+
+const CATEGORY_COLORS = ["luxury", "budget", "family", "resort", "suite", "deluxe"];
+const CATEGORY_ICONS  = ["🏨", "🛏️", "👨‍👩‍👧", "🌿", "✨", "🌟"];
 
 function Home() {
-  const [trendingRooms, setTrendingRooms] = useState([]);
-  const [popularHotels, setPopularHotels] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Static Fallbacks if backend is empty
-  const staticHotels = [
-    { id: 1, name: "Pokhara", city: "Lakeside", featured_image: "https://api.ecoholidaysnepal.com/media/attachments/Pokhara-Davis-Falls-0.jpg" },
-    { id: 2, name: "Lumbini", city: "Mayadevi Temple", featured_image: "https://upload.wikimedia.org/wikipedia/commons/1/18/BRP_Lumbini_Mayadevi_temple.jpg" },
-    { id: 3, name: "Kathmandu", city: "Boudhha", featured_image: "https://www.footprintadventure.com/uploads/media/Monuments%20and%20Culture%20in%20Nepal/boudhanath-stupa-nepal.jpg" },
-    { id: 4, name: "Chitwan", city: "Sauraha", featured_image: "https://www.chitwantourism.com/wp-content/uploads/2023/08/elephant-safari-chitwan.jpg" },
-  ];
+  const [trendingRooms, setTrendingRooms]   = useState([]);
+  const [popularHotels, setPopularHotels]   = useState([]);
+  const [roomTypes, setRoomTypes]           = useState([]);
+  const [loading, setLoading]               = useState(true);
 
-  const staticRooms = [
-    {
-      id: "royal-orchid",
-      type_name: "Royal Orchid Suite",
-      hotel: { name: "Pokhara", city: "Lakeside" },
-      base_price: 4200,
-      featured_image: "https://www.royalorchidhotels.com/images/Rooms/07_58_2020_02_58_06Stay_Club%20Room.jpg"
-    },
-    {
-      id: "lake-view",
-      type_name: "Lake View Premium",
-      hotel: { name: "Chitwan", city: "Sauraha" },
-      base_price: 3900,
-      featured_image: "https://justallinclusive.com/wp-content/uploads/2018/07/ja-lake-view-hotel-deluxe-resort-course-view-room.jpg"
-    },
-    {
-      id: "modern-paradise",
-      type_name: "Modern Paradise",
-      hotel: { name: "Kathmandu", city: "Boudhha" },
-      base_price: 3500,
-      featured_image: "https://cf.bstatic.com/xdata/images/hotel/max1024x768/528089496.jpg?k=aeb80e18992018606ffce5856bceb9c1f4bb2254dbff5c226b94a32eb6274a72&o"
-    }
-  ];
+  // Filter bar state
+  const [checkIn, setCheckIn]   = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [adults, setAdults]     = useState(1);
+  const [children, setChildren] = useState(0);
+
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
-        const [roomsData, hotelsData] = await Promise.all([
-          hotelService.getAllRoomTypes(),
-          hotelService.getHotels()
-        ]);
+        const hotelsData = await hotelService.getHotels();
+        setPopularHotels(hotelsData?.length > 0 ? hotelsData.slice(0, 4) : FALLBACK_HOTELS);
 
-        setTrendingRooms(roomsData && roomsData.length > 0 ? roomsData.slice(0, 3) : staticRooms);
-        setPopularHotels(hotelsData && hotelsData.length > 0 ? hotelsData.slice(0, 4) : staticHotels);
-      } catch (error) {
-        console.error("Home page data fetch failed, using static fallbacks:", error);
-        setTrendingRooms(staticRooms);
-        setPopularHotels(staticHotels);
+        // Fetch room types for categories
+        try {
+          const rtRes = await apiClient.get("/room-types");
+          const rts = rtRes.data.data || rtRes.data;
+          setRoomTypes(Array.isArray(rts) ? rts : []);
+        } catch { setRoomTypes([]); }
+
+        // Collect available rooms from hotels
+        const allRooms = [];
+        for (const hotel of (hotelsData || []).slice(0, 4)) {
+          try {
+            const detail = await apiClient.get(`/hotels/${hotel.id}`);
+            const roomTypesData = detail.data.room_types || detail.data.roomTypes || [];
+            for (const rt of roomTypesData) {
+              for (const room of (rt.rooms || [])) {
+                if (room.status === "available") {
+                  allRooms.push({ ...room, room_type: { ...rt, hotel: { name: hotel.name, city: hotel.city } } });
+                }
+              }
+            }
+          } catch {}
+        }
+        setTrendingRooms(allRooms.slice(0, 3).length > 0 ? allRooms.slice(0, 3) : FALLBACK_ROOMS);
+      } catch {
+        setPopularHotels(FALLBACK_HOTELS);
+        setTrendingRooms(FALLBACK_ROOMS);
       } finally {
         setLoading(false);
       }
@@ -63,114 +75,155 @@ function Home() {
     fetchData();
   }, []);
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (checkIn)   params.set("checkIn", checkIn);
+    if (checkOut)  params.set("checkOut", checkOut);
+    if (adults)    params.set("adults", adults);
+    if (children)  params.set("children", children);
+    navigate(`/search?${params.toString()}`);
+  };
+
   return (
     <div className="home">
 
-      {/* ------------------ HERO SECTION ------------------ */}
+      {/* ── HERO ── */}
       <section className="hero">
         <div className="hero-content">
+          <p className="hero-eyebrow">Welcome to StayHub</p>
           <h1>Find Your Perfect Stay</h1>
-          <p>Discover top-rated rooms, premium hotels, and luxury stays worldwide.</p>
-
+          <p className="hero-sub">Discover top-rated rooms, premium hotels, and luxury stays across Nepal.</p>
           <div className="hero-buttons">
-            <Link to="/booking">
-              <button className="btn-primary">Book Now</button>
-            </Link>
-
-            <Link to="/rooms">
-              <button className="btn-outline">Explore Rooms</button>
-            </Link>
+            <Link to="/hotels"><button className="btn-primary">Explore Hotels</button></Link>
+            <Link to="/contact"><button className="btn-outline">Contact Us</button></Link>
           </div>
-
         </div>
+
+        {/* ── FILTER BAR ── */}
+        <form className="hero-filter" onSubmit={handleSearch}>
+          <div className="hf-field">
+            <label>Check-in</label>
+            <input type="date" min={today} value={checkIn} onChange={e => setCheckIn(e.target.value)} />
+          </div>
+          <div className="hf-divider" />
+          <div className="hf-field">
+            <label>Check-out</label>
+            <input type="date" min={checkIn || today} value={checkOut} onChange={e => setCheckOut(e.target.value)} />
+          </div>
+          <div className="hf-divider" />
+          <div className="hf-field">
+            <label>Adults</label>
+            <select value={adults} onChange={e => setAdults(Number(e.target.value))}>
+              {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+          <div className="hf-divider" />
+          <div className="hf-field">
+            <label>Children</label>
+            <select value={children} onChange={e => setChildren(Number(e.target.value))}>
+              {[0,1,2,3,4].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+          <button type="submit" className="hf-submit">Search</button>
+        </form>
       </section>
 
-      {/* ------------------ POPULAR DESTINATIONS ------------------ */}
+      {/* ── POPULAR DESTINATIONS ── */}
       <section className="section">
         <h2 className="section-title">Popular Destinations</h2>
-        <p className="section-subtitle">Top places travelers love</p>
-
+        <p className="section-subtitle">Top places travellers love</p>
         <div className="destination-grid">
-          {loading ? (
-            <div className="loading" style={{ gridColumn: 'span 4', textAlign: 'center', padding: '40px' }}>Discovering places...</div>
-          ) : (
-            popularHotels.map((hotel) => (
-              <Link to={hotel.id && typeof hotel.id === 'number' ? `/rooms?hotelId=${hotel.id}` : "/rooms"} key={hotel.id} className="destination-card">
-                <img src={hotel.featured_image || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=220"} alt={hotel.name} />
-                <h3>{hotel.city || hotel.name}</h3>
+          {loading
+            ? [1,2,3,4].map(i => <div key={i} className="destination-card destination-skeleton" />)
+            : popularHotels.map(hotel => (
+              <Link to={`/hotels/${hotel.id}`} key={hotel.id} className="destination-card">
+                <img src={hotel.featured_image || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80"} alt={hotel.name} />
+                <div className="destination-overlay">
+                  <h3>{hotel.name}</h3>
+                  <span>📍 {hotel.city}</span>
+                </div>
               </Link>
             ))
-          )}
+          }
         </div>
       </section>
 
-      {/* ------------------ TRENDING ROOMS ------------------ */}
-      <section className="section">
+      {/* ── TRENDING ROOMS ── */}
+      <section className="section section--alt">
         <h2 className="section-title">Trending Rooms</h2>
         <p className="section-subtitle">Most booked rooms this week</p>
-
         <div className="card-grid">
-          {loading ? (
-            <div className="loading" style={{ width: '100%', textAlign: 'center', padding: '40px' }}>Fetching best rooms...</div>
-          ) : (
-            trendingRooms.map((room) => (
-              <div className="room-card" key={room.id}>
-                <img src={room.room_image_url || room.hotel?.featured_image || "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&w=600&q=390"} alt={room.type_name} />
-                <div className="room-info">
-                  <h3>{room.type_name}</h3>
-                  <p>{room.hotel?.name}, {room.hotel?.city}</p>
-                  <Rating value={4.5} />
-                  <p className="price">NPR {parseFloat(room.base_price).toLocaleString()} / night</p>
-                  <Link to={`/booking?roomTypeId=${room.id}`}>
-                    <button className="btn-book">Book Now</button>
-                  </Link>
-                </div>
-              </div>
-            ))
-          )}
+          {loading
+            ? [1,2,3].map(i => <div key={i} className="room-card room-skeleton" />)
+            : trendingRooms.map(room => {
+              const rt = room.room_type || {};
+              const hotel = rt.hotel || {};
+              return (
+                <Link to={`/rooms/${room.id}`} key={room.id} className="room-card">
+                  <div className="room-card-img-wrap">
+                    <img src={room.image_url || "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&w=600&q=80"} alt={rt.type_name} />
+                    <span className="room-card-badge">Available</span>
+                  </div>
+                  <div className="room-info">
+                    <h3>{rt.type_name || "Deluxe Room"}</h3>
+                    <p className="room-hotel-name">🏨 {hotel.name}{hotel.city ? `, ${hotel.city}` : ""}</p>
+                    <div className="room-card-meta">
+                      {rt.max_occupancy && <span>👥 {rt.max_occupancy} guests</span>}
+                      {rt.bed_type && <span>🛏️ {rt.bed_type}</span>}
+                    </div>
+                    <p className="price">NPR {parseFloat(rt.base_price || 0).toLocaleString()} <span>/ night</span></p>
+                    <span className="btn-book">View Room →</span>
+                  </div>
+                </Link>
+              );
+            })
+          }
         </div>
       </section>
 
-      {/* ------------------ EXPLORE CATEGORIES ------------------ */}
+      {/* ── EXPLORE ROOM TYPES (dynamic from DB) ── */}
       <section className="section">
-        <h2 className="section-title">Explore by Category</h2>
+        <h2 className="section-title">Explore Room Types</h2>
         <p className="section-subtitle">Find exactly what you're looking for</p>
-
         <div className="category-grid">
-
-          <Link to="/rooms?category=Luxury" className="category-card luxury">
-            <h3>Luxury Hotels</h3>
-            <p>Experience comfort & premium stays</p>
-          </Link>
-
-          <Link to="/rooms?category=Budget" className="category-card budget">
-            <h3>Budget Rooms</h3>
-            <p>Affordable stays for everyone</p>
-          </Link>
-
-          <Link to="/rooms?category=Family" className="category-card family">
-            <h3>Family Suites</h3>
-            <p>Spacious and comfortable rooms</p>
-          </Link>
-
-          <Link to="/rooms?category=Resort" className="category-card resort">
-            <h3>Resorts & Spa</h3>
-            <p>Relax and enjoy peaceful retreat</p>
-          </Link>
+          {loading
+            ? [1,2,3,4].map(i => <div key={i} className="category-card luxury" style={{ opacity: 0.4 }} />)
+            : roomTypes.length > 0
+              ? roomTypes.slice(0, 6).map((rt, i) => (
+                <Link
+                  to={`/hotels/${rt.hotel_id}`}
+                  key={rt.id}
+                  className={`category-card ${CATEGORY_COLORS[i % CATEGORY_COLORS.length]}`}
+                >
+                  <div className="category-icon">{CATEGORY_ICONS[i % CATEGORY_ICONS.length]}</div>
+                  <h3>{rt.type_name}</h3>
+                  <p>From NPR {parseFloat(rt.base_price).toLocaleString()} / night</p>
+                  {rt.hotel && <span className="category-hotel">🏨 {rt.hotel.name}, {rt.hotel.city}</span>}
+                </Link>
+              ))
+              : (
+                <>
+                  <Link to="/hotels?type=hotel" className="category-card luxury"><div className="category-icon">🏨</div><h3>Luxury Hotels</h3><p>Premium comfort stays</p></Link>
+                  <Link to="/hotels?type=hostel" className="category-card budget"><div className="category-icon">🛏️</div><h3>Budget Rooms</h3><p>Affordable for everyone</p></Link>
+                  <Link to="/hotels?type=resort" className="category-card family"><div className="category-icon">👨‍👩‍👧</div><h3>Family Suites</h3><p>Spacious & comfortable</p></Link>
+                  <Link to="/hotels?type=resort" className="category-card resort"><div className="category-icon">🌿</div><h3>Resorts & Spa</h3><p>Relax & unwind</p></Link>
+                </>
+              )
+          }
         </div>
       </section>
 
-      {/* ------------------ EXCLUSIVE OFFER ------------------ */}
+      {/* ── CTA ── */}
       <section className="offer">
-        <h2 className="offer-title">Ready to Book Your Dream Vacation?</h2>
-        <p>Join thousands of happy travelers booking comfort & luxury.</p>
-
-        <div className="offer-btns">
-          <button className="btn-primary">Get Started</button>
-          <Link to="/contact">
-            <button className="btn-outline">Email Us</button>
-          </Link>
-
+        <div className="offer-inner">
+          <p className="offer-eyebrow">Start Your Journey</p>
+          <h2 className="offer-title">Ready to Book Your Dream Vacation?</h2>
+          <p>Join thousands of happy travellers booking comfort & luxury across Nepal.</p>
+          <div className="offer-btns">
+            <Link to="/hotels"><button className="btn-primary">Browse Hotels</button></Link>
+            <Link to="/contact"><button className="btn-outline btn-outline--dark">Contact Us</button></Link>
+          </div>
         </div>
       </section>
 

@@ -101,6 +101,24 @@ function RoomDetails() {
                                 <div className="rd-fact-value">{rt.max_occupancy ?? '—'}</div>
                             </div>
                         </div>
+                        {rt.max_adults != null && (
+                            <div className="rd-fact">
+                                <span className="rd-fact-icon">🧑</span>
+                                <div>
+                                    <div className="rd-fact-label">Max Adults</div>
+                                    <div className="rd-fact-value">{rt.max_adults}</div>
+                                </div>
+                            </div>
+                        )}
+                        {rt.max_children != null && (
+                            <div className="rd-fact">
+                                <span className="rd-fact-icon">👶</span>
+                                <div>
+                                    <div className="rd-fact-label">Max Children</div>
+                                    <div className="rd-fact-value">{rt.max_children}</div>
+                                </div>
+                            </div>
+                        )}
                         {rt.area_sqft && (
                             <div className="rd-fact">
                                 <span className="rd-fact-icon">📐</span>

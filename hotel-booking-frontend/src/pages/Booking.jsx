@@ -22,15 +22,16 @@ function Booking() {
   const [isShutdown, setIsShutdown] = useState(false);
 
   const [formData, setFormData] = useState({
-    check_in_date: "",
-    check_out_date: "",
-    num_guests: 1,
+    check_in_date:  searchParams.get("checkIn")  || "",
+    check_out_date: searchParams.get("checkOut") || "",
+    num_guests:     Number(searchParams.get("adults") || 1),
   });
 
   // Khalti modal state
   const [showPayModal, setShowPayModal] = useState(false);
   const [pendingBooking, setPendingBooking] = useState(null);
   const [khaltiLoading, setKhaltiLoading] = useState(false);
+  const [reserveLoading, setReserveLoading] = useState(false);
 
   // Fallback static rooms matching Rooms.jsx
   const fallbackRoomTypes = [
@@ -140,6 +141,34 @@ function Booking() {
       }
     } finally {
       setKhaltiLoading(false);
+    }
+  };
+
+  const handleReserve = async () => {
+    try {
+      setReserveLoading(true);
+      const result = await bookingService.createBooking({
+        hotel_id: roomType.hotel_id,
+        room_type_id: parseInt(roomTypeId),
+        check_in_date: formData.check_in_date,
+        check_out_date: formData.check_out_date,
+        num_guests: parseInt(formData.num_guests),
+        total_amount: getTotal(),
+        payment_method: "cash",
+        is_reservation: true,
+      });
+      setShowPayModal(false);
+      setBookingSuccess(result.booking);
+    } catch (err) {
+      setShowPayModal(false);
+      const msg = err?.message || "Reservation failed. Please try again.";
+      if (msg.toLowerCase().includes("unauthenticated") || err?.status === 401) {
+        setError("auth_fail");
+      } else {
+        setError("book_fail:" + msg);
+      }
+    } finally {
+      setReserveLoading(false);
     }
   };
 
@@ -260,12 +289,20 @@ function Booking() {
 
   // ── Booking Success ───────────────────────────────────────
   if (bookingSuccess) {
+    const isReservation = bookingSuccess.status === 'reserved' || bookingSuccess.payment_method === 'cash';
     return (
       <div className="bk-success-page">
         <div className="bk-success-card">
-          <div className="bk-success-icon">✅</div>
-          <h2>Booking Confirmed!</h2>
-          <p>Your reservation has been placed successfully.</p>
+          <div className="bk-success-icon">{isReservation ? '🏨' : '✅'}</div>
+          <h2>{isReservation ? 'Room Reserved!' : 'Booking Confirmed!'}</h2>
+          <p>{isReservation
+            ? 'Your room is reserved. Please pay at the hotel on check-in.'
+            : 'Your reservation has been placed successfully.'}</p>
+          {isReservation && (
+            <div className="bk-reserve-notice">
+              💡 Bring this reference to the front desk. Payment is due on arrival.
+            </div>
+          )}
           <div className="bk-success-ref">
             Booking Reference: <strong>{bookingSuccess.booking_reference}</strong>
           </div>
@@ -276,9 +313,10 @@ function Booking() {
             <div><span>Check-out</span><strong>{formData.check_out_date}</strong></div>
             <div><span>Guests</span><strong>{formData.num_guests}</strong></div>
             <div><span>Total</span><strong>Rs. {getTotal().toLocaleString()}</strong></div>
+            {isReservation && <div><span>Payment</span><strong>Pay at Hotel</strong></div>}
           </div>
           <div className="bk-success-actions">
-            <Link to="/userProfile" className="bk-btn-primary">View My Bookings</Link>
+            <Link to="/my-bookings" className="bk-btn-primary">View My Bookings</Link>
             <Link to="/hotels" className="bk-btn-outline">Browse More Hotels</Link>
           </div>
         </div>
@@ -485,7 +523,7 @@ function Booking() {
             <button
               className="bk-btn-khalti"
               onClick={handleKhaltiPay}
-              disabled={khaltiLoading}
+              disabled={khaltiLoading || reserveLoading}
             >
               {khaltiLoading ? (
                 <><span className="bk-btn-spinner"></span> Redirecting to Khalti...</>
@@ -499,6 +537,22 @@ function Booking() {
                   />
                   Pay Rs. {getTotal().toLocaleString()} via Khalti
                 </>
+              )}
+            </button>
+
+            <div className="bk-modal-divider">
+              <span>or</span>
+            </div>
+
+            <button
+              className="bk-btn-reserve"
+              onClick={handleReserve}
+              disabled={khaltiLoading || reserveLoading}
+            >
+              {reserveLoading ? (
+                <><span className="bk-btn-spinner"></span> Reserving...</>
+              ) : (
+                <>🏨 Reserve Now — Pay at Hotel</>
               )}
             </button>
 

@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
 import hotelService from "../services/hotelService";
 import authService from "../services/authService";
+import apiClient from "../services/apiClient";
+import { useBookingCart } from "../context/BookingCartContext";
 import "./HotelDetails.css";
 
 const AMENITY_ICONS = {
@@ -26,15 +28,37 @@ const FALLBACK_ROOM_IMG = "https://images.unsplash.com/photo-1611892440504-42a79
 
 function HotelDetails() {
     const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const user = authService.getCurrentUser();
     const canBook = !user || user.role === 'customer';
+    const { cart, addRoom, removeRoom, isInCart } = useBookingCart();
+
+    // Carry forward search params from home filter
+    const checkIn  = searchParams.get("checkIn")  || "";
+    const checkOut = searchParams.get("checkOut") || "";
+    const adults   = searchParams.get("adults")   || "";
+    const children = searchParams.get("children") || "";
+
+    const bookingQuery = new URLSearchParams();
+    if (checkIn)  bookingQuery.set("checkIn", checkIn);
+    if (checkOut) bookingQuery.set("checkOut", checkOut);
+    if (adults)   bookingQuery.set("adults", adults);
+    if (children) bookingQuery.set("children", children);
+    const bookingQueryStr = bookingQuery.toString();
 
     const [hotel, setHotel] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const [reviews, setReviews] = useState([]);
+    const [reviewsLoading, setReviewsLoading] = useState(false);
+    const [reviewPage, setReviewPage] = useState(1);
+    const [reviewMeta, setReviewMeta] = useState(null);
+
     const [maxPrice, setMaxPrice] = useState(null);
     const [minGuests, setMinGuests] = useState(null);
     const [selectedAmenity, setSelectedAmenity] = useState("");
+    const [cartError, setCartError] = useState(null); // { roomTypeId, message }
 
     useEffect(() => {
         hotelService.getHotelDetails(id)
@@ -50,14 +74,23 @@ function HotelDetails() {
             .finally(() => setLoading(false));
     }, [id]);
 
-    // Flatten all individual rooms from all room types
+    useEffect(() => {
+        setReviewsLoading(true);
+        apiClient.get(`/hotels/${id}/reviews?page=${reviewPage}`)
+            .then(res => {
+                setReviews(res.data.data || []);
+                setReviewMeta(res.data);
+            })
+            .catch(() => {})
+            .finally(() => setReviewsLoading(false));
+    }, [id, reviewPage]);
+
     const allRooms = useMemo(() => {
         if (!hotel?.roomTypes) return [];
         const rooms = [];
         hotel.roomTypes.forEach(rt => {
             if (Array.isArray(rt.rooms) && rt.rooms.length > 0) {
                 rt.rooms.forEach(room => {
-                    // Only show available rooms to customers
                     if (room.status === 'available') {
                         rooms.push({ ...room, roomType: rt });
                     }
@@ -67,7 +100,6 @@ function HotelDetails() {
         return rooms;
     }, [hotel]);
 
-    // Collect all unique amenity names across room types for filter
     const allRoomAmenities = useMemo(() => {
         if (!hotel?.roomTypes) return [];
         const set = new Set();
@@ -105,14 +137,11 @@ function HotelDetails() {
     if (!hotel) return <div className="error-state">Hotel not found.</div>;
 
     return (
+        <>
         <div className="hotel-details-page">
             {/* Hero */}
             <div className="hotel-hero">
-                <img
-                    src={hotel.featured_image || FALLBACK_HOTEL.featured_image}
-                    alt={hotel.name}
-                    className="hero-image"
-                />
+                <img src={hotel.featured_image || FALLBACK_HOTEL.featured_image} alt={hotel.name} className="hero-image" />
                 <div className="hero-overlay">
                     <div className="hero-content">
                         <div className="hero-breadcrumb">
@@ -134,7 +163,6 @@ function HotelDetails() {
                         <h2>About this {hotel.property_type || "Hotel"}</h2>
                         <p>{hotel.description || FALLBACK_HOTEL.description}</p>
                     </div>
-
                     <div className="hotel-amenities">
                         <h3>Hotel Facilities</h3>
                         {hotelAmenities.length > 0 ? (
@@ -156,10 +184,8 @@ function HotelDetails() {
 
                 {/* Rooms Section */}
                 <div className="hotel-rooms-wrapper">
-                    {/* Filter Sidebar */}
                     <aside className="rooms-filter-sidebar">
                         <h3>Filter Rooms</h3>
-
                         <div className="filter-group">
                             <label>Max Price / Night</label>
                             {maxPrice === null ? (
@@ -182,7 +208,6 @@ function HotelDetails() {
                                 </>
                             )}
                         </div>
-
                         <div className="filter-group">
                             <label>Minimum Guests</label>
                             <select
@@ -196,7 +221,6 @@ function HotelDetails() {
                                 <option value={4}>4+ Guests</option>
                             </select>
                         </div>
-
                         {allRoomAmenities.length > 0 && (
                             <div className="filter-group">
                                 <label>Amenity</label>
@@ -212,7 +236,6 @@ function HotelDetails() {
                                 </select>
                             </div>
                         )}
-
                         {(maxPrice !== null || minGuests !== null || selectedAmenity) && (
                             <button
                                 className="filter-reset"
@@ -221,17 +244,14 @@ function HotelDetails() {
                                 Clear All Filters
                             </button>
                         )}
-
                         <p className="filter-count">
                             {filteredRooms.length} of {allRooms.length} room{allRooms.length !== 1 ? "s" : ""}
                         </p>
                     </aside>
 
-                    {/* Rooms List */}
                     <div className="hotel-rooms-section">
                         <h2>Available Rooms</h2>
                         <p className="section-subtitle">Select a room to begin your reservation</p>
-
                         <div className="rooms-list">
                             {filteredRooms.length > 0 ? (
                                 filteredRooms.map(room => {
@@ -256,18 +276,13 @@ function HotelDetails() {
                                                         <span className="per-night">/ night</span>
                                                     </div>
                                                 </div>
-
                                                 <div className="room-features">
                                                     <span>👥 {rt.max_occupancy} Guests</span>
                                                     {rt.area_sqft && <span>📐 {rt.area_sqft} sqft</span>}
                                                     {rt.bed_type && <span>🛏️ {rt.bed_type}</span>}
                                                     {room.floor && <span>🏢 Floor {room.floor}</span>}
                                                 </div>
-
-                                                {room.notes && (
-                                                    <p className="room-notes">{room.notes}</p>
-                                                )}
-
+                                                {room.notes && <p className="room-notes">{room.notes}</p>}
                                                 {amenities.length > 0 && (
                                                     <div className="room-amenity-tags">
                                                         {amenities.slice(0, 4).map((a, i) => (
@@ -282,15 +297,47 @@ function HotelDetails() {
                                                         )}
                                                     </div>
                                                 )}
-
                                                 <div className="room-action">
-                                                    <Link to={`/rooms/${room.id}`} className="btn-details">
-                                                        View Details
-                                                    </Link>
+                                                    <Link to={`/rooms/${room.id}`} className="btn-details">View Details</Link>
                                                     {canBook ? (
-                                                        <Link to={`/booking?roomTypeId=${rt.id}`}>
-                                                            <button className="btn-reserve">Book Now</button>
-                                                        </Link>
+                                                        <>
+                                                            <Link to={`/booking?roomTypeId=${rt.id}${bookingQueryStr ? `&${bookingQueryStr}` : ''}`}>
+                                                                <button className="btn-reserve">Book Now</button>
+                                                            </Link>
+                                                            <button
+                                                                className={`btn-cart ${isInCart(rt.id) ? 'btn-cart--added' : ''}`}
+                                                                onClick={() => {
+                                                                    if (isInCart(rt.id)) {
+                                                                        removeRoom(rt.id);
+                                                                        setCartError(null);
+                                                                        return;
+                                                                    }
+                                                                    const result = addRoom({
+                                                                        roomTypeId: rt.id,
+                                                                        hotelId: hotel.id,
+                                                                        roomTypeName: rt.type_name,
+                                                                        hotelName: hotel.name,
+                                                                        basePrice: rt.base_price,
+                                                                        maxOccupancy: rt.max_occupancy,
+                                                                    });
+                                                                    if (!result.ok) {
+                                                                        if (result.reason === 'different_hotel') {
+                                                                            setCartError({ roomTypeId: rt.id, message: `Your cart already has rooms from "${result.hotelName}". You can only book rooms from one hotel at a time. Clear your cart first.` });
+                                                                        }
+                                                                    } else {
+                                                                        setCartError(null);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {isInCart(rt.id) ? '✓ In Cart' : '+ Add to Cart'}
+                                                            </button>
+                                                            {cartError?.roomTypeId === rt.id && (
+                                                                <div className="cart-error-msg">
+                                                                    ⚠️ {cartError.message}
+                                                                    <button className="cart-error-dismiss" onClick={() => setCartError(null)}>✕</button>
+                                                                </div>
+                                                            )}
+                                                        </>
                                                     ) : (
                                                         <button className="btn-reserve btn-reserve--disabled" disabled>
                                                             Managers Restricted
@@ -317,8 +364,72 @@ function HotelDetails() {
                         </div>
                     </div>
                 </div>
+
+                {/* Guest Reviews */}
+                <div className="hd-reviews-section">
+                    <div className="hd-reviews-header">
+                        <h2>Guest Reviews</h2>
+                        {reviewMeta && reviewMeta.total > 0 && (
+                            <span className="hd-reviews-count">{reviewMeta.total} review{reviewMeta.total !== 1 ? 's' : ''}</span>
+                        )}
+                    </div>
+
+                    {reviewsLoading ? (
+                        <p className="hd-reviews-loading">Loading reviews...</p>
+                    ) : reviews.length === 0 ? (
+                        <div className="hd-reviews-empty">
+                            <span>⭐</span>
+                            <p>No reviews yet. Be the first to share your experience!</p>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="hd-reviews-list">
+                                {reviews.map(review => (
+                                    <div key={review.review_id} className="hd-review-card">
+                                        <div className="hd-review-top">
+                                            <div className="hd-reviewer-avatar">
+                                                {review.user?.name?.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="hd-reviewer-info">
+                                                <span className="hd-reviewer-name">{review.user?.name}</span>
+                                                <span className="hd-review-date">
+                                                    {new Date(review.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                                </span>
+                                            </div>
+                                            <div className="hd-review-stars">
+                                                {[1,2,3,4,5].map(s => (
+                                                    <span key={s} className={s <= review.rating ? 'hd-star hd-star--on' : 'hd-star'}>★</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        {review.title && <p className="hd-review-title">{review.title}</p>}
+                                        {review.comment && <p className="hd-review-comment">{review.comment}</p>}
+                                    </div>
+                                ))}
+                            </div>
+                            {reviewMeta && reviewMeta.last_page > 1 && (
+                                <div className="hd-reviews-pagination">
+                                    <button className="hd-page-btn" disabled={reviewPage === 1} onClick={() => setReviewPage(p => p - 1)}>← Prev</button>
+                                    <span>{reviewPage} / {reviewMeta.last_page}</span>
+                                    <button className="hd-page-btn" disabled={reviewPage === reviewMeta.last_page} onClick={() => setReviewPage(p => p + 1)}>Next →</button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
         </div>
+
+        {/* Floating cart bar */}
+        {canBook && cart.length > 0 && (
+            <div className="hd-cart-bar">
+                <span className="hd-cart-count">🛒 {cart.length} room{cart.length > 1 ? 's' : ''} in cart</span>
+                <button className="hd-cart-btn" onClick={() => navigate('/multi-booking')}>
+                    Book All Rooms →
+                </button>
+            </div>
+        )}
+        </>
     );
 }
 

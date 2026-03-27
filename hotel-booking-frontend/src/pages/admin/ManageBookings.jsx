@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { App, Modal } from 'antd';
-import { FaCheck, FaTimes, FaEye } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaEye, FaSignInAlt, FaSignOutAlt } from 'react-icons/fa';
 import bookingService from '../../services/bookingService';
 import adminService from '../../services/adminService';
 import './ManageHotels.css';
@@ -11,6 +11,7 @@ const ManageBookings = () => {
     const [loading, setLoading] = useState(true);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
+    const [updatingId, setUpdatingId] = useState(null);
 
     useEffect(() => {
         fetchBookings();
@@ -28,12 +29,15 @@ const ManageBookings = () => {
     };
 
     const handleStatusUpdate = async (id, status) => {
+        setUpdatingId(id);
         try {
             await adminService.updateBookingStatus(id, status);
-            message.success(`Booking ${status} successfully!`);
+            message.success(`Booking marked as ${status.replace('_', ' ')} successfully!`);
             fetchBookings();
         } catch (error) {
             message.error("Status update failed");
+        } finally {
+            setUpdatingId(null);
         }
     };
 
@@ -87,11 +91,35 @@ const ManageBookings = () => {
                                     </span>
                                 </td>
                                 <td className="actions">
-                                    {booking.status === 'pending' && (
+                                    {(booking.status === 'pending') && (
                                         <>
-                                            <button className="edit-icon" title="Confirm" onClick={() => handleStatusUpdate(booking.id, 'confirmed')}><FaCheck /></button>
-                                            <button className="delete-icon" title="Cancel" onClick={() => handleStatusUpdate(booking.id, 'cancelled')}><FaTimes /></button>
+                                            <button className="edit-icon" title="Confirm" disabled={updatingId === booking.id} onClick={() => handleStatusUpdate(booking.id, 'confirmed')}>
+                                                {updatingId === booking.id ? '…' : <FaCheck />}
+                                            </button>
+                                            <button className="delete-icon" title="Cancel" disabled={updatingId === booking.id} onClick={() => handleStatusUpdate(booking.id, 'cancelled')}>
+                                                <FaTimes />
+                                            </button>
                                         </>
+                                    )}
+                                    {booking.status === 'reserved' && (
+                                        <>
+                                            <button className="edit-icon" title="Confirm (payment received)" disabled={updatingId === booking.id} onClick={() => handleStatusUpdate(booking.id, 'confirmed')}>
+                                                {updatingId === booking.id ? '…' : <FaCheck />}
+                                            </button>
+                                            <button className="delete-icon" title="Cancel" disabled={updatingId === booking.id} onClick={() => handleStatusUpdate(booking.id, 'cancelled')}>
+                                                <FaTimes />
+                                            </button>
+                                        </>
+                                    )}
+                                    {booking.status === 'confirmed' && (
+                                        <button className="checkin-icon" title="Mark as Checked In" disabled={updatingId === booking.id} onClick={() => handleStatusUpdate(booking.id, 'checked_in')}>
+                                            {updatingId === booking.id ? '…' : <FaSignInAlt />}
+                                        </button>
+                                    )}
+                                    {booking.status === 'checked_in' && (
+                                        <button className="checkout-icon" title="Mark as Checked Out" disabled={updatingId === booking.id} onClick={() => handleStatusUpdate(booking.id, 'checked_out')}>
+                                            {updatingId === booking.id ? '…' : <FaSignOutAlt />}
+                                        </button>
                                     )}
                                     <button className="view-icon" title="View Details" onClick={() => handleViewDetails(booking.id)}><FaEye /></button>
                                 </td>
@@ -127,6 +155,18 @@ const ManageBookings = () => {
                                 <span className={`status-badge ${selectedBooking.status}`}>{selectedBooking.status}</span>
                             </div>
                             <div className="detail-row"><span>Total Amount</span><strong>Rs. {Number(selectedBooking.total_amount).toLocaleString()}</strong></div>
+                            {selectedBooking.payment_method && (
+                                <div className="detail-row"><span>Payment Method</span>
+                                    <strong style={{ textTransform: 'capitalize' }}>
+                                        {selectedBooking.payment_method === 'cash' ? '💵 Pay at Hotel' : selectedBooking.payment_method}
+                                    </strong>
+                                </div>
+                            )}
+                            {selectedBooking.status === 'reserved' && (
+                                <div className="detail-row" style={{ background: '#fffbe6', borderRadius: 6, padding: '6px 10px', marginTop: 4 }}>
+                                    <span style={{ color: '#b8860b' }}>⚠️ Awaiting payment at hotel</span>
+                                </div>
+                            )}
                         </section>
 
                         {selectedBooking.payment && (
@@ -171,15 +211,20 @@ const ManageBookings = () => {
                     display: inline-block;
                 }
                 .status-badge.pending    { background: rgba(246,194,62,0.1);  color: #F5C518; }
+                .status-badge.reserved   { background: rgba(52,152,219,0.1);  color: #2980b9; }
                 .status-badge.confirmed  { background: rgba(28,200,138,0.1);  color: #1cc88a; }
                 .status-badge.cancelled  { background: rgba(231,74,59,0.1);   color: #e74a3b; }
                 .status-badge.completed  { background: rgba(108,92,231,0.1);  color: #6C5CE7; }
                 .status-badge.checked_in { background: rgba(52,152,219,0.1);  color: #3498db; }
+                .status-badge.checked_out { background: rgba(108,92,231,0.1); color: #6C5CE7; }
                 .view-icon  { color: #858796; }
                 .edit-icon  { color: #6C5CE7; }
                 .delete-icon { color: #e74a3b; }
+                .checkin-icon { color: #1cc88a; }
+                .checkout-icon { color: #6C5CE7; }
                 .actions button { transition: all 0.2s; }
-                .actions button:hover { transform: scale(1.2); }
+                .actions button:hover:not(:disabled) { transform: scale(1.2); }
+                .actions button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
                 .booking-detail-modal .detail-section-title {
                     font-size: 0.85rem;

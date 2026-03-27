@@ -50,6 +50,9 @@ function MyBookings() {
               </div>
               <div className="mb-card-right">
                 <span className={`mb-badge mb-badge-${booking.status}`}>{booking.status}</span>
+                {booking.status === 'reserved' && (
+                  <div className="mb-reserve-note">💵 Pay at hotel on check-in</div>
+                )}
                 <div className="mb-amount">Rs. {Number(booking.total_amount).toLocaleString()}</div>
                 <button className="mb-view-btn" onClick={() => handleViewDetails(booking.id)}>
                   View Details
@@ -83,6 +86,12 @@ function MyBookings() {
                 <span className={`mb-badge mb-badge-${selectedBooking.status}`}>{selectedBooking.status}</span>
               </div>
               <div className="mb-detail-row"><span>Total Amount</span><strong>Rs. {Number(selectedBooking.total_amount).toLocaleString()}</strong></div>
+              {selectedBooking.payment_method === 'cash' && (
+                <div className="mb-detail-row">
+                  <span>Payment</span>
+                  <strong style={{ color: '#2980b9' }}>💵 Pay at Hotel on Check-in</strong>
+                </div>
+              )}
             </section>
 
             {selectedBooking.payment && (

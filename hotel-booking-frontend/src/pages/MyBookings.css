@@ -140,3 +140,18 @@
     padding-top: 12px;
   }
 }
+
+.mb-badge-reserved {
+  background: rgba(52, 152, 219, 0.12);
+  color: #2980b9;
+}
+
+.mb-reserve-note {
+  font-size: 11px;
+  color: #2980b9;
+  background: #eaf4fd;
+  border-radius: 6px;
+  padding: 4px 8px;
+  margin-top: 4px;
+  font-weight: 600;
+}

@@ -529,3 +529,253 @@
     font-style: italic;
     line-height: 1.5;
 }
+
+/* ── Reviews Section ───────────────────────────────────────── */
+.hd-reviews-section {
+    background: #fff;
+    border-radius: 20px;
+    padding: 36px 40px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+}
+
+.hd-reviews-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.hd-reviews-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem;
+    color: #2D1B69;
+    margin: 0;
+}
+
+.hd-reviews-count {
+    background: #f0edff;
+    color: #6C5CE7;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.hd-reviews-loading {
+    color: #aaa;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.hd-reviews-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #bbb;
+}
+
+.hd-reviews-empty span {
+    font-size: 36px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.hd-reviews-empty p {
+    font-size: 15px;
+    color: #aaa;
+    margin: 0;
+}
+
+.hd-reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.hd-review-card {
+    padding: 20px 24px;
+    border-radius: 14px;
+    background: #fafbff;
+    border: 1px solid #ebf0ff;
+}
+
+.hd-review-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.hd-reviewer-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6C5CE7, #a29bfe);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hd-reviewer-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.hd-reviewer-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2D1B69;
+}
+
+.hd-review-date {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.hd-review-stars {
+    display: flex;
+    gap: 2px;
+}
+
+.hd-star {
+    font-size: 18px;
+    color: #ddd;
+}
+
+.hd-star--on {
+    color: #ffc107;
+}
+
+.hd-review-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 6px;
+}
+
+.hd-review-comment {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.hd-reviews-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 28px;
+    font-size: 14px;
+    color: #888;
+}
+
+.hd-page-btn {
+    padding: 8px 20px;
+    border: 1.5px solid #e0d9ff;
+    border-radius: 8px;
+    background: #fff;
+    color: #6C5CE7;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hd-page-btn:hover:not(:disabled) {
+    background: #6C5CE7;
+    color: #fff;
+}
+
+.hd-page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ── Cart button on room cards ─────────────────────────────── */
+.btn-cart {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1.5px solid #6C5CE7;
+    background: #fff;
+    color: #6C5CE7;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-cart:hover { background: #f0eeff; }
+.btn-cart--added {
+    background: #6C5CE7;
+    color: #fff;
+}
+.btn-cart--added:hover { background: #5a4bd1; }
+
+/* ── Floating cart bar ─────────────────────────────────────── */
+.hd-cart-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2D1B69;
+    color: #fff;
+    border-radius: 50px;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 8px 32px rgba(44,27,105,0.35);
+    z-index: 1000;
+    animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+    to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}
+.hd-cart-count { font-size: 15px; font-weight: 600; }
+.hd-cart-btn {
+    background: #6C5CE7;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 9px 22px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.hd-cart-btn:hover { background: #a29bfe; }
+
+/* ── Cart error inline message ─────────────────────────────── */
+.cart-error-msg {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #7a5c00;
+    line-height: 1.5;
+    margin-top: 8px;
+    width: 100%;
+}
+.cart-error-dismiss {
+    background: none;
+    border: none;
+    color: #7a5c00;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    margin-left: auto;
+    flex-shrink: 0;
+    line-height: 1;
+}
+.cart-error-dismiss:hover { color: #333; }

@@ -209,7 +209,7 @@ class RoomController extends Controller
         return response()->json($room);
     }
 
-    // Check room availability
+    // Check room availability (per hotel)
     public function checkAvailability(Request $request)
     {
         $request->validate([
@@ -231,6 +231,34 @@ class RoomController extends Controller
             ->count();
 
         return response()->json(['available_rooms' => $availableRooms]);
+    }
+
+    // Global room search across all hotels
+    public function searchAvailableRooms(Request $request)
+    {
+        $request->validate([
+            'check_in'  => 'required|date',
+            'check_out' => 'required|date|after:check_in',
+            'guests'    => 'nullable|integer|min:1',
+        ]);
+
+        $checkIn  = $request->check_in;
+        $checkOut = $request->check_out;
+        $guests   = $request->guests ?? 1;
+
+        $rooms = Room::with(['roomType.hotel', 'hotel'])
+            ->where('status', 'available')
+            ->whereHas('roomType', function ($q) use ($guests) {
+                $q->where('max_occupancy', '>=', $guests);
+            })
+            ->whereDoesntHave('bookings', function ($q) use ($checkIn, $checkOut) {
+                $q->whereIn('status', ['confirmed', 'reserved', 'checked_in'])
+                  ->where('check_in_date', '<', $checkOut)
+                  ->where('check_out_date', '>', $checkIn);
+            })
+            ->get();
+
+        return response()->json($rooms);
     }
 
     public function getUnavailableDates($id)
@@ -255,7 +283,7 @@ class RoomController extends Controller
         $bookings = \App\Models\Booking::whereHas('room', function ($q) use ($id) {
                 $q->where('room_type_id', $id);
             })
-            ->whereIn('status', ['confirmed', 'checked_in', 'checked_out'])
+            ->whereIn('status', ['confirmed', 'reserved', 'checked_in', 'checked_out'])
             ->where('check_out_date', '>', $rangeStart)
             ->where('check_in_date', '<', $rangeEnd)
             ->get(['check_in_date', 'check_out_date', 'room_id']);

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BookingConfirmationMail;
+use App\Mail\CheckInMail;
+use App\Mail\CheckOutMail;
 use App\Services\KhaltiService;
 
 class BookingController extends Controller
@@ -28,6 +30,7 @@ class BookingController extends Controller
             'num_guests'     => 'required|integer|min:1',
             'total_amount'   => 'required|numeric',
             'payment_method' => 'nullable|in:khalti,cash,card',
+            'is_reservation' => 'nullable|boolean',
         ]);
 
         $checkIn  = $request->check_in_date;
@@ -43,14 +46,14 @@ class BookingController extends Controller
                     ->where('created_at', '<', now()->subMinutes(30))
                     ->update(['status' => 'cancelled']);
 
-                // Block confirmed + recent pending (within 30 min payment window)
+                // Block confirmed + reserved + recent pending (within 30 min payment window)
                 $availableRoom = \App\Models\Room::where('hotel_id', $request->hotel_id)
                     ->where('room_type_id', $request->room_type_id)
                     ->where('status', 'available')
                     ->whereDoesntHave('bookings', function ($query) use ($checkIn, $checkOut) {
                         $query->where(function ($q) {
-                                // Always block confirmed/active bookings
-                                $q->whereIn('status', ['confirmed', 'checked_in', 'checked_out'])
+                                // Always block confirmed/active/reserved bookings
+                                $q->whereIn('status', ['confirmed', 'reserved', 'checked_in', 'checked_out'])
                                   ->orWhere(function ($q2) {
                                       // Also block recent pending (payment in progress)
                                       $q2->where('status', 'pending')
@@ -77,9 +80,20 @@ class BookingController extends Controller
                     'num_guests'        => $request->num_guests,
                     'num_adults'        => $request->num_adults ?? 1,
                     'total_amount'      => $request->total_amount,
-                    'status'            => 'pending',
+                    'payment_method'    => $request->payment_method ?? null,
+                    'status'            => ($request->is_reservation || $request->payment_method === 'cash') ? 'reserved' : 'pending',
                 ]);
             });
+
+            // Cash reservation — room is held, pay at hotel
+            if ($request->payment_method === 'cash' || $request->is_reservation) {
+                return response()->json([
+                    'message'        => 'Room reserved successfully. Please pay at the hotel on check-in.',
+                    'booking'        => $booking,
+                    'payment_method' => 'cash',
+                    'is_reservation' => true,
+                ], 201);
+            }
 
             // If payment_method is khalti, auto-initiate and return payment_url
             if ($request->payment_method === 'khalti') {
@@ -111,6 +125,151 @@ class BookingController extends Controller
             }
 
             return response()->json($booking, 201);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    // Create multiple bookings at once (multi-room booking)
+    public function storeMulti(Request $request)
+    {
+        if (\App\Models\SystemSetting::get('shutdown_website') === '1') {
+            return response()->json(['message' => 'Bookings are currently disabled. The website is under maintenance.'], 503);
+        }
+
+        $request->validate([
+            'rooms'                  => 'required|array|min:1|max:10',
+            'rooms.*.hotel_id'       => 'required|exists:hotels,id',
+            'rooms.*.room_type_id'   => 'required|exists:room_types,id',
+            'rooms.*.num_guests'     => 'required|integer|min:1',
+            'rooms.*.total_amount'   => 'required|numeric',
+            'check_in_date'          => 'required|date|after_or_equal:today',
+            'check_out_date'         => 'required|date|after:check_in_date',
+            'payment_method'         => 'nullable|in:khalti,cash,card',
+            'is_reservation'         => 'nullable|boolean',
+        ]);
+
+        // All rooms must belong to the same hotel
+        $hotelIds = collect($request->rooms)->pluck('hotel_id')->unique();
+        if ($hotelIds->count() > 1) {
+            return response()->json([
+                'message' => 'All rooms in a multi-room booking must belong to the same hotel. Please book rooms from different hotels separately.',
+            ], 422);
+        }
+
+        $checkIn  = $request->check_in_date;
+        $checkOut = $request->check_out_date;
+        $groupRef = 'GRP-' . strtoupper(uniqid());
+
+        try {
+            $bookings = \Illuminate\Support\Facades\DB::transaction(function () use ($request, $checkIn, $checkOut, $groupRef) {
+                $created = [];
+
+                foreach ($request->rooms as $roomRequest) {
+                    // Expire stale pending bookings for this room type
+                    \App\Models\Booking::whereHas('room', function ($q) use ($roomRequest) {
+                            $q->where('room_type_id', $roomRequest['room_type_id']);
+                        })
+                        ->where('status', 'pending')
+                        ->where('created_at', '<', now()->subMinutes(30))
+                        ->update(['status' => 'cancelled']);
+
+                    // Exclude already-locked rooms in this same transaction
+                    $lockedRoomIds = collect($created)->pluck('room_id')->toArray();
+
+                    $availableRoom = \App\Models\Room::where('hotel_id', $roomRequest['hotel_id'])
+                        ->where('room_type_id', $roomRequest['room_type_id'])
+                        ->where('status', 'available')
+                        ->when(!empty($lockedRoomIds), fn($q) => $q->whereNotIn('id', $lockedRoomIds))
+                        ->whereDoesntHave('bookings', function ($query) use ($checkIn, $checkOut) {
+                            $query->where(function ($q) {
+                                    $q->whereIn('status', ['confirmed', 'reserved', 'checked_in', 'checked_out'])
+                                      ->orWhere(function ($q2) {
+                                          $q2->where('status', 'pending')
+                                             ->where('created_at', '>=', now()->subMinutes(30));
+                                      });
+                                })
+                                ->where('check_in_date', '<', $checkOut)
+                                ->where('check_out_date', '>', $checkIn);
+                        })
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (!$availableRoom) {
+                        throw new \Exception("No available room for room type ID {$roomRequest['room_type_id']} on the selected dates.");
+                    }
+
+                    $created[] = Booking::create([
+                        'user_id'                 => $request->user()->id,
+                        'hotel_id'                => $roomRequest['hotel_id'],
+                        'room_id'                 => $availableRoom->id,
+                        'booking_reference'       => 'BK-' . strtoupper(uniqid()),
+                        'group_booking_reference' => $groupRef,
+                        'check_in_date'           => $checkIn,
+                        'check_out_date'          => $checkOut,
+                        'num_guests'              => $roomRequest['num_guests'],
+                        'num_adults'              => $roomRequest['num_adults'] ?? 1,
+                        'total_amount'            => $roomRequest['total_amount'],
+                        'payment_method'          => $request->payment_method ?? null,
+                        'status'                  => ($request->is_reservation || $request->payment_method === 'cash') ? 'reserved' : 'pending',
+                    ]);
+                }
+
+                return $created;
+            });
+
+            $totalAmount = collect($bookings)->sum('total_amount');
+
+            // Cash / reservation
+            if ($request->payment_method === 'cash' || $request->is_reservation) {
+                return response()->json([
+                    'message'                 => count($bookings) . ' room(s) reserved. Pay at the hotel on check-in.',
+                    'bookings'                => $bookings,
+                    'group_booking_reference' => $groupRef,
+                    'payment_method'          => 'cash',
+                    'is_reservation'          => true,
+                ], 201);
+            }
+
+            // Khalti — initiate a single payment for the combined total
+            if ($request->payment_method === 'khalti') {
+                try {
+                    // Use the first booking as the anchor for Khalti, override amount with total
+                    $anchorBooking = $bookings[0];
+                    $anchorBooking->load('hotel');
+                    $anchorBooking->total_amount = $totalAmount; // pass combined total to Khalti
+                    $khaltiResult = $this->khalti->initiate($anchorBooking, $request->user());
+
+                    return response()->json([
+                        'message'                 => 'Bookings created. Complete payment via Khalti.',
+                        'bookings'                => $bookings,
+                        'group_booking_reference' => $groupRef,
+                        'payment_method'          => 'khalti',
+                        'payment_url'             => $khaltiResult['payment_url'],
+                        'pidx'                    => $khaltiResult['pidx'],
+                        'order_id'                => $khaltiResult['order_id'],
+                        'total_amount'            => $totalAmount,
+                    ], 201);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Khalti multi-booking initiation failed', [
+                        'group_ref' => $groupRef,
+                        'error'     => $e->getMessage(),
+                    ]);
+                    return response()->json([
+                        'message'                 => 'Bookings created but Khalti initiation failed. Retry payment.',
+                        'bookings'                => $bookings,
+                        'group_booking_reference' => $groupRef,
+                        'payment_method'          => 'khalti',
+                        'payment_error'           => $e->getMessage(),
+                    ], 201);
+                }
+            }
+
+            return response()->json([
+                'bookings'                => $bookings,
+                'group_booking_reference' => $groupRef,
+            ], 201);
 
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
@@ -188,10 +347,26 @@ class BookingController extends Controller
     // Update booking status (Admin)
     public function updateStatus(Request $request, $id)
     {
-        $booking = Booking::find($id);
+        $request->validate([
+            'status' => 'required|in:pending,reserved,confirmed,checked_in,checked_out,cancelled',
+        ]);
+
+        $booking = Booking::with(['user', 'hotel'])->find($id);
         if (!$booking) return response()->json(['message' => 'Not found'], 404);
 
         $booking->update(['status' => $request->status]);
+
+        // Send email notifications for check-in / check-out
+        if ($request->status === 'checked_in') {
+            Mail::to($booking->user->email)->send(
+                new CheckInMail($booking, $booking->user, $booking->hotel)
+            );
+        } elseif ($request->status === 'checked_out') {
+            Mail::to($booking->user->email)->send(
+                new CheckOutMail($booking, $booking->user, $booking->hotel)
+            );
+        }
+
         return response()->json($booking);
     }
 }
