@@ -114,6 +114,7 @@ function Booking() {
     try {
       setKhaltiLoading(true);
       // Step 1: create booking with payment_method=khalti
+      // non_refundable policy for Khalti payments (paid = confirmed = no cancel)
       const result = await bookingService.createBooking({
         hotel_id: roomType.hotel_id,
         room_type_id: parseInt(roomTypeId),
@@ -122,6 +123,7 @@ function Booking() {
         num_guests: parseInt(formData.num_guests),
         total_amount: getTotal(),
         payment_method: "khalti",
+        cancellation_policy: "non_refundable",
       });
 
       if (result.payment_url) {
@@ -156,6 +158,7 @@ function Booking() {
         total_amount: getTotal(),
         payment_method: "cash",
         is_reservation: true,
+        cancellation_policy: "24_hours",
       });
       setShowPayModal(false);
       setBookingSuccess(result.booking);
@@ -290,6 +293,9 @@ function Booking() {
   // ── Booking Success ───────────────────────────────────────
   if (bookingSuccess) {
     const isReservation = bookingSuccess.status === 'reserved' || bookingSuccess.payment_method === 'cash';
+    const policy = bookingSuccess.cancellation_policy;
+    const isNonRefundable = policy === 'non_refundable';
+    const is24Hours = policy === '24_hours';
     return (
       <div className="bk-success-page">
         <div className="bk-success-card">
@@ -301,6 +307,16 @@ function Booking() {
           {isReservation && (
             <div className="bk-reserve-notice">
               💡 Bring this reference to the front desk. Payment is due on arrival.
+            </div>
+          )}
+          {isNonRefundable && (
+            <div className="bk-nonrefundable-notice">
+              🚫 This booking is 100% non-refundable and cannot be canceled after confirmation/payment.
+            </div>
+          )}
+          {is24Hours && !isNonRefundable && (
+            <div className="bk-policy-notice">
+              ⏰ This booking can only be canceled at least 24 hours before check-in.
             </div>
           )}
           <div className="bk-success-ref">
@@ -466,7 +482,8 @@ function Booking() {
           <div className="bk-policy-card">
             <h4>📋 Booking Policies</h4>
             <ul>
-              <li>✅ Free cancellation up to 24hrs before check-in</li>
+              <li>⏰ Cash reservations: free cancellation up to 24hrs before check-in</li>
+              <li>🚫 Khalti payments: 100% non-refundable after payment</li>
               <li>✅ Breakfast included on request</li>
               <li>✅ Instant confirmation</li>
               <li>✅ No hidden charges</li>
@@ -520,6 +537,10 @@ function Booking() {
               </div>
             </div>
 
+            <div className="bk-nonrefundable-warning">
+              🚫 Khalti payments are 100% non-refundable and cannot be canceled after payment.
+            </div>
+
             <button
               className="bk-btn-khalti"
               onClick={handleKhaltiPay}
@@ -542,6 +563,10 @@ function Booking() {
 
             <div className="bk-modal-divider">
               <span>or</span>
+            </div>
+
+            <div className="bk-24hr-warning">
+              ⏰ Cash reservations can be canceled up to 24 hours before check-in.
             </div>
 
             <button

@@ -75,14 +75,22 @@ class PaymentController extends Controller
             }
 
             // 2. If already completed, return success immediately (idempotent)
+            // Also ensure any sibling bookings in the group are confirmed (handles past stuck cases)
             if ($payment->payment_status === 'completed') {
                 $booking = Booking::find($payment->booking_id);
+                if ($booking?->group_booking_reference) {
+                    Booking::where('group_booking_reference', $booking->group_booking_reference)
+                        ->where('id', '!=', $booking->id)
+                        ->whereIn('status', ['pending', 'reserved'])
+                        ->update(['status' => 'confirmed']);
+                }
                 return response()->json([
-                    'message'        => 'Payment already verified. Booking confirmed.',
-                    'status'         => 'completed',
-                    'transaction_id' => $payment->transaction_id,
-                    'booking_id'     => $payment->booking_id,
-                    'booking_status' => $booking?->status,
+                    'message'                 => 'Payment already verified. Booking confirmed.',
+                    'status'                  => 'completed',
+                    'transaction_id'          => $payment->transaction_id,
+                    'booking_id'              => $payment->booking_id,
+                    'booking_status'          => $booking?->status,
+                    'group_booking_reference' => $booking?->group_booking_reference,
                 ]);
             }
 
@@ -103,15 +111,24 @@ class PaymentController extends Controller
                     $payment->payment_date             = now();
                     $payment->save();
 
-                    // Confirm the booking
-                    Booking::where('id', $payment->booking_id)
-                        ->update(['status' => 'confirmed']);
+                    // Confirm the anchor booking
+                    $anchorBooking = Booking::find($payment->booking_id);
+                    $anchorBooking->update(['status' => 'confirmed']);
+
+                    // Also confirm all sibling bookings in the same group (multi-room booking)
+                    if ($anchorBooking->group_booking_reference) {
+                        Booking::where('group_booking_reference', $anchorBooking->group_booking_reference)
+                            ->where('id', '!=', $anchorBooking->id)
+                            ->whereIn('status', ['pending', 'reserved'])
+                            ->update(['status' => 'confirmed']);
+                    }
 
                     Log::info('Khalti payment confirmed in DB', [
-                        'pidx'           => $pidx,
-                        'payment_id'     => $payment->payment_id,
-                        'transaction_id' => $data['transaction_id'] ?? null,
-                        'booking_id'     => $payment->booking_id,
+                        'pidx'                    => $pidx,
+                        'payment_id'              => $payment->payment_id,
+                        'transaction_id'          => $data['transaction_id'] ?? null,
+                        'booking_id'              => $payment->booking_id,
+                        'group_booking_reference' => $anchorBooking->group_booking_reference,
                     ]);
                 });
 
@@ -138,11 +155,13 @@ class PaymentController extends Controller
                     Log::error('Booking confirmation mail failed after payment: ' . $mailEx->getMessage());
                 }
 
+                $confirmedAnchor = Booking::find($payment->booking_id);
                 return response()->json([
-                    'message'        => 'Payment verified. Booking confirmed.',
-                    'status'         => 'completed',
-                    'transaction_id' => $data['transaction_id'] ?? null,
-                    'booking_id'     => $payment->booking_id,
+                    'message'                 => 'Payment verified. Booking confirmed.',
+                    'status'                  => 'completed',
+                    'transaction_id'          => $data['transaction_id'] ?? null,
+                    'booking_id'              => $payment->booking_id,
+                    'group_booking_reference' => $confirmedAnchor?->group_booking_reference,
                 ]);
             }
 

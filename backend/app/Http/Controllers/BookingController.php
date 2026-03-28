@@ -23,14 +23,15 @@ class BookingController extends Controller
         }
 
         $request->validate([
-            'hotel_id'       => 'required|exists:hotels,id',
-            'room_type_id'   => 'required|exists:room_types,id',
-            'check_in_date'  => 'required|date|after_or_equal:today',
-            'check_out_date' => 'required|date|after:check_in_date',
-            'num_guests'     => 'required|integer|min:1',
-            'total_amount'   => 'required|numeric',
-            'payment_method' => 'nullable|in:khalti,cash,card',
-            'is_reservation' => 'nullable|boolean',
+            'hotel_id'             => 'required|exists:hotels,id',
+            'room_type_id'         => 'required|exists:room_types,id',
+            'check_in_date'        => 'required|date|after_or_equal:today',
+            'check_out_date'       => 'required|date|after:check_in_date',
+            'num_guests'           => 'required|integer|min:1',
+            'total_amount'         => 'required|numeric',
+            'payment_method'       => 'nullable|in:khalti,cash,card',
+            'is_reservation'       => 'nullable|boolean',
+            'cancellation_policy'  => 'nullable|in:flexible,24_hours,non_refundable',
         ]);
 
         $checkIn  = $request->check_in_date;
@@ -67,21 +68,22 @@ class BookingController extends Controller
                     ->first();
 
                 if (!$availableRoom) {
-                    throw new \Exception('No available rooms for the selected dates. Another user may have just booked it.');
+                    throw new \Exception('No available rooms for the selected dates. All rooms of this type are fully booked.');
                 }
 
                 return Booking::create([
-                    'user_id'           => $request->user()->id,
-                    'hotel_id'          => $request->hotel_id,
-                    'room_id'           => $availableRoom->id,
-                    'booking_reference' => 'BK-' . strtoupper(uniqid()),
-                    'check_in_date'     => $checkIn,
-                    'check_out_date'    => $checkOut,
-                    'num_guests'        => $request->num_guests,
-                    'num_adults'        => $request->num_adults ?? 1,
-                    'total_amount'      => $request->total_amount,
-                    'payment_method'    => $request->payment_method ?? null,
-                    'status'            => ($request->is_reservation || $request->payment_method === 'cash') ? 'reserved' : 'pending',
+                    'user_id'              => $request->user()->id,
+                    'hotel_id'             => $request->hotel_id,
+                    'room_id'              => $availableRoom->id,
+                    'booking_reference'    => 'BK-' . strtoupper(uniqid()),
+                    'check_in_date'        => $checkIn,
+                    'check_out_date'       => $checkOut,
+                    'num_guests'           => $request->num_guests,
+                    'num_adults'           => $request->num_adults ?? 1,
+                    'total_amount'         => $request->total_amount,
+                    'payment_method'       => $request->payment_method ?? null,
+                    'status'               => ($request->is_reservation || $request->payment_method === 'cash') ? 'reserved' : 'pending',
+                    'cancellation_policy'  => $request->cancellation_policy ?? 'flexible',
                 ]);
             });
 
@@ -148,6 +150,7 @@ class BookingController extends Controller
             'check_out_date'         => 'required|date|after:check_in_date',
             'payment_method'         => 'nullable|in:khalti,cash,card',
             'is_reservation'         => 'nullable|boolean',
+            'cancellation_policy'    => 'nullable|in:flexible,24_hours,non_refundable',
         ]);
 
         // All rooms must belong to the same hotel
@@ -196,8 +199,10 @@ class BookingController extends Controller
                         ->lockForUpdate()
                         ->first();
 
-                    if (!$availableRoom) {
-                        throw new \Exception("No available room for room type ID {$roomRequest['room_type_id']} on the selected dates.");
+    if (!$availableRoom) {
+                        // Give a clear, user-friendly message
+                        $typeName = \App\Models\RoomType::find($roomRequest['room_type_id'])?->type_name ?? 'selected type';
+                        throw new \Exception("No available rooms of type \"{$typeName}\" for {$checkIn} – {$checkOut}. All rooms of this type are fully booked on those dates.");
                     }
 
                     $created[] = Booking::create([
@@ -213,6 +218,7 @@ class BookingController extends Controller
                         'total_amount'            => $roomRequest['total_amount'],
                         'payment_method'          => $request->payment_method ?? null,
                         'status'                  => ($request->is_reservation || $request->payment_method === 'cash') ? 'reserved' : 'pending',
+                        'cancellation_policy'     => $request->cancellation_policy ?? 'flexible',
                     ]);
                 }
 
@@ -325,23 +331,51 @@ class BookingController extends Controller
         return response()->json($booking);
     }
 
-    // Cancel booking
+    // Cancel booking (customer-initiated, policy-enforced)
+    // Pass ?check_only=1 or body {check_only: true} to just check eligibility without cancelling
     public function cancel(Request $request, $id)
     {
-        $booking = Booking::find($id);
-        if (!$booking) return response()->json(['message' => 'Not found'], 404);
+        $booking = Booking::with('payment')->find($id);
+        if (!$booking) {
+            return response()->json(['message' => 'Booking not found.'], 404);
+        }
 
         if ($request->user()->id !== $booking->user_id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $eligibility = $booking->cancellationEligibility();
+
+        // Check-only mode — return eligibility without mutating anything
+        if ($request->boolean('check_only') || $request->input('check_only')) {
+            return response()->json([
+                'eligible'            => $eligibility['allowed'],
+                'message'             => $eligibility['message'],
+                'cancellation_policy' => $booking->cancellation_policy,
+                'check_in_date'       => $booking->check_in_date,
+                'status'              => $booking->status,
+            ]);
+        }
+
+        if (!$eligibility['allowed']) {
+            return response()->json([
+                'message'             => $eligibility['message'],
+                'cancellation_policy' => $booking->cancellation_policy,
+                'eligible'            => false,
+            ], 422);
         }
 
         $booking->update([
-            'status' => 'cancelled',
-            'cancelled_at' => now(),
-            'cancellation_reason' => $request->reason
+            'status'              => 'cancelled',
+            'cancelled_at'        => now(),
+            'cancellation_reason' => $request->input('reason'),
         ]);
 
-        return response()->json(['message' => 'Booking cancelled']);
+        return response()->json([
+            'message'  => 'Your booking has been successfully canceled.',
+            'eligible' => true,
+            'booking'  => $booking->fresh(),
+        ]);
     }
 
     // Update booking status (Admin)

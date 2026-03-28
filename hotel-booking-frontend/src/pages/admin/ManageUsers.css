@@ -151,3 +151,40 @@
     margin-bottom: 1.5rem;
     border-radius: 4px;
 }
+
+.badge-active { background: #dcfce7; color: #166534; }
+.badge-deactivated { background: #fee2e2; color: #991b1b; }
+
+.btn-deactivate {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-deactivate:hover { background-color: #dc2626; transform: translateY(-1px); }
+
+.btn-activate {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-activate:hover { background-color: #059669; transform: translateY(-1px); }

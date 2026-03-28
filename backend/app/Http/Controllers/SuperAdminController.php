@@ -86,6 +86,45 @@ class SuperAdminController extends Controller
         ]);
     }
 
+    // Activate user
+    public function activateUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $user->update([
+            'is_active' => true,
+            'deactivation_note' => null,
+        ]);
+
+        return response()->json([
+            'message' => 'User activated successfully',
+            'user' => $user
+        ]);
+    }
+
+    // Deactivate user
+    public function deactivateUser(Request $request, $id)
+    {
+        $request->validate([
+            'note' => 'required|string|max:500',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        if ($user->role === 'super_admin') {
+            return response()->json(['message' => 'Cannot deactivate a super admin'], 403);
+        }
+
+        $user->update([
+            'is_active' => false,
+            'deactivation_note' => $request->note,
+        ]);
+
+        return response()->json([
+            'message' => 'User deactivated successfully',
+            'user' => $user
+        ]);
+    }
+
     // Public settings (no auth — for frontend site title, contact info etc.)
     public function getPublicSettings()
     {

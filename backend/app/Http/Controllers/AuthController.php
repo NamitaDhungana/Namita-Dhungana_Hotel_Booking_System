@@ -145,6 +145,14 @@ class AuthController extends Controller
             return response()->json(['message' => 'Your registration has been rejected.'], 403);
         }
 
+        // Check if account is deactivated
+        if (! $user->is_active) {
+            return response()->json([
+                'message' => 'Your account has been deactivated. Reason: ' . ($user->deactivation_note ?? 'No reason provided.'),
+                'is_deactivated' => true,
+            ], 403);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([

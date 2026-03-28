@@ -27,6 +27,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'pan_number',
         'is_approved',
         'registration_status',
+        'is_active',
+        'deactivation_note',
         'email_verification_code',
         'email_verification_expires_at',
     ];

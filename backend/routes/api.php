@@ -81,11 +81,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pending-managers', [SuperAdminController::class, 'getPendingManagers']);
         Route::post('/users/{id}/approve', [SuperAdminController::class, 'approveUser']);
         Route::post('/users/{id}/reject', [SuperAdminController::class, 'rejectUser']);
+        Route::post('/users/{id}/activate', [SuperAdminController::class, 'activateUser']);
+        Route::post('/users/{id}/deactivate', [SuperAdminController::class, 'deactivateUser']);
         Route::post('/admins', [SuperAdminController::class, 'createAdmin']);
         Route::get('/settings', [SuperAdminController::class, 'getSettings']);
+        Route::put('/settings', [SuperAdminController::class, 'updateSettings']);
         Route::get('/contact-queries', [App\Http\Controllers\ContactController::class, 'index']);
         Route::put('/contact-queries/{id}/read', [App\Http\Controllers\ContactController::class, 'markRead']);
         Route::delete('/contact-queries/{id}', [App\Http\Controllers\ContactController::class, 'destroy']);
-        Route::put('/settings', [SuperAdminController::class, 'updateSettings']);
     });
 });

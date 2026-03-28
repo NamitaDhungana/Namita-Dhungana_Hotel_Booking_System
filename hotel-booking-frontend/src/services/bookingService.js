@@ -37,9 +37,18 @@ const bookingService = {
         }
     },
 
-    cancelBooking: async (id) => {
+    cancelBooking: async (id, reason = '') => {
         try {
-            const response = await apiClient.post(`/bookings/${id}/cancel`);
+            const response = await apiClient.post(`/bookings/${id}/cancel`, { reason });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    checkCancellationEligibility: async (id) => {
+        try {
+            const response = await apiClient.post(`/bookings/${id}/cancel`, { check_only: true });
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;

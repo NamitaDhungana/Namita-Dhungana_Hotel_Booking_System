@@ -88,7 +88,12 @@ const ManageFacilities = () => {
                     <FaPlus /> Add {type === 'facility' ? 'Facility' : 'Feature'}
                 </button>
             </div>
-            <table className="rm-table">
+            <table className="rm-table" style={{ tableLayout: 'fixed' }}>
+                <colgroup>
+                    <col style={{ width: 50 }} />
+                    <col />
+                    <col style={{ width: 120 }} />
+                </colgroup>
                 <thead>
                     <tr>
                         <th>#</th>
@@ -101,11 +106,13 @@ const ManageFacilities = () => {
                         <tr><td colSpan={3} className="rm-empty">No {type}s added yet.</td></tr>
                     ) : items.map((a, i) => (
                         <tr key={a.amenity_id}>
-                            <td style={{ color: '#aaa', width: 40 }}>{i + 1}</td>
+                            <td style={{ color: '#aaa' }}>{i + 1}</td>
                             <td style={{ fontWeight: 500 }}>{a.name}</td>
-                            <td style={{ display: 'flex', gap: 8 }}>
-                                <button className="rm-edit-btn" onClick={() => openEdit(a)} title="Edit"><FaEdit /></button>
-                                <button className="rm-edit-btn" onClick={() => handleDelete(a)} title="Delete" style={{ color: '#e74c3c' }}><FaTrash /></button>
+                            <td>
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                    <button className="rm-edit-btn" onClick={() => openEdit(a)} title="Edit"><FaEdit /></button>
+                                    <button className="rm-edit-btn" onClick={() => handleDelete(a)} title="Delete" style={{ color: '#e74c3c' }}><FaTrash /></button>
+                                </div>
                             </td>
                         </tr>
                     ))}
@@ -117,7 +124,7 @@ const ManageFacilities = () => {
     return (
         <div className="manage-rooms-page">
             <div className="rm-header">
-                <h2>Features & Facilities</h2>
+                <h2>Features and Facilities</h2>
             </div>
 
             {loading ? <p className="rm-loading">Loading...</p> : (

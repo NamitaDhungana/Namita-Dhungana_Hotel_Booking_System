@@ -10,7 +10,7 @@ import "./MultiBooking.css";
 function MultiBooking() {
     const { message } = App.useApp();
     const navigate = useNavigate();
-    const { cart, removeRoom, updateGuests, clearCart } = useBookingCart();
+    const { cart, removeRoom, updateGuests, updateQuantity, clearCart } = useBookingCart();
 
     const [checkIn, setCheckIn] = useState("");
     const [checkOut, setCheckOut] = useState("");
@@ -31,7 +31,7 @@ function MultiBooking() {
         return diff > 0 ? diff : 0;
     };
 
-    const getRoomTotal = (room) => getNights() * parseFloat(room.basePrice || 0);
+    const getRoomTotal = (room) => getNights() * parseFloat(room.basePrice || 0) * (room.quantity || 1);
 
     const getGrandTotal = () => cart.reduce((sum, room) => sum + getRoomTotal(room), 0);
 
@@ -48,13 +48,17 @@ function MultiBooking() {
                 check_out_date: checkOut,
                 payment_method: paymentMethod,
                 is_reservation: paymentMethod === "cash",
-                rooms: cart.map(room => ({
-                    hotel_id: room.hotelId,
-                    room_type_id: room.roomTypeId,
-                    num_guests: room.numGuests,
-                    num_adults: room.numGuests,
-                    total_amount: getRoomTotal(room),
-                })),
+                cancellation_policy: paymentMethod === "khalti" ? "non_refundable" : "24_hours",
+                // Expand quantities: 2x room type A → two separate entries
+                rooms: cart.flatMap(room =>
+                    Array.from({ length: room.quantity || 1 }, () => ({
+                        hotel_id: room.hotelId,
+                        room_type_id: room.roomTypeId,
+                        num_guests: room.numGuests,
+                        num_adults: room.numGuests,
+                        total_amount: getNights() * parseFloat(room.basePrice || 0),
+                    }))
+                ),
             };
 
             const result = await bookingService.createMultiBooking(payload);
@@ -138,7 +142,7 @@ function MultiBooking() {
                 <div className="mb-form-col">
                     <div className="mb-section-card">
                         <h1 className="mb-title">Book Multiple Rooms</h1>
-                        <p className="mb-subtitle">{cart.length} room{cart.length > 1 ? 's' : ''} selected · All rooms share the same dates</p>
+                        <p className="mb-subtitle">{cart.reduce((s, r) => s + (r.quantity || 1), 0)} room{cart.reduce((s, r) => s + (r.quantity || 1), 0) > 1 ? 's' : ''} selected · All rooms share the same dates</p>
 
                         {/* Room list */}
                         <div className="mb-room-list">
@@ -158,6 +162,16 @@ function MultiBooking() {
                                             value={room.numGuests}
                                             onChange={e => updateGuests(room.roomTypeId, parseInt(e.target.value) || 1)}
                                             className="mb-guests-input"
+                                        />
+                                        <label style={{ marginLeft: 8 }}>Qty</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="5"
+                                            value={room.quantity || 1}
+                                            onChange={e => updateQuantity(room.roomTypeId, parseInt(e.target.value) || 1)}
+                                            className="mb-guests-input"
+                                            style={{ width: 52 }}
                                         />
                                         {getNights() > 0 && (
                                             <span className="mb-room-subtotal">
@@ -239,7 +253,7 @@ function MultiBooking() {
                             )}
 
                             <button type="submit" className="mb-btn-confirm" disabled={submitting || getNights() <= 0}>
-                                {submitting ? "Processing..." : `Confirm ${cart.length} Room${cart.length > 1 ? 's' : ''}`}
+                                {submitting ? "Processing..." : `Confirm ${cart.reduce((s, r) => s + (r.quantity || 1), 0)} Room${cart.reduce((s, r) => s + (r.quantity || 1), 0) > 1 ? 's' : ''}`}
                             </button>
                         </form>
                     </div>
