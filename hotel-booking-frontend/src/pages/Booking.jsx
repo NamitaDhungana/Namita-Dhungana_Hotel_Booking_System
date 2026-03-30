@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import hotelService from "../services/hotelService";
 import bookingService from "../services/bookingService";
 import settingsService from "../services/settingsService";
+import authService from "../services/authService";
 import "./Booking.css";
 
 function Booking() {
@@ -98,7 +99,7 @@ function Booking() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!localStorage.getItem("token")) {
+    if (!authService.isAuthenticated()) {
       navigate("/login");
       return;
     }
@@ -423,7 +424,7 @@ function Booking() {
                 </div>
               )}
 
-              {!localStorage.getItem("token") && (
+              {!authService.isAuthenticated() && (
                 <div className="bk-login-notice">
                   ⚠️ You must <Link to="/login">log in</Link> to complete your booking.
                 </div>

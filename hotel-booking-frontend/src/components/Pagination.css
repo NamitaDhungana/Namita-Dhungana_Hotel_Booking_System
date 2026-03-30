@@ -1,0 +1,43 @@
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+.pg-btn {
+    padding: 6px 14px;
+    border: 1.5px solid #e0d9f7;
+    border-radius: 8px;
+    background: #fff;
+    color: #6C5CE7;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.pg-btn:hover:not(:disabled) {
+    background: #6C5CE7;
+    color: #fff;
+    border-color: #6C5CE7;
+}
+
+.pg-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pg-btn.pg-active {
+    background: #6C5CE7;
+    color: #fff;
+    border-color: #6C5CE7;
+}
+
+.pg-ellipsis {
+    color: #aaa;
+    font-size: 14px;
+    padding: 0 4px;
+}

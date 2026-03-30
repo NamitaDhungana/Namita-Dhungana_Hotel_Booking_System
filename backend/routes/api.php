@@ -38,7 +38,9 @@ Route::get('/site-settings', [SuperAdminController::class, 'getPublicSettings'])
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/profile', [AuthController::class, 'getProfile']);
+    Route::post('/profile/update', [AuthController::class, 'updateProfile']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
+    Route::delete('/profile/picture', [AuthController::class, 'deleteProfilePicture']);
 
     Route::post('/bookings', [BookingController::class, 'store'])->middleware('role:customer');
     Route::post('/bookings/multi', [BookingController::class, 'storeMulti'])->middleware('role:customer');

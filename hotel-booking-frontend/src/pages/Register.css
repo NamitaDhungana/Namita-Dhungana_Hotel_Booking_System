@@ -158,4 +158,25 @@
 
 .register-box p a:hover {
   text-decoration: underline;
-}
+}
+
+
+/* Inline field error styles */
+.reg-field {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.reg-error-msg {
+  color: #e53e3e;
+  font-size: 0.78rem;
+  margin-top: 4px;
+  margin-bottom: 6px;
+  padding-left: 4px;
+}
+
+.reg-input-error {
+  border-color: #e53e3e !important;
+  outline-color: #e53e3e !important;
+}

@@ -18,7 +18,7 @@ class AuthController extends Controller
             'name' => 'required|string',
             'email' => 'required|string|email|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'phone' => 'nullable|string',
+            'phone' => 'required|string',
             'address' => 'nullable|string',
             'role' => 'required|in:customer,admin',
             'pan_number' => 'required_if:role,admin|string|nullable'
@@ -211,18 +211,62 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
         $user = $request->user();
-        
+
         $request->validate([
-            'name' => 'string',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string',
+            'name'            => 'sometimes|string|max:255',
+            'phone'           => 'nullable|string|max:30',
+            'address'         => 'nullable|string|max:500',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'current_password'=> 'nullable|string',
+            'new_password'    => 'nullable|string|min:8|confirmed',
         ]);
 
-        $user->update($request->only(['name', 'phone', 'address']));
+        // Handle password change
+        if ($request->filled('new_password')) {
+            if (!$request->filled('current_password') || !Hash::check($request->current_password, $user->password)) {
+                return response()->json(['message' => 'Current password is incorrect.'], 422);
+            }
+            $user->password = Hash::make($request->new_password);
+        }
+
+        // Handle profile picture upload — client already compresses, just store it
+        if ($request->hasFile('profile_picture')) {
+            // Delete old picture
+            if ($user->profile_picture) {
+                $oldPath = public_path('profile_pictures/' . basename($user->profile_picture));
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+
+            $file     = $request->file('profile_picture');
+            $filename = 'user_' . $user->id . '_' . time() . '.jpg';
+            $file->move(public_path('profile_pictures'), $filename);
+
+            $user->profile_picture = '/profile_pictures/' . $filename;
+        }
+
+        $user->fill($request->only(['name', 'phone', 'address']));
+        $user->save();
 
         return response()->json([
             'message' => 'Profile updated successfully',
-            'user' => $user
+            'user'    => $user,
         ]);
+    }
+
+    // Delete Profile Picture
+    public function deleteProfilePicture(Request $request)
+    {
+        $user = $request->user();
+        if ($user->profile_picture) {
+            $path = public_path('profile_pictures/' . basename($user->profile_picture));
+            if (file_exists($path)) {
+                unlink($path);
+            }
+            $user->profile_picture = null;
+            $user->save();
+        }
+        return response()->json(['message' => 'Profile picture removed.', 'user' => $user]);
     }
 }

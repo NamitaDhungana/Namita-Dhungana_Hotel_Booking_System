@@ -32,10 +32,34 @@ class SuperAdminController extends Controller
     }
 
     // Get all users
-    public function getUsers()
+    public function getUsers(Request $request)
     {
-        $users = User::whereIn('role', ['customer', 'admin'])->get();
-        return response()->json($users);
+        $query = User::whereIn('role', ['customer', 'admin'])
+            ->orderBy('created_at', 'desc');
+
+        // Search by name or email
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(fn($q) => $q->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%"));
+        }
+
+        // Filter by role
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
+
+        $perPage = $request->input('per_page', 15);
+        return response()->json($query->paginate($perPage));
     }
 
     // Get pending managers

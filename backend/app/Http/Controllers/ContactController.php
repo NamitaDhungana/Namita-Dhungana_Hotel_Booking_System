@@ -48,10 +48,25 @@ class ContactController extends Controller
     }
 
     // Super admin — list all queries
-    public function index()
+    public function index(Request $request)
     {
-        $queries = ContactQuery::orderBy('created_at', 'desc')->get();
-        return response()->json($queries);
+        $query = ContactQuery::orderBy('created_at', 'desc');
+
+        // Search by name or email
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(fn($q) => $q->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('subject', 'like', "%{$search}%"));
+        }
+
+        // Filter by read status
+        if ($request->filled('is_read')) {
+            $query->where('is_read', $request->boolean('is_read'));
+        }
+
+        $perPage = $request->input('per_page', 15);
+        return response()->json($query->paginate($perPage));
     }
 
     // Super admin — mark as read

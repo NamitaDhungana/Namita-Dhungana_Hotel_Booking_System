@@ -10,6 +10,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({ email: "", password: "" });
 
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,10 +28,14 @@ function Login() {
   }, [successMessage, message, searchParams, setSearchParams]);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      message.warning("Please fill in all fields");
+    const newErrors = { email: "", password: "" };
+    if (!email) newErrors.email = "Email is required";
+    if (!password) newErrors.password = "Password is required";
+    if (newErrors.email || newErrors.password) {
+      setErrors(newErrors);
       return;
     }
+    setErrors({ email: "", password: "" });
     try {
       setLoading(true);
       const response = await authService.login({ email, password }, rememberMe);
@@ -55,7 +60,7 @@ function Login() {
     } catch (err) {
       console.error("Login failed:", err);
       const errorMsg = err.message || "Invalid email or password!";
-      message.error(errorMsg);
+      setErrors({ email: errorMsg, password: "" });
       setLoading(false);
     }
   };
@@ -70,19 +75,21 @@ function Login() {
         <input
           type="email"
           placeholder="Email"
-          className="login-input"
+          className={`login-input${errors.email ? " input-error" : ""}`}
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => { setEmail(e.target.value); setErrors(p => ({ ...p, email: "" })); }}
         />
+        {errors.email && <span className="field-error">{errors.email}</span>}
 
         {/* Password */}
         <input
           type="password"
           placeholder="Password"
-          className="login-input"
+          className={`login-input${errors.password ? " input-error" : ""}`}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); setErrors(p => ({ ...p, password: "" })); }}
         />
+        {errors.password && <span className="field-error">{errors.password}</span>}
 
         {/* Options */}
         <div className="login-options">

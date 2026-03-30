@@ -53,7 +53,7 @@ function Header() {
 
         {user ? (
           <div className="user-nav">
-            <span className="user-name">👤 {user.name}</span>
+            <Link to="/userProfile" className="user-name">👤 {user.name}</Link>
             <button className="login-btn" onClick={handleLogout}>Logout</button>
           </div>
         ) : (

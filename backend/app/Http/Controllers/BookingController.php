@@ -297,23 +297,40 @@ class BookingController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role === 'super_admin') {
-            $bookings = Booking::with(['user', 'hotel', 'room', 'room.roomType'])
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } else {
+        $query = Booking::with(['user', 'hotel', 'room', 'room.roomType'])
+            ->orderBy('created_at', 'desc');
+
+        if ($user->role !== 'super_admin') {
             $admin = \App\Models\Admin::where('user_id', $user->id)->first();
             if (!$admin) {
                 return response()->json(['message' => 'Admin record not found'], 403);
             }
             $hotelIds = \App\Models\Hotel::where('admin_id', $admin->id)->pluck('id');
-            $bookings = Booking::with(['user', 'hotel', 'room', 'room.roomType'])
-                ->whereIn('hotel_id', $hotelIds)
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $query->whereIn('hotel_id', $hotelIds);
         }
 
-        return response()->json($bookings);
+        // Search by guest name or email
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('user', fn($q) => $q->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%"));
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by check-in date range
+        if ($request->filled('check_in_from')) {
+            $query->where('check_in_date', '>=', $request->check_in_from);
+        }
+        if ($request->filled('check_in_to')) {
+            $query->where('check_in_date', '<=', $request->check_in_to);
+        }
+
+        $perPage = $request->input('per_page', 15);
+        return response()->json($query->paginate($perPage));
     }
 
     // Get booking details

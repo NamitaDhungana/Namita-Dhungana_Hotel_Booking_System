@@ -112,9 +112,9 @@ const adminService = {
     },
 
     // Booking Management
-    getAllBookings: async () => {
+    getAllBookings: async (params = {}) => {
         try {
-            const response = await apiClient.get('/admin/bookings');
+            const response = await apiClient.get('/admin/bookings', { params });
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;

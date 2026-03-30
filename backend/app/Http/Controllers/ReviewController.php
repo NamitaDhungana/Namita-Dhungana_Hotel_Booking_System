@@ -87,23 +87,34 @@ class ReviewController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role === 'super_admin') {
-            $reviews = Review::with(['user:id,name', 'hotel:id,name'])
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } else {
+        $query = Review::with(['user:id,name', 'hotel:id,name'])
+            ->orderBy('created_at', 'desc');
+
+        if ($user->role !== 'super_admin') {
             $admin = \App\Models\Admin::where('user_id', $user->id)->first();
             if (!$admin) {
                 return response()->json(['message' => 'Admin record not found'], 403);
             }
             $hotelIds = \App\Models\Hotel::where('admin_id', $admin->id)->pluck('id');
-            $reviews = Review::with(['user:id,name', 'hotel:id,name'])
-                ->whereIn('hotel_id', $hotelIds)
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $query->whereIn('hotel_id', $hotelIds);
         }
 
-        return response()->json($reviews);
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Search by guest name or hotel name
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"))
+                  ->orWhereHas('hotel', fn($h) => $h->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        $perPage = $request->input('per_page', 15);
+        return response()->json($query->paginate($perPage));
     }
 
     // Approve or reject a review

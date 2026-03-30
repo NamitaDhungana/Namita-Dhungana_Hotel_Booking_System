@@ -78,6 +78,12 @@
   background: #f0edff;
   padding: 5px 12px;
   border-radius: 20px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.user-name:hover {
+  background: #e0dcff;
 }
 
 .login-btn {

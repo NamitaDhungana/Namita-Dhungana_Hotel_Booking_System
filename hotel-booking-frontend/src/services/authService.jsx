@@ -47,6 +47,32 @@ const authService = {
         }
     },
 
+    updateProfile: async (formData) => {
+        try {
+            const response = await apiClient.post('/profile/update', formData);
+            if (response.data.user) {
+                const storage = localStorage.getItem('rememberMe') === 'true' ? localStorage : sessionStorage;
+                storage.setItem('user', JSON.stringify(response.data.user));
+            }
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    deleteProfilePicture: async () => {
+        try {
+            const response = await apiClient.delete('/profile/picture');
+            if (response.data.user) {
+                const storage = localStorage.getItem('rememberMe') === 'true' ? localStorage : sessionStorage;
+                storage.setItem('user', JSON.stringify(response.data.user));
+            }
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
     getProfile: async () => {
         try {
             const response = await apiClient.get('/profile');

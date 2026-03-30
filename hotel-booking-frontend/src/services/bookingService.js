@@ -10,10 +10,10 @@ const bookingService = {
         }
     },
 
-    getUserBookings: async () => {
+    getUserBookings: async (page = 1) => {
         try {
-            const response = await apiClient.get('/user/bookings');
-            return response.data.data || response.data;
+            const response = await apiClient.get('/user/bookings', { params: { page, per_page: 10 } });
+            return response.data; // return full paginated response
         } catch (error) {
             throw error.response?.data || error.message;
         }

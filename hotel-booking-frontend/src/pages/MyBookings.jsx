@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Modal, App } from "antd";
 import bookingService from "../services/bookingService";
+import Pagination from "../components/Pagination";
 import "./MyBookings.css";
 
 // Only reserved (cash) bookings can be cancelled — confirmed = paid via Khalti = non-refundable
@@ -68,20 +69,27 @@ function MyBookings() {
   const { message } = App.useApp();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedGroup, setSelectedGroup] = useState(null); // array of booking detail objects
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [cancellingId, setCancellingId] = useState(null);
   const [cancelModal, setCancelModal] = useState({ open: false, booking: null, eligibility: null });
   const [cancelReason, setCancelReason] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
 
-  const fetchBookings = () => {
-    bookingService.getUserBookings()
-      .then(setBookings)
+  const fetchBookings = (page = 1) => {
+    setLoading(true);
+    bookingService.getUserBookings(page)
+      .then(res => {
+        setBookings(res.data || res);
+        setCurrentPage(res.current_page || 1);
+        setLastPage(res.last_page || 1);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchBookings(); }, []);
+  useEffect(() => { fetchBookings(1); }, []);
 
   const handleViewDetails = async (group) => {
     setDetailLoading(true);
@@ -151,8 +159,7 @@ function MyBookings() {
         <div className="mb-empty">You haven't made any bookings yet.</div>
       ) : (
         <div className="mb-list">
-          {groups.map((group) => {
-            // For display, use the first booking's shared fields
+          {groups.map((group) => {            // For display, use the first booking's shared fields
             const primary = group.bookings[0];
             const isKhaltiPaid = primary.payment_method === 'khalti' || primary.cancellation_policy === 'non_refundable';
             const isCancellableStatus = group.bookings.every((b) => CANCELLABLE_STATUSES.includes(b.status));
@@ -222,6 +229,8 @@ function MyBookings() {
           })}
         </div>
       )}
+
+      <Pagination currentPage={currentPage} lastPage={lastPage} onPageChange={p => fetchBookings(p)} />
 
       {/* Cancellation Confirmation Modal */}
       <Modal
