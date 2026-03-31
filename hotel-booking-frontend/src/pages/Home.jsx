@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Home.css";
 import hotelService from "../services/hotelService";
@@ -27,6 +27,9 @@ function Home() {
   const [popularHotels, setPopularHotels]   = useState([]);
   const [roomTypes, setRoomTypes]           = useState([]);
   const [loading, setLoading]               = useState(true);
+  const [bannerAds, setBannerAds]           = useState([]);
+  const [bannerIndex, setBannerIndex]       = useState(0);
+  const bannerTimer                         = useRef(null);
 
   // Filter bar state
   const [checkIn, setCheckIn]   = useState("");
@@ -74,6 +77,22 @@ function Home() {
     };
     fetchData();
   }, []);
+
+  // Fetch approved banner ads
+  useEffect(() => {
+    apiClient.get("/advertisements")
+      .then((res) => setBannerAds(res.data || []))
+      .catch(() => {});
+  }, []);
+
+  // Auto-advance carousel every 5 seconds
+  useEffect(() => {
+    if (bannerAds.length <= 1) return;
+    bannerTimer.current = setInterval(() => {
+      setBannerIndex((i) => (i + 1) % bannerAds.length);
+    }, 5000);
+    return () => clearInterval(bannerTimer.current);
+  }, [bannerAds]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -128,6 +147,57 @@ function Home() {
           <button type="submit" className="hf-submit">Search</button>
         </form>
       </section>
+
+      {/* ── BANNER ADS CAROUSEL ── */}
+      {bannerAds.length > 0 && (
+        <section className="banner-ads-section">
+          <div className="banner-carousel">
+            {bannerAds.map((ad, i) => (
+              <div
+                key={ad.id}
+                className={`banner-slide${i === bannerIndex ? " active" : ""}${i === ((bannerIndex - 1 + bannerAds.length) % bannerAds.length) ? " prev" : ""}`}
+              >
+                <Link to={`/hotels/${ad.hotel?.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  <img
+                    src={`http://localhost:8000/storage/${ad.banner_image}`}
+                    alt={ad.title}
+                    className="banner-img"
+                  />
+                  <div className="banner-overlay">
+                    <span className="banner-sponsored">Sponsored</span>
+                    <h3 className="banner-title">{ad.title}</h3>
+                    <p className="banner-hotel">{ad.hotel?.name} — {ad.hotel?.city}</p>
+                  </div>
+                </Link>
+              </div>
+            ))}
+            {bannerAds.length > 1 && (
+              <>
+                <button
+                  className="banner-nav banner-nav--prev"
+                  onClick={() => { clearInterval(bannerTimer.current); setBannerIndex((i) => (i - 1 + bannerAds.length) % bannerAds.length); }}
+                  aria-label="Previous"
+                >&#8249;</button>
+                <button
+                  className="banner-nav banner-nav--next"
+                  onClick={() => { clearInterval(bannerTimer.current); setBannerIndex((i) => (i + 1) % bannerAds.length); }}
+                  aria-label="Next"
+                >&#8250;</button>
+                <div className="banner-dots">
+                  {bannerAds.map((_, i) => (
+                    <button
+                      key={i}
+                      className={`banner-dot${i === bannerIndex ? " active" : ""}`}
+                      onClick={() => { clearInterval(bannerTimer.current); setBannerIndex(i); }}
+                      aria-label={`Go to slide ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ── POPULAR DESTINATIONS ── */}
       <section className="section">

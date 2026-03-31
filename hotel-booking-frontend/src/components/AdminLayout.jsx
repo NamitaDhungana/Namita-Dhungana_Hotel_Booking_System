@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
     FaChartLine, FaHotel, FaBed, FaDoorOpen, FaCalendarCheck,
     FaSignOutAlt, FaStar, FaUsers, FaConciergeBell,
-    FaCog, FaBars, FaTimes, FaUserShield, FaEnvelope
+    FaCog, FaBars, FaTimes, FaUserShield, FaEnvelope, FaBullhorn
 } from 'react-icons/fa';
 import authService from '../services/authService';
 import './AdminLayout.css';
@@ -16,6 +16,7 @@ const ADMIN_MENU = [
     { to: '/admin/facilities',   label: 'Features & Facilities', icon: <FaConciergeBell /> },
     { to: '/admin/bookings',     label: 'Bookings',            icon: <FaCalendarCheck /> },
     { to: '/admin/reviews',      label: 'Reviews & Ratings',   icon: <FaStar /> },
+    { to: '/admin/advertisements', label: 'Advertisements',    icon: <FaBullhorn /> },
 ];
 
 const SUPER_ADMIN_MENU = [
@@ -26,6 +27,7 @@ const SUPER_ADMIN_MENU = [
     { to: '/super-admin/bookings',         label: 'All Bookings',      icon: <FaCalendarCheck /> },
     { to: '/super-admin/reviews',          label: 'Reviews & Ratings', icon: <FaStar /> },
     { to: '/super-admin/contact-queries',  label: 'Contact Queries',   icon: <FaEnvelope /> },
+    { to: '/super-admin/advertisements',   label: 'Advertisements',    icon: <FaBullhorn /> },
 ];
 
 const AdminLayout = ({ role }) => {
@@ -45,7 +47,7 @@ const AdminLayout = ({ role }) => {
     };
 
     return (
-        <div className={`admin-container${collapsed ? ' sidebar-collapsed' : ''}`}>
+        <div className={`admin-container${collapsed ? ' sidebar-collapsed' : ''}${isSuperAdmin ? ' super-admin-layout' : ''}`}>
             <aside className="admin-sidebar">
                 <div className="sidebar-top">
                     <div className="admin-logo">
@@ -58,6 +60,7 @@ const AdminLayout = ({ role }) => {
                 </div>
 
                 <nav className="sidebar-nav">
+                    {!collapsed && <div className="nav-section-label">Navigation</div>}
                     {menuItems.map(item => (
                         <NavLink
                             key={item.to}
@@ -72,10 +75,12 @@ const AdminLayout = ({ role }) => {
                     ))}
                 </nav>
 
-                <button onClick={handleLogout} className="sidebar-logout" title={collapsed ? 'Logout' : undefined}>
-                    <FaSignOutAlt />
-                    {!collapsed && <span>Logout</span>}
-                </button>
+                <div className="sidebar-footer">
+                    <button onClick={handleLogout} className="sidebar-logout" title={collapsed ? 'Logout' : undefined}>
+                        <FaSignOutAlt />
+                        {!collapsed && <span>Logout</span>}
+                    </button>
+                </div>
             </aside>
 
             <main className="admin-main">

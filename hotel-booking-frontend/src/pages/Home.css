@@ -536,3 +536,141 @@
   .hf-divider       { width: 100%; height: 1px; }
   .hf-submit        { width: 100%; margin: 4px 0 0; border-radius: 10px; }
 }
+
+/* ── BANNER ADS CAROUSEL ─────────────────────────────────── */
+.banner-ads-section {
+  padding: 32px 5%;
+  background: #f8f7ff;
+}
+
+.banner-carousel {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  height: 340px;
+  box-shadow: 0 8px 32px rgba(108, 92, 231, 0.15);
+}
+
+/* All slides stacked, hidden by default */
+.banner-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  pointer-events: none;
+}
+
+/* Active slide — visible and in place */
+.banner-slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  z-index: 2;
+}
+
+/* Previous slide — slides out to the left */
+.banner-slide.prev {
+  opacity: 0;
+  transform: translateX(-60px);
+  z-index: 1;
+}
+
+.banner-slide a {
+  display: block;
+  position: relative;
+  height: 340px;
+}
+
+.banner-img {
+  width: 100%;
+  height: 340px;
+  object-fit: cover;
+  display: block;
+}
+
+.banner-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 32px 32px 24px;
+  background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
+  color: #fff !important;
+}
+
+.banner-sponsored {
+  background: #6C5CE7;
+  color: #fff !important;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.banner-title {
+  margin: 10px 0 6px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff !important;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  line-height: 1.2;
+}
+
+.banner-hotel {
+  margin: 0;
+  font-size: 1rem;
+  color: rgba(255,255,255,0.92) !important;
+  font-weight: 500;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.banner-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.85);
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background 0.2s;
+}
+
+.banner-nav:hover { background: #fff; }
+.banner-nav--prev { left: 16px; }
+.banner-nav--next { right: 16px; }
+
+.banner-dots {
+  position: absolute;
+  bottom: 16px;
+  right: 24px;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+}
+
+.banner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.5);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.banner-dot.active {
+  background: #fff;
+  transform: scale(1.3);
+}

@@ -12,6 +12,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AmenityController;
+use App\Http\Controllers\AdvertisementController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -34,6 +35,9 @@ Route::get('/amenities', [AmenityController::class, 'index']);
 Route::get('/payments/khalti/verify', [PaymentController::class, 'verifyPayment'])->name('khalti.verify');
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send']);
 Route::get('/site-settings', [SuperAdminController::class, 'getPublicSettings']);
+Route::get('/advertisements', [AdvertisementController::class, 'publicIndex']);
+Route::get('/advertisements/packages', [AdvertisementController::class, 'packages']);
+Route::get('/advertisements/verify', [AdvertisementController::class, 'verifyPayment']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -76,6 +80,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/reviews', [ReviewController::class, 'adminIndex']);
         Route::put('/reviews/{id}/status', [ReviewController::class, 'updateStatus']);
         Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+        Route::get('/advertisements', [AdvertisementController::class, 'adminIndex']);
+        Route::post('/advertisements/initiate-payment', [AdvertisementController::class, 'initiatePayment']);
+        Route::delete('/advertisements/{id}', [AdvertisementController::class, 'destroy']);
     });
 
     Route::middleware('role:super_admin')->prefix('super-admin')->group(function () {
@@ -91,5 +98,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/contact-queries', [App\Http\Controllers\ContactController::class, 'index']);
         Route::put('/contact-queries/{id}/read', [App\Http\Controllers\ContactController::class, 'markRead']);
         Route::delete('/contact-queries/{id}', [App\Http\Controllers\ContactController::class, 'destroy']);
+        Route::get('/advertisements', [AdvertisementController::class, 'superAdminIndex']);
+        Route::post('/advertisements/{id}/approve', [AdvertisementController::class, 'approve']);
+        Route::post('/advertisements/{id}/reject', [AdvertisementController::class, 'reject']);
     });
 });

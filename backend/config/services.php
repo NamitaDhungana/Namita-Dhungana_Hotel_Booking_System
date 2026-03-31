@@ -36,6 +36,7 @@ return [
         'initiate_url' => env('KHALTI_INITIATE_URL', 'https://a.khalti.com/api/v2/epayment/initiate/'),
         'lookup_url'   => env('KHALTI_LOOKUP_URL', 'https://a.khalti.com/api/v2/epayment/lookup/'),
         'return_url'   => env('KHALTI_RETURN_URL', env('APP_URL') . '/api/payments/khalti/verify'),
+        'ad_return_url'=> env('KHALTI_AD_RETURN_URL', 'http://localhost:5173/payment/ad/return'),
     ],
 
 ];

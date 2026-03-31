@@ -35,6 +35,9 @@ import SearchResults from "./pages/SearchResults";
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
 import SystemSettings from "./pages/superadmin/SystemSettings";
 import ContactQueries from "./pages/superadmin/ContactQueries";
+import ManageAdvertisements from "./pages/admin/ManageAdvertisements";
+import ManageAds from "./pages/superadmin/ManageAds";
+import AdReturn from "./pages/AdReturn";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const user = authService.getCurrentUser();
@@ -87,6 +90,7 @@ function App() {
               <Route path="/userProfile" element={<UserProfile />} />
               <Route path="/my-bookings" element={<MyBookings />} />
               <Route path="/payment/khalti/return" element={<KhaltiReturn />} />
+              <Route path="/payment/ad/return" element={<AdReturn />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/review/:bookingId" element={<ReviewPage />} />
               <Route path="/search" element={<SearchResults />} />
@@ -108,6 +112,7 @@ function App() {
               <Route path="facilities" element={<ManageFacilities />} />
               <Route path="bookings" element={<ManageBookings />} />
               <Route path="reviews" element={<AdminReviews />} />
+              <Route path="advertisements" element={<ManageAdvertisements />} />
             </Route>
 
             {/* Super Admin routes */}
@@ -126,6 +131,7 @@ function App() {
               <Route path="bookings" element={<ManageBookings />} />
               <Route path="reviews" element={<AdminReviews />} />
               <Route path="contact-queries" element={<ContactQueries />} />
+              <Route path="advertisements" element={<ManageAds />} />
             </Route>
 
             <Route path="/login" element={<Login />} />

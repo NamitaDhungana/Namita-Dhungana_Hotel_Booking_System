@@ -10,9 +10,9 @@ const adminService = {
         }
     },
 
-    getRevenueReport: async () => {
+    getRevenueReport: async (months = 6) => {
         try {
-            const response = await apiClient.get('/admin/revenue');
+            const response = await apiClient.get('/admin/revenue', { params: { months } });
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
