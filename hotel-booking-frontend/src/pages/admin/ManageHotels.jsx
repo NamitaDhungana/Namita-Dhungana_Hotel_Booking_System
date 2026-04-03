@@ -22,7 +22,9 @@ const ManageHotels = () => {
         description: '',
         rating: 0,
         featured_image: '',
-        property_type: 'hotel'
+        property_type: 'hotel',
+        latitude: '',
+        longitude: '',
     });
 
     useEffect(() => {
@@ -94,7 +96,9 @@ const ManageHotels = () => {
             description: hotel.description,
             rating: hotel.rating,
             featured_image: hotel.featured_image,
-            property_type: hotel.property_type || 'hotel'
+            property_type: hotel.property_type || 'hotel',
+            latitude: hotel.latitude || '',
+            longitude: hotel.longitude || '',
         });
         setShowModal(true);
     };
@@ -116,7 +120,7 @@ const ManageHotels = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <button className="add-btn" onClick={() => { setShowModal(true); setEditingHotel(null); setFormData({ name: '', address: '', city: '', description: '', rating: 0, featured_image: '', property_type: 'hotel' }); }}>
+                <button className="add-btn" onClick={() => { setShowModal(true); setEditingHotel(null); setFormData({ name: '', address: '', city: '', description: '', rating: 0, featured_image: '', property_type: 'hotel', latitude: '', longitude: '' }); }}>
                     <FaPlus /> Add New Hotel
                 </button>
             </div>
@@ -196,6 +200,28 @@ const ManageHotels = () => {
                                     value={formData.featured_image}
                                     onChange={(e) => setFormData({ ...formData, featured_image: e.target.value })}
                                 />
+                            </div>
+                            <div className="form-group" style={{ display: 'flex', gap: '12px' }}>
+                                <div style={{ flex: 1 }}>
+                                    <label>Latitude</label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        placeholder="e.g. 27.7172"
+                                        value={formData.latitude}
+                                        onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                                    />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <label>Longitude</label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        placeholder="e.g. 85.3240"
+                                        value={formData.longitude}
+                                        onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                                    />
+                                </div>
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>

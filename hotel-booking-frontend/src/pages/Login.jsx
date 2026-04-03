@@ -96,7 +96,7 @@ function Login() {
           <label>
             <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} /> Remember Me
           </label>
-          <a href="#" className="forgot">Forgot Password?</a>
+          <Link to="/forgot-password" className="forgot">Forgot Password?</Link>
         </div>
 
         {/* Button */}

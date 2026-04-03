@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
 import hotelService from "../services/hotelService";
 import authService from "../services/authService";
 import apiClient from "../services/apiClient";
 import { useBookingCart } from "../context/BookingCartContext";
 import "./HotelDetails.css";
+
+const HotelMap = lazy(() => import("../components/HotelMap"));
 
 const AMENITY_ICONS = {
     "Air Conditioner": "❄️", "TV": "📺", "Coffee Maker": "☕", "Room Heater": "🔥",
@@ -180,6 +182,7 @@ function HotelDetails() {
                             </div>
                         )}
                     </div>
+
                 </div>
 
                 {/* Rooms Section */}
@@ -417,6 +420,22 @@ function HotelDetails() {
                         </>
                     )}
                 </div>
+                {/* Location Map */}
+                {(hotel.latitude && hotel.longitude) || hotel.city ? (
+                    <div className="hotel-map-section">
+                        <h2>Location</h2>
+                        <Suspense fallback={<div className="map-loading">Loading map...</div>}>
+                            <HotelMap
+                                lat={hotel.latitude}
+                                lng={hotel.longitude}
+                                name={hotel.name}
+                                address={hotel.address}
+                                city={hotel.city}
+                                country={hotel.country}
+                            />
+                        </Suspense>
+                    </div>
+                ) : null}
             </div>
         </div>
 

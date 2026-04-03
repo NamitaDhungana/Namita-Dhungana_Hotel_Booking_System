@@ -38,6 +38,10 @@ import ContactQueries from "./pages/superadmin/ContactQueries";
 import ManageAdvertisements from "./pages/admin/ManageAdvertisements";
 import ManageAds from "./pages/superadmin/ManageAds";
 import AdReturn from "./pages/AdReturn";
+import ForgotPassword from "./pages/ForgotPassword";
+import FAQ from "./pages/FAQ";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const user = authService.getCurrentUser();
@@ -94,6 +98,9 @@ function App() {
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/review/:bookingId" element={<ReviewPage />} />
               <Route path="/search" element={<SearchResults />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/privacy-policies" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-services" element={<TermsOfService />} />
             </Route>
 
             {/* Admin routes — Hotel Manager only */}
@@ -136,6 +143,7 @@ function App() {
 
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
           </Routes>
         </main>
         </BookingCartProvider>

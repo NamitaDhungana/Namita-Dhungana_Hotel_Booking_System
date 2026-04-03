@@ -779,3 +779,27 @@
     line-height: 1;
 }
 .cart-error-dismiss:hover { color: #333; }
+
+/* ── Map ───────────────────────────────────────────────────── */
+.hotel-map-section {
+    margin-top: 2.5rem;
+    padding: 0 1rem 2rem;
+}
+
+.hotel-map-section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.map-loading {
+    height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    border-radius: 12px;
+    color: #64748b;
+    font-size: 0.95rem;
+}

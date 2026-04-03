@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import settingsService from "../services/settingsService";
 import "./Footer.css";
@@ -37,10 +37,9 @@ function Footer() {
     {
       title: "Connect with Us",
       links: [
-        { icon: <FaFacebook />, path: settings.facebook_url || "#" },
-        { icon: <FaInstagram />, path: settings.instagram_url || "#" },
-        { icon: <FaTwitter />, path: settings.twitter_url || "#" },
-        { icon: <FaLinkedin />, path: "#" },
+        { icon: <FaFacebook />, path: "https://www.facebook.com/" },
+        { icon: <FaInstagram />, path: "https://www.instagram.com/nameeta_10/" },
+        { icon: <FaLinkedin />, path: "https://www.linkedin.com/feed/" },
       ],
     },
   ];

@@ -194,6 +194,52 @@ class AuthController extends Controller
         return response()->json(['message' => 'Verification link sent.']);
     }
 
+    // Forgot Password - send reset code
+    public function forgotPassword(Request $request)
+    {
+        $request->validate(['email' => 'required|email|exists:users,email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $user->update([
+            'email_verification_code' => $code,
+            'email_verification_expires_at' => now()->addMinutes(10),
+        ]);
+
+        Mail::to($user->email)->send(new \App\Mail\PasswordResetCodeMail($code, $user->name));
+
+        return response()->json(['message' => 'A password reset code has been sent to your email.']);
+    }
+
+    // Reset Password - verify code and set new password
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'code' => 'required|string|size:6',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user->email_verification_code !== $request->code) {
+            return response()->json(['message' => 'Invalid reset code.'], 422);
+        }
+
+        if (now()->isAfter($user->email_verification_expires_at)) {
+            return response()->json(['message' => 'Reset code has expired. Please request a new one.'], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+            'email_verification_code' => null,
+            'email_verification_expires_at' => null,
+        ]);
+
+        return response()->json(['message' => 'Password reset successfully. You can now login.']);
+    }
+
     // Logout
     public function logout(Request $request)
     {

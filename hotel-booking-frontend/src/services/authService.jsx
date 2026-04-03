@@ -112,6 +112,29 @@ const authService = {
             throw error.response?.data || error.message;
         }
     },
+
+    forgotPassword: async (email) => {
+        try {
+            const response = await apiClient.post('/forgot-password', { email });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    resetPassword: async (email, code, password, passwordConfirmation) => {
+        try {
+            const response = await apiClient.post('/reset-password', {
+                email,
+                code,
+                password,
+                password_confirmation: passwordConfirmation,
+            });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
 };
 
 export default authService;
