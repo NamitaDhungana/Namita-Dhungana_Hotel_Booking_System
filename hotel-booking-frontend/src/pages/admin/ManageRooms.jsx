@@ -164,9 +164,11 @@ const ManageRooms = () => {
                                             {room.status.charAt(0).toUpperCase() + room.status.slice(1)}
                                         </span>
                                     </td>
-                                    <td style={{ display: 'flex', gap: 6 }}>
-                                        <button className="rm-edit-btn" onClick={() => openEdit(room)} title="Edit"><FaEdit /></button>
-                                        <button className="rm-edit-btn" onClick={() => handleDelete(room)} title="Delete" style={{ color: '#e74c3c' }}><FaTrash /></button>
+                                    <td>
+                                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                            <button className="rm-edit-btn" onClick={() => openEdit(room)} title="Edit"><FaEdit /></button>
+                                            <button className="rm-edit-btn" onClick={() => handleDelete(room)} title="Delete" style={{ color: '#e74c3c' }}><FaTrash /></button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

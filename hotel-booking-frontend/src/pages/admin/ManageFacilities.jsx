@@ -22,7 +22,7 @@ const ManageFacilities = () => {
             const data = await hotelService.getAmenities();
             setAmenities(Array.isArray(data) ? data : []);
         } catch {
-            message.error('Failed to load facilities & features');
+            message.error('Failed to load facilities and features');
         } finally {
             setLoading(false);
         }

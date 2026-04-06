@@ -144,8 +144,10 @@ const ManageHotels = () => {
                                 <td>{hotel.city}</td>
                                 <td>{hotel.rating} / 5</td>
                                 <td className="actions">
-                                    <button className="edit-icon" onClick={() => openEdit(hotel)}><FaEdit /></button>
-                                    <button className="delete-icon" onClick={() => handleDelete(hotel.id)}><FaTrash /></button>
+                                    <div className="actions-inner">
+                                        <button className="edit-icon" onClick={() => openEdit(hotel)}><FaEdit /></button>
+                                        <button className="delete-icon" onClick={() => handleDelete(hotel.id)}><FaTrash /></button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

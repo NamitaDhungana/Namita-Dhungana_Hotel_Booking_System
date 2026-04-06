@@ -8,5 +8,3 @@ createRoot(document.getElementById('root')).render(
     <App />
   </BrowserRouter>,
 )
-
-axios.defaults.withCredentials = true;  //axios config

@@ -273,7 +273,7 @@ function Booking() {
           className="bk-btn-primary" 
           onClick={() => navigate(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`)}
         >
-          Login & Continue
+          Login and Continue
         </button>
       </div>
     );

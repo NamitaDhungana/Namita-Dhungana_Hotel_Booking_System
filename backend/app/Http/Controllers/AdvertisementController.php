@@ -32,6 +32,9 @@ class AdvertisementController extends Controller
             ->where('status', 'approved')
             ->where('payment_status', 'completed')
             ->where(function ($q) use ($today) {
+                $q->whereNull('start_date')->orWhere('start_date', '<=', $today);
+            })
+            ->where(function ($q) use ($today) {
                 $q->whereNull('end_date')->orWhere('end_date', '>=', $today);
             })
             ->latest()

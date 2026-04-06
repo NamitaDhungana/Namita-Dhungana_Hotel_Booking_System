@@ -54,7 +54,7 @@ const faqs = [
     ],
   },
   {
-    category: "Hotels & Rooms",
+    category: "Hotels and Rooms",
     items: [
       {
         q: "How do I find hotels in a specific location?",

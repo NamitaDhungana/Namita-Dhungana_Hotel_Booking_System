@@ -118,7 +118,7 @@ const ManageRoomTypes = () => {
                                 <th>Adults</th>
                                 <th>Children</th>
                                 <th>Rooms</th>
-                                <th>Facilities & Features</th>
+                                <th>Facilities and Features</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>

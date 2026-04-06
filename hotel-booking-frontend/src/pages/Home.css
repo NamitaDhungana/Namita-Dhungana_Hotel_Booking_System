@@ -569,8 +569,8 @@
   z-index: 2;
 }
 
-/* Previous slide — slides out to the left */
-.banner-slide.prev {
+/* Previous slide — slides out to the left (only when NOT also active) */
+.banner-slide.prev:not(.active) {
   opacity: 0;
   transform: translateX(-60px);
   z-index: 1;

@@ -80,6 +80,18 @@
 .actions {
     display: flex;
     gap: 10px;
+    align-items: center;
+}
+
+td.actions {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+td.actions > .actions-inner {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 .actions button {
@@ -192,4 +204,4 @@ input[type=number]::-webkit-outer-spin-button {
 input[type=number] {
     -moz-appearance: textfield;
     appearance: textfield;
-}
+}

@@ -148,7 +148,8 @@ const ManageBookings = () => {
                                     <td>{new Date(booking.check_out_date).toLocaleDateString()}</td>
                                     <td><div style={{ fontWeight: 700, color: '#F5C518' }}>Rs. {parseFloat(booking.total_amount).toLocaleString()}</div></td>
                                     <td><span className={`status-badge ${booking.status}`}>{booking.status}</span></td>
-                                    <td className="actions">
+                                    <td>
+                                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                                         {(booking.status === 'pending' || booking.status === 'reserved') && (
                                             <>
                                                 <button className="edit-icon" title="Confirm" disabled={updatingId === booking.id} onClick={() => handleStatusUpdate(booking.id, 'confirmed')}>
@@ -170,6 +171,7 @@ const ManageBookings = () => {
                                             </button>
                                         )}
                                         <button className="view-icon" title="View Details" onClick={() => handleViewDetails(booking.id)}><FaEye /></button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -239,7 +241,7 @@ const ManageBookings = () => {
                 .status-badge.checked_out{ background:rgba(108,92,231,0.1);  color:#6C5CE7; }
                 .view-icon   { color:#858796; } .edit-icon { color:#6C5CE7; } .delete-icon { color:#e74a3b; }
                 .checkin-icon { color:#1cc88a; } .checkout-icon { color:#6C5CE7; }
-                .actions button { transition:all 0.2s; }
+                .actions button { transition:all 0.2s; font-size:15px; }
                 .actions button:hover:not(:disabled) { transform:scale(1.2); }
                 .actions button:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
                 .booking-detail-modal .detail-section-title { font-size:0.85rem; font-weight:700; color:#6C5CE7; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid #f0f0f0; }

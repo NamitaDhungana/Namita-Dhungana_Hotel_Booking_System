@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import apiClient from "../services/apiClient";
 import "./SearchResults.css";
+import { formatName } from "../utils/formatName";
 
 const FALLBACK_IMG = "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&w=600&q=80";
 
@@ -145,7 +146,7 @@ function SearchResults() {
                                         <div className="sr-card-top">
                                             <div>
                                                 <h3>{rt.type_name || "Room"}</h3>
-                                                <p className="sr-hotel">🏨 {hotel.name}{hotel.city ? `, ${hotel.city}` : ""}</p>
+                                                <p className="sr-hotel">🏨 {formatName(hotel.name)}{hotel.city ? `, ${hotel.city}` : ""}</p>
                                             </div>
                                             <div className="sr-price-box">
                                                 <span className="sr-price">NPR {price.toLocaleString()}</span>

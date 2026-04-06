@@ -5,6 +5,7 @@ import authService from "../services/authService";
 import apiClient from "../services/apiClient";
 import { useBookingCart } from "../context/BookingCartContext";
 import "./HotelDetails.css";
+import { formatName } from "../utils/formatName";
 
 const HotelMap = lazy(() => import("../components/HotelMap"));
 
@@ -147,9 +148,9 @@ function HotelDetails() {
                 <div className="hero-overlay">
                     <div className="hero-content">
                         <div className="hero-breadcrumb">
-                            <Link to="/hotels">Hotels</Link> › <span>{hotel.name}</span>
+                            <Link to="/hotels">Hotels</Link> › <span>{formatName(hotel.name)}</span>
                         </div>
-                        <h1>{hotel.name}</h1>
+                        <h1>{formatName(hotel.name)}</h1>
                         <p className="location-badge">📍 {hotel.city}</p>
                         {hotel.rating > 0 && (
                             <p className="rating-badge">⭐ {parseFloat(hotel.rating).toFixed(1)} rating</p>
@@ -319,7 +320,7 @@ function HotelDetails() {
                                                                         roomTypeId: rt.id,
                                                                         hotelId: hotel.id,
                                                                         roomTypeName: rt.type_name,
-                                                                        hotelName: hotel.name,
+                                                                        hotelName: formatName(hotel.name),
                                                                         basePrice: rt.base_price,
                                                                         maxOccupancy: rt.max_occupancy,
                                                                     });

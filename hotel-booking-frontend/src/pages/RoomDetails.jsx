@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import hotelService from "../services/hotelService";
+import { formatName } from "../utils/formatName";
 import authService from "../services/authService";
 import "./roomDetails.css";
 
@@ -64,7 +65,7 @@ function RoomDetails() {
             <div className="rd-breadcrumb">
                 <Link to="/hotels">Hotels</Link>
                 {hotel.id && (
-                    <><span>›</span><Link to={`/hotels/${hotel.id}`}>{hotel.name}</Link></>
+                    <><span>›</span><Link to={`/hotels/${hotel.id}`}>{formatName(hotel.name)}</Link></>
                 )}
                 <span>›</span>
                 <span className="rd-bc-current">Room {room.room_number}</span>
@@ -153,7 +154,7 @@ function RoomDetails() {
                 {/* Right — Details */}
                 <div className="rd-right">
                     {hotel.name && (
-                        <p className="rd-hotel-name">🏨 {hotel.name}{hotel.city ? ` · ${hotel.city}` : ''}</p>
+                        <p className="rd-hotel-name">🏨 {formatName(hotel.name)}{hotel.city ? ` · ${hotel.city}` : ''}</p>
                     )}
                     <h1 className="rd-title">{rt.type_name} — Room {room.room_number}</h1>
 
@@ -162,7 +163,7 @@ function RoomDetails() {
 
                     {amenities.length > 0 && (
                         <div className="rd-amenities">
-                            <h3>Room Amenities & Features</h3>
+                            <h3>Room Amenities and Features</h3>
                             <div className="rd-amenities-grid">
                                 {amenities.map((name, i) => (
                                     <span key={i} className="rd-amenity-tag">
@@ -178,7 +179,7 @@ function RoomDetails() {
                             Rs. {parseFloat(rt.base_price || 0).toLocaleString()}
                             <span>/night</span>
                         </div>
-                        <p className="rd-pricing-note">Taxes & fees included · Free cancellation</p>
+                        <p className="rd-pricing-note">Taxes and fees included · Free cancellation</p>
                     </div>
 
                     <div className="rd-actions">

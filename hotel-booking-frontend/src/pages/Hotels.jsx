@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./hotels.css";
 import { Link, useSearchParams } from "react-router-dom";
 import hotelService from "../services/hotelService";
+import { formatName } from "../utils/formatName";
 
 const FALLBACK_HOTELS = [
     { id: 1,  name: "Hotel Grand Pokhara",            city: "Pokhara, Lakeside",      featured_image: "https://images.getaroom-cdn.com/image/upload/s--TmEjyUgK--/c_limit,e_improve,fl_lossy.immutable_cache,h_460,q_auto:good,w_460/v1662863807/b7e3e0d9a34641884759bbf63ea6f4c78f5ea3c3" },
@@ -9,7 +10,7 @@ const FALLBACK_HOTELS = [
     { id: 3,  name: "Park Safari Resort",             city: "Chitwan, Sauraha",       featured_image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/13/ab/e9/03/getlstd-property-photo.jpg?w=900&h=500&s=1" },
     { id: 4,  name: "Club Himalayan Nagarkot Resort", city: "Nagarkot",               featured_image: "https://www.opulentroutes.com/wp-content/uploads/2021/01/club-himalaya-nagarkot-resort-nagarkot-nepal.jpg" },
     { id: 5,  name: "Barahi Resort",                  city: "Pokhara",                featured_image: "https://images.trvl-media.com/lodging/4000000/3900000/3891900/3891821/175a70b7.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill" },
-    { id: 6,  name: "Hotel Yak & Yeti",               city: "Kathmandu, Durbar Marg", featured_image: "https://media-cdn.tripadvisor.com/media/photo-s/09/34/5c/a0/hotel-yak-yeti.jpg" },
+    { id: 6,  name: "Hotel Yak and Yeti",               city: "Kathmandu, Durbar Marg", featured_image: "https://media-cdn.tripadvisor.com/media/photo-s/09/34/5c/a0/hotel-yak-yeti.jpg" },
 ];
 
 function Hotels() {
@@ -27,8 +28,11 @@ function Hotels() {
 
     useEffect(() => {
         hotelService.getHotels()
-            .then(data => setHotels(data?.length > 0 ? data : FALLBACK_HOTELS))
-            .catch(() => setHotels(FALLBACK_HOTELS))
+            .then(data => setHotels(Array.isArray(data) && data.length > 0 ? data : FALLBACK_HOTELS))
+            .catch((err) => {
+                console.error('Failed to load hotels from API:', err);
+                setHotels(FALLBACK_HOTELS);
+            })
             .finally(() => setLoading(false));
     }, []);
 
@@ -97,7 +101,7 @@ function Hotels() {
                             {hotel.is_featured && <span className="hotel-featured-badge">Featured</span>}
                         </div>
                         <div className="hotel-card-body">
-                            <h3>{hotel.name}</h3>
+                            <h3>{formatName(hotel.name)}</h3>
                             <p className="hotel-card-city">📍 {hotel.city}</p>
                             {hotel.rating > 0 && (
                                 <p className="hotel-card-rating">⭐ {parseFloat(hotel.rating).toFixed(1)}</p>

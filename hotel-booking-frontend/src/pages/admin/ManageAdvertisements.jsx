@@ -191,7 +191,7 @@ export default function ManageAdvertisements() {
             type="submit" disabled={submitting || !form.package}
             style={{ marginTop: 20, background: "#6C5CE7", color: "#fff", border: "none", borderRadius: 8, padding: "12px 32px", cursor: "pointer", fontWeight: 600, fontSize: 15, opacity: (submitting || !form.package) ? 0.6 : 1 }}
           >
-            {submitting ? "Redirecting to Khalti..." : "Pay & Submit"}
+            {submitting ? "Redirecting to Khalti..." : "Pay and Submit"}
           </button>
         </form>
       )}

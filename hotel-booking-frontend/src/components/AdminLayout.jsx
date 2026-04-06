@@ -13,9 +13,9 @@ const ADMIN_MENU = [
     { to: '/admin/hotels',       label: 'Manage Hotels',       icon: <FaHotel /> },
     { to: '/admin/room-types',   label: 'Manage Room Types',   icon: <FaBed /> },
     { to: '/admin/rooms',        label: 'Manage Rooms',        icon: <FaDoorOpen /> },
-    { to: '/admin/facilities',   label: 'Features & Facilities', icon: <FaConciergeBell /> },
+    { to: '/admin/facilities',   label: 'Features and Facilities', icon: <FaConciergeBell /> },
     { to: '/admin/bookings',     label: 'Bookings',            icon: <FaCalendarCheck /> },
-    { to: '/admin/reviews',      label: 'Reviews & Ratings',   icon: <FaStar /> },
+    { to: '/admin/reviews',      label: 'Reviews and Ratings',   icon: <FaStar /> },
     { to: '/admin/advertisements', label: 'Advertisements',    icon: <FaBullhorn /> },
 ];
 
@@ -25,7 +25,7 @@ const SUPER_ADMIN_MENU = [
     { to: '/super-admin/settings',         label: 'System Settings',   icon: <FaCog /> },
     { to: '/super-admin/hotels',           label: 'Hotel Management',  icon: <FaHotel /> },
     { to: '/super-admin/bookings',         label: 'All Bookings',      icon: <FaCalendarCheck /> },
-    { to: '/super-admin/reviews',          label: 'Reviews & Ratings', icon: <FaStar /> },
+    { to: '/super-admin/reviews',          label: 'Reviews and Ratings', icon: <FaStar /> },
     { to: '/super-admin/contact-queries',  label: 'Contact Queries',   icon: <FaEnvelope /> },
     { to: '/super-admin/advertisements',   label: 'Advertisements',    icon: <FaBullhorn /> },
 ];

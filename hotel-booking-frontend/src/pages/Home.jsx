@@ -81,8 +81,12 @@ function Home() {
   // Fetch approved banner ads
   useEffect(() => {
     apiClient.get("/advertisements")
-      .then((res) => setBannerAds(res.data || []))
-      .catch(() => {});
+      .then((res) => {
+        const ads = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        console.log("Fetched ads:", ads);
+        setBannerAds(ads);
+      })
+      .catch((err) => { console.error("Ads fetch failed:", err); });
   }, []);
 
   // Auto-advance carousel every 5 seconds
@@ -152,16 +156,24 @@ function Home() {
       {bannerAds.length > 0 && (
         <section className="banner-ads-section">
           <div className="banner-carousel">
-            {bannerAds.map((ad, i) => (
+            {bannerAds.map((ad, i) => {
+              const isActive = i === bannerIndex;
+              const isPrev = bannerAds.length > 1 && i === ((bannerIndex - 1 + bannerAds.length) % bannerAds.length);
+              const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
+              return (
               <div
                 key={ad.id}
-                className={`banner-slide${i === bannerIndex ? " active" : ""}${i === ((bannerIndex - 1 + bannerAds.length) % bannerAds.length) ? " prev" : ""}`}
+                className={`banner-slide${isActive ? " active" : ""}${isPrev ? " prev" : ""}`}
               >
                 <Link to={`/hotels/${ad.hotel?.id}`} style={{ textDecoration: "none", color: "inherit" }}>
                   <img
-                    src={`http://localhost:8000/storage/${ad.banner_image}`}
+                    src={`${baseUrl}/storage/${ad.banner_image}`}
                     alt={ad.title}
                     className="banner-img"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80';
+                    }}
                   />
                   <div className="banner-overlay">
                     <span className="banner-sponsored">Sponsored</span>
@@ -170,7 +182,8 @@ function Home() {
                   </div>
                 </Link>
               </div>
-            ))}
+              );
+            })}
             {bannerAds.length > 1 && (
               <>
                 <button
@@ -276,8 +289,8 @@ function Home() {
                 <>
                   <Link to="/hotels?type=hotel" className="category-card luxury"><div className="category-icon">🏨</div><h3>Luxury Hotels</h3><p>Premium comfort stays</p></Link>
                   <Link to="/hotels?type=hostel" className="category-card budget"><div className="category-icon">🛏️</div><h3>Budget Rooms</h3><p>Affordable for everyone</p></Link>
-                  <Link to="/hotels?type=resort" className="category-card family"><div className="category-icon">👨‍👩‍👧</div><h3>Family Suites</h3><p>Spacious & comfortable</p></Link>
-                  <Link to="/hotels?type=resort" className="category-card resort"><div className="category-icon">🌿</div><h3>Resorts & Spa</h3><p>Relax & unwind</p></Link>
+                  <Link to="/hotels?type=resort" className="category-card family"><div className="category-icon">👨‍👩‍👧</div><h3>Family Suites</h3><p>Spacious and comfortable</p></Link>
+                  <Link to="/hotels?type=resort" className="category-card resort"><div className="category-icon">🌿</div><h3>Resorts and Spa</h3><p>Relax and unwind</p></Link>
                 </>
               )
           }
@@ -289,7 +302,7 @@ function Home() {
         <div className="offer-inner">
           <p className="offer-eyebrow">Start Your Journey</p>
           <h2 className="offer-title">Ready to Book Your Dream Vacation?</h2>
-          <p>Join thousands of happy travellers booking comfort & luxury across Nepal.</p>
+          <p>Join thousands of happy travellers booking comfort and luxury across Nepal.</p>
           <div className="offer-btns">
             <Link to="/hotels"><button className="btn-primary">Browse Hotels</button></Link>
             <Link to="/contact"><button className="btn-outline btn-outline--dark">Contact Us</button></Link>

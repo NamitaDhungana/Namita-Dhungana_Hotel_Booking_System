@@ -152,7 +152,7 @@ const AdminDashboard = () => {
                     <div className="chart-card-header">
                         <h3 className="chart-card-title">
                             <FaChartBar style={{ marginRight: 8, opacity: 0.7 }} />
-                            Revenue &amp; Bookings Trend
+                            Revenue and Bookings Trend
                         </h3>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                             {/* Chart type toggle */}
