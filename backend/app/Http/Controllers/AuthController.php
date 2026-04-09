@@ -260,7 +260,7 @@ class AuthController extends Controller
 
         $request->validate([
             'name'            => 'sometimes|string|max:255',
-            'phone'           => 'nullable|string|max:30',
+            'phone'           => 'nullable|digits:10',
             'address'         => 'nullable|string|max:500',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'current_password'=> 'nullable|string',

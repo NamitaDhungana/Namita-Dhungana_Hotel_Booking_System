@@ -97,6 +97,19 @@
 }
 .rm-edit-btn:hover { background: #f3f0ff; }
 
+.rm-delete-btn {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    margin-left: 4px;
+}
+.rm-delete-btn:hover { background: #fdecea; }
+
 /* Modal */
 .rm-overlay {
     position: fixed;

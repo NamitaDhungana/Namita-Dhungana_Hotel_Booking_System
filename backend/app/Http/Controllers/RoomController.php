@@ -132,6 +132,24 @@ class RoomController extends Controller
         return response()->json($roomType->loadCount('rooms'), 201);
     }
 
+    // Delete room type
+    public function destroyRoomType($id)
+    {
+        $roomType = RoomType::find($id);
+        if (!$roomType) return response()->json(['message' => 'Room type not found'], 404);
+
+        $hasActive = $roomType->rooms()
+            ->whereHas('bookings', fn($q) => $q->whereIn('status', ['confirmed', 'checked_in']))
+            ->exists();
+
+        if ($hasActive) {
+            return response()->json(['message' => 'Cannot delete a room type with active bookings'], 422);
+        }
+
+        $roomType->delete();
+        return response()->json(['message' => 'Room type deleted']);
+    }
+
     // Update room type
     public function updateRoomType(Request $request, $id)
     {

@@ -73,6 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/amenities/{id}', [AmenityController::class, 'destroy']);
         Route::post('/room-types', [RoomController::class, 'storeRoomType']);
         Route::put('/room-types/{id}', [RoomController::class, 'updateRoomType']);
+        Route::delete('/room-types/{id}', [RoomController::class, 'destroyRoomType']);
         Route::get('/rooms', [RoomController::class, 'getRooms']);
         Route::post('/rooms', [RoomController::class, 'storeRoom']);
         Route::put('/rooms/{id}', [RoomController::class, 'updateRoom']);

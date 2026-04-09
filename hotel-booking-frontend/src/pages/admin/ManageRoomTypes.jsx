@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { App } from 'antd';
-import { FaPlus, FaEdit } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import adminService from '../../services/adminService';
 import hotelService from '../../services/hotelService';
 import './ManageRooms.css';
@@ -93,6 +93,17 @@ const ManageRoomTypes = () => {
 
     const openAdd = () => { setEditingRoom(null); setFormData(defaultForm); setShowModal(true); };
 
+    const handleDelete = async (room) => {
+        if (!window.confirm(`Delete room type "${room.type_name}"? This cannot be undone.`)) return;
+        try {
+            await adminService.deleteRoomType(room.id);
+            message.success('Room type deleted!');
+            fetchData();
+        } catch (error) {
+            message.error(error?.message || 'Failed to delete room type.');
+        }
+    };
+
     const statusBadge = (count) => (
         <span className={`rm-badge ${count > 0 ? 'available' : 'none'}`}>
             {count > 0 ? `${count} rooms` : 'No Rooms'}
@@ -149,6 +160,7 @@ const ManageRoomTypes = () => {
                                     </td>
                                     <td>
                                         <button className="rm-edit-btn" onClick={() => openEdit(room)} title="Edit"><FaEdit /></button>
+                                        <button className="rm-delete-btn" onClick={() => handleDelete(room)} title="Delete"><FaTrash /></button>
                                     </td>
                                 </tr>
                             ))}

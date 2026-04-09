@@ -66,6 +66,15 @@ const adminService = {
         }
     },
 
+    deleteRoomType: async (id) => {
+        try {
+            const response = await apiClient.delete(`/admin/room-types/${id}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
     getRooms: async () => {
         try {
             const response = await apiClient.get('/admin/rooms');

@@ -59,6 +59,10 @@ function UserProfile() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (form.phone && !/^\d{10}$/.test(form.phone)) {
+      setMsg({ type: "error", text: "Phone number must be exactly 10 digits." });
+      return;
+    }
     setSaving(true);
     setMsg(null);
     try {
@@ -156,7 +160,16 @@ function UserProfile() {
             </div>
             <div className="up-field">
               <label>Phone</label>
-              <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <input
+                value={form.phone}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  setForm({ ...form, phone: val });
+                }}
+                inputMode="numeric"
+                maxLength={10}
+                placeholder="10-digit phone number"
+              />
             </div>
             <div className="up-field">
               <label>Address</label>
