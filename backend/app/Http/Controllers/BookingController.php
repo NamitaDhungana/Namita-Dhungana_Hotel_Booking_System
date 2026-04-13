@@ -89,6 +89,22 @@ class BookingController extends Controller
 
             // Cash reservation — room is held, pay at hotel
             if ($request->payment_method === 'cash' || $request->is_reservation) {
+                // Notify hotel manager of new reservation
+                try {
+                    $booking->load('hotel.admin.user');
+                    $hotelAdmin = $booking->hotel?->admin?->user;
+                    if ($hotelAdmin) {
+                        \App\Models\Notification::create([
+                            'user_id' => $hotelAdmin->id,
+                            'type'    => 'new_booking',
+                            'title'   => 'New Reservation',
+                            'message' => "New cash reservation from {$request->user()->name} for {$booking->hotel->name}. Check-in: {$booking->check_in_date}, Check-out: {$booking->check_out_date}. Ref: {$booking->booking_reference}.",
+                            'is_read' => false,
+                            'related_booking_id' => $booking->id,
+                        ]);
+                    }
+                } catch (\Exception $e) {}
+
                 return response()->json([
                     'message'        => 'Room reserved successfully. Please pay at the hotel on check-in.',
                     'booking'        => $booking,
@@ -412,10 +428,38 @@ class BookingController extends Controller
             Mail::to($booking->user->email)->send(
                 new CheckInMail($booking, $booking->user, $booking->hotel)
             );
+            // Notify hotel manager
+            try {
+                $hotelAdmin = $booking->hotel?->admin?->user;
+                if ($hotelAdmin) {
+                    \App\Models\Notification::create([
+                        'user_id' => $hotelAdmin->id,
+                        'type'    => 'booking_status',
+                        'title'   => 'Guest Checked In',
+                        'message' => "{$booking->user->name} has checked in at {$booking->hotel->name}. Ref: {$booking->booking_reference}.",
+                        'is_read' => false,
+                        'related_booking_id' => $booking->id,
+                    ]);
+                }
+            } catch (\Exception $e) {}
         } elseif ($request->status === 'checked_out') {
             Mail::to($booking->user->email)->send(
                 new CheckOutMail($booking, $booking->user, $booking->hotel)
             );
+            // Notify hotel manager
+            try {
+                $hotelAdmin = $booking->hotel?->admin?->user;
+                if ($hotelAdmin) {
+                    \App\Models\Notification::create([
+                        'user_id' => $hotelAdmin->id,
+                        'type'    => 'booking_status',
+                        'title'   => 'Guest Checked Out',
+                        'message' => "{$booking->user->name} has checked out from {$booking->hotel->name}. Ref: {$booking->booking_reference}.",
+                        'is_read' => false,
+                        'related_booking_id' => $booking->id,
+                    ]);
+                }
+            } catch (\Exception $e) {}
         }
 
         return response()->json($booking);

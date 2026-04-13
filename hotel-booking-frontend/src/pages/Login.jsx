@@ -58,10 +58,19 @@ function Login() {
         }
       }, 1500);
     } catch (err) {
-      console.error("Login failed:", err);
-      const errorMsg = err.message || "Invalid email or password!";
-      setErrors({ email: errorMsg, password: "" });
       setLoading(false);
+      // Pending admin — redirect to status page so they can see their notification
+      if (err?.is_pending) {
+        navigate(`/registration-status?email=${encodeURIComponent(email)}&status=pending`);
+        return;
+      }
+      // Rejected admin — redirect to status page
+      if (err?.message?.includes('rejected')) {
+        navigate(`/registration-status?email=${encodeURIComponent(email)}&status=rejected`);
+        return;
+      }
+      const errorMsg = err?.message || "Invalid email or password!";
+      setErrors({ email: errorMsg, password: "" });
     }
   };
 

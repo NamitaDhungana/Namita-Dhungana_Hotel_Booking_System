@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Review;
 use App\Models\Booking;
+use App\Models\Admin;
+use App\Models\Hotel;
 
 class ReviewController extends Controller
 {
-    // Submit a review
+    // Submit a review (customer only)
     public function store(Request $request)
     {
         $request->validate([
@@ -19,7 +21,6 @@ class ReviewController extends Controller
             'title'      => 'nullable|string|max:255',
         ]);
 
-        // Ensure the booking belongs to this user and is in a reviewable state
         $booking = Booking::where('id', $request->booking_id)
             ->where('user_id', $request->user()->id)
             ->whereIn('status', ['confirmed', 'checked_in', 'checked_out'])
@@ -29,7 +30,6 @@ class ReviewController extends Controller
             return response()->json(['message' => 'Invalid booking or not eligible for review.'], 403);
         }
 
-        // Prevent duplicate review for same booking
         if (Review::where('booking_id', $request->booking_id)->where('user_id', $request->user()->id)->exists()) {
             return response()->json(['message' => 'You have already reviewed this booking.'], 409);
         }
@@ -47,7 +47,7 @@ class ReviewController extends Controller
         return response()->json($review, 201);
     }
 
-    // Get booking info for review page (authenticated, must own booking)
+    // Get booking info for review page
     public function getBookingForReview(Request $request, $bookingId)
     {
         $booking = Booking::with(['hotel', 'room.roomType'])
@@ -70,7 +70,7 @@ class ReviewController extends Controller
         ]);
     }
 
-    // Get approved hotel reviews (public)
+    // Get approved reviews for a hotel (public)
     public function index($hotelId)
     {
         $reviews = Review::where('hotel_id', $hotelId)
@@ -82,29 +82,26 @@ class ReviewController extends Controller
         return response()->json($reviews);
     }
 
-    // Get reviews for admin panel
+    // Get reviews for admin panel (Hotel Manager sees own hotels only)
     public function adminIndex(Request $request)
     {
-        $user = $request->user();
-
+        $user  = $request->user();
         $query = Review::with(['user:id,name', 'hotel:id,name'])
             ->orderBy('created_at', 'desc');
 
         if ($user->role !== 'super_admin') {
-            $admin = \App\Models\Admin::where('user_id', $user->id)->first();
+            $admin = Admin::where('user_id', $user->id)->first();
             if (!$admin) {
                 return response()->json(['message' => 'Admin record not found'], 403);
             }
-            $hotelIds = \App\Models\Hotel::where('admin_id', $admin->id)->pluck('id');
+            $hotelIds = Hotel::where('admin_id', $admin->id)->pluck('id');
             $query->whereIn('hotel_id', $hotelIds);
         }
 
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Search by guest name or hotel name
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -113,20 +110,54 @@ class ReviewController extends Controller
             });
         }
 
-        $perPage = $request->input('per_page', 15);
-        return response()->json($query->paginate($perPage));
+        return response()->json($query->paginate($request->input('per_page', 15)));
     }
 
-    // Approve or reject a review
+    // Approve or reject — Hotel Manager scoped to own hotels, Super Admin unrestricted
     public function updateStatus(Request $request, $id)
     {
         $request->validate(['status' => 'required|in:approved,rejected']);
+
+        $user   = $request->user();
         $review = Review::findOrFail($id);
+
+        if ($user->role !== 'super_admin') {
+            $admin    = Admin::where('user_id', $user->id)->first();
+            $ownsHotel = Hotel::where('admin_id', $admin->id)
+                ->where('id', $review->hotel_id)->exists();
+
+            if (!$ownsHotel) {
+                return response()->json(['message' => 'Unauthorized. This review does not belong to your hotel.'], 403);
+            }
+        }
+
         $review->update(['status' => $request->status]);
+
         return response()->json($review);
     }
 
-    // Delete a review
+    // Hotel Manager responds to an approved review (own hotels only)
+    public function respond(Request $request, $id)
+    {
+        $request->validate(['response' => 'required|string|max:1000']);
+
+        $user   = $request->user();
+        $review = Review::where('review_id', $id)->where('status', 'approved')->firstOrFail();
+
+        $admin     = Admin::where('user_id', $user->id)->first();
+        $ownsHotel = Hotel::where('admin_id', $admin->id)
+            ->where('id', $review->hotel_id)->exists();
+
+        if (!$ownsHotel) {
+            return response()->json(['message' => 'Unauthorized. This review does not belong to your hotel.'], 403);
+        }
+
+        $review->update(['manager_response' => $request->response]);
+
+        return response()->json($review);
+    }
+
+    // Delete — Super Admin only
     public function destroy($id)
     {
         Review::findOrFail($id)->delete();

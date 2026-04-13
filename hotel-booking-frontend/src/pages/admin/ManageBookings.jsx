@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { App, Modal } from 'antd';
-import { FaCheck, FaTimes, FaEye, FaSignInAlt, FaSignOutAlt, FaSearch } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaEye, FaSignInAlt, FaSignOutAlt, FaSearch, FaDownload } from 'react-icons/fa';
 import bookingService from '../../services/bookingService';
 import adminService from '../../services/adminService';
 import Pagination from '../../components/Pagination';
+import { downloadBookingPdf } from '../../utils/bookingPdf';
 import './ManageHotels.css';
 
 const STATUSES = ['', 'pending', 'reserved', 'confirmed', 'checked_in', 'checked_out', 'cancelled'];
@@ -186,7 +187,16 @@ const ManageBookings = () => {
             <Modal
                 open={!!selectedBooking || detailLoading}
                 onCancel={() => setSelectedBooking(null)}
-                footer={null}
+                footer={
+                    selectedBooking ? (
+                        <button
+                            onClick={() => downloadBookingPdf(selectedBooking, 'admin')}
+                            style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 18px', background:'#6C5CE7', color:'#fff', border:'none', borderRadius:8, fontWeight:600, fontSize:13, cursor:'pointer' }}
+                        >
+                            <FaDownload /> Download PDF
+                        </button>
+                    ) : null
+                }
                 title="Booking Details"
                 width={520}
             >

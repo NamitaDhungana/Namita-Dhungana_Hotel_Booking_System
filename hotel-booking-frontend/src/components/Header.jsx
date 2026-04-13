@@ -42,13 +42,14 @@ function Header() {
         <nav className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/hotels">Hotels</Link>
+          <Link to="/about">About</Link>
+          <Link to="/contact">Contact Us</Link>
           {isCustomer && <Link to="/my-bookings">My Bookings</Link>}
           {isAdmin && (
             <Link to={user.role === "super_admin" ? "/super-admin" : "/admin"} className="admin-link">
               Dashboard
             </Link>
           )}
-          {!user && <Link to="/contact">Contact</Link>}
         </nav>
 
         {user ? (

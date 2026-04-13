@@ -1,0 +1,112 @@
+.rs-page {
+  min-height: 100vh;
+  background: #f7f6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+.rs-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(108,92,231,0.10);
+  padding: 52px 48px;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+}
+
+.rs-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin: 0 auto 24px;
+}
+
+.rs-pending  { background: #fff8e1; }
+.rs-rejected { background: #fef2f2; font-size: 28px; color: #dc2626; }
+
+.rs-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+}
+
+.rs-sub {
+  font-size: 15px;
+  color: #666;
+  line-height: 1.7;
+  margin: 0 0 24px;
+}
+
+.rs-badge {
+  display: inline-block;
+  padding: 7px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 28px;
+}
+
+.rs-badge-pending  { background: #fff8e1; color: #b45309; }
+.rs-badge-rejected { background: #fef2f2; color: #dc2626; }
+
+.rs-notifications {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.rs-notifications h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+}
+
+.rs-notif {
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border-left: 4px solid;
+}
+
+.rs-notif-approved { background: #f0fdf4; border-color: #16a34a; }
+.rs-notif-rejected { background: #fef2f2; border-color: #dc2626; }
+
+.rs-notif strong { font-size: 14px; color: #1a1a2e; display: block; margin-bottom: 4px; }
+.rs-notif p      { font-size: 13px; color: #555; margin: 0 0 6px; line-height: 1.6; }
+.rs-notif-time   { font-size: 11px; color: #aaa; }
+
+.rs-info {
+  background: #f7f6ff;
+  border-radius: 10px;
+  padding: 18px 20px;
+  text-align: left;
+  margin-bottom: 28px;
+}
+
+.rs-info p {
+  font-size: 14px;
+  color: #555;
+  margin: 0 0 8px;
+  line-height: 1.6;
+}
+
+.rs-info p:last-child { margin: 0; }
+.rs-info a { color: #6C5CE7; text-decoration: none; }
+
+.rs-back {
+  display: inline-block;
+  color: #6C5CE7;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.rs-back:hover { text-decoration: underline; }

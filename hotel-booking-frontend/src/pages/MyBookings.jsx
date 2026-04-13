@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Modal, App } from "antd";
+import { FaDownload } from "react-icons/fa";
 import bookingService from "../services/bookingService";
 import Pagination from "../components/Pagination";
+import { downloadBookingPdf } from "../utils/bookingPdf";
 import "./MyBookings.css";
 
 // Only reserved (cash) bookings can be cancelled — confirmed = paid via Khalti = non-refundable
@@ -293,7 +295,16 @@ function MyBookings() {
       <Modal
         open={selectedGroup !== null}
         onCancel={() => setSelectedGroup(null)}
-        footer={null}
+        footer={
+          selectedGroup && selectedGroup.length > 0 ? (
+            <button
+              onClick={() => downloadBookingPdf(selectedGroup, 'customer')}
+              style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 18px', background:'#6C5CE7', color:'#fff', border:'none', borderRadius:8, fontWeight:600, fontSize:13, cursor:'pointer' }}
+            >
+              <FaDownload /> Download PDF
+            </button>
+          ) : null
+        }
         title={selectedGroup?.length > 1 ? `Booking Details (${selectedGroup.length} Rooms)` : "Booking Details"}
         width={560}
       >

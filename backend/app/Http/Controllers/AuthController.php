@@ -46,6 +46,18 @@ class AuthController extends Controller
         // Create admins table record for hotel managers
         if ($isAdmin) {
             \App\Models\Admin::create(['user_id' => $user->id]);
+
+            // Notify all super admins about new pending manager
+            $superAdmins = User::where('role', 'super_admin')->get();
+            foreach ($superAdmins as $sa) {
+                \App\Models\Notification::create([
+                    'user_id' => $sa->id,
+                    'type'    => 'new_manager_registration',
+                    'title'   => 'New Hotel Manager Registration',
+                    'message' => "{$user->name} ({$user->email}) has registered as a Hotel Manager and is awaiting your approval.",
+                    'is_read' => false,
+                ]);
+            }
         }
 
         return response()->json([

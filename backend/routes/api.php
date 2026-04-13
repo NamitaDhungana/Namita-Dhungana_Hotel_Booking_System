@@ -106,3 +106,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/advertisements/{id}/reject', [AdvertisementController::class, 'reject']);
     });
 });
+
+

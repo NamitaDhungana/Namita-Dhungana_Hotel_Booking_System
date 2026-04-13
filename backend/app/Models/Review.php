@@ -18,7 +18,12 @@ class Review extends Model
         'rating',
         'title',
         'comment',
-        'status'
+        'status',
+        'manager_response',
+        'responded_by',
+        'responded_at',
+        'moderated_by',
+        'moderated_at',
     ];
 
     public function user()

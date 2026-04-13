@@ -52,7 +52,7 @@ const AdminReviews = () => {
     const handleStatus = async (id, newStatus) => {
         try {
             await apiClient.put(`/admin/reviews/${id}/status`, { status: newStatus });
-            setReviews(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
+            setReviews(prev => prev.map(r => r.review_id === id ? { ...r, status: newStatus } : r));
             message.success(`Review ${newStatus}`);
         } catch {
             message.error('Failed to update status');
@@ -67,7 +67,7 @@ const AdminReviews = () => {
             onOk: async () => {
                 try {
                     await apiClient.delete(`/admin/reviews/${id}`);
-                    setReviews(prev => prev.filter(r => r.id !== id));
+                    setReviews(prev => prev.filter(r => r.review_id !== id));
                     message.success('Review deleted');
                 } catch {
                     message.error('Delete failed');
@@ -124,7 +124,7 @@ const AdminReviews = () => {
                             {reviews.length === 0 ? (
                                 <tr><td colSpan={6} style={{ textAlign: 'center', color: '#aaa', padding: 32 }}>No reviews found.</td></tr>
                             ) : reviews.map(review => (
-                                <tr key={review.id}>
+                                <tr key={review.review_id}>
                                     <td><FaUser style={{ marginRight: 8, color: '#888' }} />{review.user?.name}</td>
                                     <td>{review.hotel?.name}</td>
                                     <td>
@@ -143,18 +143,18 @@ const AdminReviews = () => {
                                     </td>
                                     <td className="actions">
                                         {review.status !== 'approved' && (
-                                            <button title="Approve" onClick={() => handleStatus(review.id, 'approved')}
+                                            <button title="Approve" onClick={() => handleStatus(review.review_id, 'approved')}
                                                 style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', marginRight: 6 }}>
                                                 <FaCheck />
                                             </button>
                                         )}
                                         {review.status !== 'rejected' && (
-                                            <button title="Reject" onClick={() => handleStatus(review.id, 'rejected')}
+                                            <button title="Reject" onClick={() => handleStatus(review.review_id, 'rejected')}
                                                 style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', marginRight: 6 }}>
                                                 <FaTimes />
                                             </button>
                                         )}
-                                        <button className="delete-icon" title="Delete" onClick={() => handleDelete(review.id)}>
+                                        <button title="Delete" onClick={() => handleDelete(review.review_id)} style={{ background: `#dc2626`, color: `#fff`, border: `none`, borderRadius: 6, padding: `5px 10px`, cursor: `pointer` }}>
                                             <FaTrash />
                                         </button>
                                     </td>

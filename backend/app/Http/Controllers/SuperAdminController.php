@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\RegistrationApprovedMail;
+use App\Mail\RegistrationRejectedMail;
 
 class SuperAdminController extends Controller
 {
@@ -89,6 +93,24 @@ class SuperAdminController extends Controller
             ]);
         }
 
+        // Send in-app notification
+        if ($user->role === 'admin') {
+            Notification::create([
+                'user_id' => $user->id,
+                'type'    => 'registration_approved',
+                'title'   => 'Registration Approved',
+                'message' => 'Congratulations! Your Hotel Manager registration has been approved. You can now access your dashboard.',
+                'is_read' => false,
+            ]);
+
+            // Send email
+            try {
+                Mail::to($user->email)->send(new RegistrationApprovedMail($user));
+            } catch (\Exception $e) {
+                \Log::error('Approval email failed: ' . $e->getMessage());
+            }
+        }
+
         return response()->json([
             'message' => 'User approved successfully',
             'user' => $user
@@ -103,6 +125,24 @@ class SuperAdminController extends Controller
             'is_approved' => false,
             'registration_status' => 'rejected'
         ]);
+
+        // Send in-app notification
+        if ($user->role === 'admin') {
+            Notification::create([
+                'user_id' => $user->id,
+                'type'    => 'registration_rejected',
+                'title'   => 'Registration Not Approved',
+                'message' => 'Unfortunately, your Hotel Manager registration has not been approved. Please contact support for more information.',
+                'is_read' => false,
+            ]);
+
+            // Send email
+            try {
+                Mail::to($user->email)->send(new RegistrationRejectedMail($user));
+            } catch (\Exception $e) {
+                \Log::error('Rejection email failed: ' . $e->getMessage());
+            }
+        }
 
         return response()->json([
             'message' => 'User registration rejected',

@@ -149,6 +149,15 @@ class PaymentController extends Controller
                             Mail::to($hotelAdmin->email)->send(
                                 new \App\Mail\HotelBookingNotificationMail($confirmedBooking, $bookingUser, $confirmedBooking->hotel)
                             );
+                            // In-app notification to hotel manager
+                            \App\Models\Notification::create([
+                                'user_id' => $hotelAdmin->id,
+                                'type'    => 'new_booking',
+                                'title'   => 'New Booking Confirmed',
+                                'message' => "New booking from {$bookingUser->name} for {$confirmedBooking->hotel->name}. Check-in: {$confirmedBooking->check_in_date}, Check-out: {$confirmedBooking->check_out_date}. Ref: {$confirmedBooking->booking_reference}.",
+                                'is_read' => false,
+                                'related_booking_id' => $confirmedBooking->id,
+                            ]);
                         }
                     }
                 } catch (\Exception $mailEx) {

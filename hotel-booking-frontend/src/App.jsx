@@ -27,6 +27,7 @@ import AdminReviews from "./pages/admin/AdminReviews";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageUsers from "./pages/admin/ManageUsers";
 import ManageFacilities from "./pages/admin/ManageFacilities";
+import AdminNotifications from "./pages/admin/AdminNotifications";
 import NotificationCenter from "./components/NotificationCenter";
 import KhaltiReturn from "./pages/KhaltiReturn";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -42,6 +43,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import FAQ from "./pages/FAQ";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import RegistrationStatus from "./pages/RegistrationStatus";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const user = authService.getCurrentUser();
@@ -120,6 +122,7 @@ function App() {
               <Route path="bookings" element={<ManageBookings />} />
               <Route path="reviews" element={<AdminReviews />} />
               <Route path="advertisements" element={<ManageAdvertisements />} />
+              <Route path="notifications" element={<AdminNotifications />} />
             </Route>
 
             {/* Super Admin routes */}
@@ -139,11 +142,13 @@ function App() {
               <Route path="reviews" element={<AdminReviews />} />
               <Route path="contact-queries" element={<ContactQueries />} />
               <Route path="advertisements" element={<ManageAds />} />
+              <Route path="notifications" element={<AdminNotifications />} />
             </Route>
 
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/registration-status" element={<RegistrationStatus />} />
           </Routes>
         </main>
         </BookingCartProvider>

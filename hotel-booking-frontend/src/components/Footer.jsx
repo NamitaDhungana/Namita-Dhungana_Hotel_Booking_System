@@ -20,15 +20,12 @@ function Footer() {
         { name: "Home", path: "/" },
         { name: "About", path: "/about" },
         { name: "Hotels", path: "/hotels" },
-        { name: "Booking", path: "/booking" },
-        { name: "Services", path: "/services" },
         { name: "Contact", path: "/contact" },
       ],
     },
     {
       title: "Support",
       links: [
-        { name: "Contact Us", path: "/contact" },
         { name: "FAQ", path: "/faq" },
         { name: "Privacy Policies", path: "/privacy-policies" },
         { name: "Terms of Services", path: "/terms-of-services" },
