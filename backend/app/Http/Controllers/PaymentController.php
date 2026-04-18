@@ -136,28 +136,42 @@ class PaymentController extends Controller
 
                 // Send booking confirmation email after successful payment
                 try {
-                    $confirmedBooking = Booking::with(['hotel.admin.user', 'payment'])->find($payment->booking_id);
-                    $bookingUser = User::find($confirmedBooking->user_id);
-                    if ($confirmedBooking && $bookingUser) {
-                        // Email to customer
-                        Mail::to($bookingUser->email)->send(
-                            new BookingConfirmationMail($confirmedBooking, $bookingUser, $confirmedBooking->hotel)
-                        );
-                        // Email to hotel admin
-                        $hotelAdmin = $confirmedBooking->hotel?->admin?->user;
-                        if ($hotelAdmin && $hotelAdmin->email) {
-                            Mail::to($hotelAdmin->email)->send(
-                                new \App\Mail\HotelBookingNotificationMail($confirmedBooking, $bookingUser, $confirmedBooking->hotel)
+                    $anchorBookingForMail = Booking::with(['hotel.admin.user', 'payment'])->find($payment->booking_id);
+                    $bookingUser = User::find($anchorBookingForMail->user_id);
+
+                    if ($anchorBookingForMail && $bookingUser) {
+                        // Collect all bookings in the group (anchor + siblings)
+                        $allGroupBookings = collect([$anchorBookingForMail]);
+                        if ($anchorBookingForMail->group_booking_reference) {
+                            $siblingBookings = Booking::with(['hotel.admin.user', 'payment'])
+                                ->where('group_booking_reference', $anchorBookingForMail->group_booking_reference)
+                                ->where('id', '!=', $anchorBookingForMail->id)
+                                ->get();
+                            $allGroupBookings = $allGroupBookings->merge($siblingBookings);
+                        }
+
+                        // Send one confirmation email per room booking to the customer
+                        foreach ($allGroupBookings as $groupBooking) {
+                            Mail::to($bookingUser->email)->send(
+                                new BookingConfirmationMail($groupBooking, $bookingUser, $groupBooking->hotel)
                             );
-                            // In-app notification to hotel manager
-                            \App\Models\Notification::create([
-                                'user_id' => $hotelAdmin->id,
-                                'type'    => 'new_booking',
-                                'title'   => 'New Booking Confirmed',
-                                'message' => "New booking from {$bookingUser->name} for {$confirmedBooking->hotel->name}. Check-in: {$confirmedBooking->check_in_date}, Check-out: {$confirmedBooking->check_out_date}. Ref: {$confirmedBooking->booking_reference}.",
-                                'is_read' => false,
-                                'related_booking_id' => $confirmedBooking->id,
-                            ]);
+
+                            // Notify the hotel admin for each booking
+                            $hotelAdmin = $groupBooking->hotel?->admin?->user;
+                            if ($hotelAdmin && $hotelAdmin->email) {
+                                Mail::to($hotelAdmin->email)->send(
+                                    new \App\Mail\HotelBookingNotificationMail($groupBooking, $bookingUser, $groupBooking->hotel)
+                                );
+                                // In-app notification to hotel manager
+                                \App\Models\Notification::create([
+                                    'user_id' => $hotelAdmin->id,
+                                    'type'    => 'new_booking',
+                                    'title'   => 'New Booking Confirmed',
+                                    'message' => "New booking from {$bookingUser->name} for {$groupBooking->hotel->name}. Check-in: {$groupBooking->check_in_date}, Check-out: {$groupBooking->check_out_date}. Ref: {$groupBooking->booking_reference}.",
+                                    'is_read' => false,
+                                    'related_booking_id' => $groupBooking->id,
+                                ]);
+                            }
                         }
                     }
                 } catch (\Exception $mailEx) {

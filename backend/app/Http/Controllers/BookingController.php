@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BookingConfirmationMail;
+use App\Mail\BookingCancellationMail;
 use App\Mail\CheckInMail;
 use App\Mail\CheckOutMail;
 use App\Services\KhaltiService;
@@ -403,6 +404,19 @@ class BookingController extends Controller
             'cancelled_at'        => now(),
             'cancellation_reason' => $request->input('reason'),
         ]);
+
+        // Send cancellation confirmation email to the customer
+        try {
+            $booking->load('hotel');
+            $user = $request->user();
+            if ($booking->hotel) {
+                Mail::to($user->email)->send(
+                    new BookingCancellationMail($booking->fresh(), $user, $booking->hotel)
+                );
+            }
+        } catch (\Exception $mailEx) {
+            \Illuminate\Support\Facades\Log::error('Booking cancellation mail failed: ' . $mailEx->getMessage());
+        }
 
         return response()->json([
             'message'  => 'Your booking has been successfully canceled.',
