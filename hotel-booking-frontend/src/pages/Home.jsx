@@ -273,7 +273,7 @@ function Home() {
           {loading
             ? [1,2,3,4].map(i => <div key={i} className="category-card luxury" style={{ opacity: 0.4 }} />)
             : roomTypes.length > 0
-              ? roomTypes.slice(0, 6).map((rt, i) => (
+              ? roomTypes.slice(0, 4).map((rt, i) => (
                 <Link
                   to={`/hotels/${rt.hotel_id}`}
                   key={rt.id}
