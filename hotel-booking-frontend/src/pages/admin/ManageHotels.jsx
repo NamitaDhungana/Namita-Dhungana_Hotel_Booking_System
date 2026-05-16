@@ -25,6 +25,7 @@ const ManageHotels = () => {
         property_type: 'hotel',
         latitude: '',
         longitude: '',
+        status: 'active',
     });
 
     useEffect(() => {
@@ -99,6 +100,7 @@ const ManageHotels = () => {
             property_type: hotel.property_type || 'hotel',
             latitude: hotel.latitude || '',
             longitude: hotel.longitude || '',
+            status: hotel.status || 'active',
         });
         setShowModal(true);
     };
@@ -120,7 +122,7 @@ const ManageHotels = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <button className="add-btn" onClick={() => { setShowModal(true); setEditingHotel(null); setFormData({ name: '', address: '', city: '', description: '', rating: 0, featured_image: '', property_type: 'hotel', latitude: '', longitude: '' }); }}>
+                <button className="add-btn" onClick={() => { setShowModal(true); setEditingHotel(null); setFormData({ name: '', address: '', city: '', description: '', rating: 0, featured_image: '', property_type: 'hotel', latitude: '', longitude: '', status: 'active' }); }}>
                     <FaPlus /> Add New Hotel
                 </button>
             </div>
@@ -132,6 +134,7 @@ const ManageHotels = () => {
                             <th>Image</th>
                             <th>Name</th>
                             <th>City</th>
+                            <th>Status</th>
                             <th>Rating</th>
                             <th>Actions</th>
                         </tr>
@@ -142,6 +145,11 @@ const ManageHotels = () => {
                                 <td><img src={hotel.featured_image} alt={hotel.name} className="table-thumb" /></td>
                                 <td>{hotel.name}</td>
                                 <td>{hotel.city}</td>
+                                <td>
+                                    <span className={`status-badge status-${hotel.status || 'active'}`}>
+                                        {(hotel.status || 'active').charAt(0).toUpperCase() + (hotel.status || 'active').slice(1)}
+                                    </span>
+                                </td>
                                 <td>{hotel.rating} / 5</td>
                                 <td className="actions">
                                     <div className="actions-inner">
@@ -224,6 +232,18 @@ const ManageHotels = () => {
                                         onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
                                     />
                                 </div>
+                            </div>
+                            <div className="form-group">
+                                <label>Status</label>
+                                <select
+                                    value={formData.status}
+                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                    required
+                                >
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="pending">Pending</option>
+                                </select>
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>

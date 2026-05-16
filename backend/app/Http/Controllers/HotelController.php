@@ -12,6 +12,9 @@ class HotelController extends Controller
     {
         $query = Hotel::query();
 
+        // Only show active hotels in public listing
+        $query->where('status', 'active');
+
         if ($request->has('city')) {
             $query->where('city', 'like', '%' . $request->city . '%');
         }
@@ -83,6 +86,7 @@ class HotelController extends Controller
             'city' => 'required|string',
             'property_type' => 'nullable|string',
             'description' => 'nullable|string',
+            'status' => 'nullable|in:active,inactive,pending',
         ]);
 
         $admin = \App\Models\Admin::where('user_id', $request->user()->id)->first();
@@ -93,7 +97,11 @@ class HotelController extends Controller
 
         $data = $request->all();
         $data['admin_id'] = $admin->id;
-        $data['status'] = 'active'; // Set default status
+        
+        // Set default status if not provided
+        if (!isset($data['status'])) {
+            $data['status'] = 'active';
+        }
 
         $hotel = Hotel::create($data);
 
@@ -115,6 +123,11 @@ class HotelController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
         }
+
+        // Validate status if provided
+        $request->validate([
+            'status' => 'nullable|in:active,inactive,pending',
+        ]);
 
         $hotel->update($request->all());
         return response()->json($hotel);
