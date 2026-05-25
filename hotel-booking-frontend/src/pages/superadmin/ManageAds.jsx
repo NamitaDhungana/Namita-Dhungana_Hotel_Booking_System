@@ -19,8 +19,14 @@ export default function ManageAds() {
   const fetchAds = async () => {
     try {
       const res = await apiClient.get("/super-admin/advertisements");
+      console.log("Fetched ads:", res.data);
+      console.log("First ad banner_image:", res.data[0]?.banner_image);
+      console.log("VITE_API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
+      const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
+      console.log("Base URL for images:", baseUrl);
       setAds(res.data);
-    } catch {
+    } catch (error) {
+      console.error("Failed to load advertisements:", error);
       setMsg("Failed to load advertisements.");
     } finally {
       setLoading(false);
@@ -93,12 +99,22 @@ export default function ManageAds() {
         <p style={{ color: "#888" }}>No advertisements found.</p>
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
-          {filtered.map((ad) => (
+          {filtered.map((ad) => {
+            const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
+            const imageUrl = `${baseUrl}/storage/${ad.banner_image}`;
+            console.log("Rendering image URL:", imageUrl);
+            return (
             <div key={ad.id} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 16, display: "flex", gap: 16, alignItems: "flex-start" }}>
               <img
-                src={`http://localhost:8000/storage/${ad.banner_image}`}
+                src={imageUrl}
                 alt={ad.title}
                 style={{ width: 200, height: 100, objectFit: "cover", borderRadius: 8, flexShrink: 0 }}
+                onError={(e) => {
+                  console.error("Image failed to load:", e.target.src);
+                  e.target.onerror = null;
+                  e.target.src = 'https://via.placeholder.com/200x100?text=Image+Not+Found';
+                }}
+                onLoad={() => console.log("Image loaded successfully:", ad.banner_image)}
               />
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -136,7 +152,8 @@ export default function ManageAds() {
                 )}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -171,3 +188,5 @@ export default function ManageAds() {
     </div>
   );
 }
+
+

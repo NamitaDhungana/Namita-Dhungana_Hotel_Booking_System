@@ -11,12 +11,12 @@ import {
 import adminService from '../../services/adminService';
 import authService from '../../services/authService';
 
-/* ── Colour palettes ─────────────────────────────────────── */
+/*  Colour palettes  */
 const ADMIN_ACCENT   = '#6366f1';
 const SUPER_ACCENT   = '#d97706';
 const PIE_COLORS     = ['#6366f1', '#10b981', '#f59e0b', '#64748b', '#f43f5e'];
 
-/* ── Helpers ─────────────────────────────────────────────── */
+/*  Helpers  */
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
 const StatusBadge = ({ status }) => (
@@ -42,7 +42,7 @@ const CustomTooltip = ({ active, payload, label, isCurrency }) => {
     );
 };
 
-/* ── Main Component ──────────────────────────────────────── */
+/*  Main Component */
 const AdminDashboard = () => {
     const user = authService.getCurrentUser();
     const isSuperAdmin = user?.role === 'super_admin';
@@ -124,7 +124,7 @@ const AdminDashboard = () => {
         <div>
             {/* Welcome Banner */}
             <div className={`dashboard-welcome${isSuperAdmin ? ' super-admin-welcome' : ''}`}>
-                <h2>{isSuperAdmin ? `Welcome back, ${user?.name ?? 'Super Admin'}` : `Welcome back, ${user?.name ?? 'Admin'}`}</h2>
+                <h2>{isSuperAdmin ? `Welcome back, ${user?.name ?? 'Admin'}` : `Welcome back, ${user?.name ?? 'Admin'}`}</h2>
                 <p>
                     {isSuperAdmin
                         ? 'Full system access — manage all hotels, users, bookings, and reviews.'

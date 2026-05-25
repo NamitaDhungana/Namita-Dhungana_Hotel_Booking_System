@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import "./Header.css";
 import authService from "../services/authService";
 import settingsService from "../services/settingsService";
-
 function Header() {
   const navigate = useNavigate();
   const [user, setUser] = useState(authService.getCurrentUser());
@@ -37,18 +36,20 @@ function Header() {
   return (
     <header className="header">
       <div className="header-container">
-        <Link to="/" className="logo">{siteTitle}</Link>
+        <Link to="/" className="logo">
+          {siteTitle}
+        </Link>
 
         <nav className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/hotels">Hotels</Link>
           <Link to="/about">About</Link>
-          <Link to="/contact">Contact Us</Link>
+          <Link to="/contact">Contact</Link>
           {isCustomer && <Link to="/my-bookings">My Bookings</Link>}
           {isAdmin && (
             <Link to={user.role === "super_admin" ? "/super-admin" : "/admin"} className="admin-link">
               Dashboard
-            </Link>
+            </Link> 
           )}
         </nav>
 

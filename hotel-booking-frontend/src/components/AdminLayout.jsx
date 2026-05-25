@@ -41,8 +41,8 @@ const AdminLayout = ({ role }) => {
     const [unreadCount, setUnreadCount] = useState(0);
 
     const menuItems = isSuperAdmin ? SUPER_ADMIN_MENU : ADMIN_MENU;
-    const portalLabel = isSuperAdmin ? 'Super Admin' : 'Admin Portal';
-    const welcomeLabel = isSuperAdmin ? `Welcome, ${user?.name || 'Super Admin'}` : `Welcome, ${user?.name || 'Admin'}`;
+    const portalLabel = isSuperAdmin ? 'Super Admin' : 'Admin';
+    const welcomeLabel = isSuperAdmin ? `Welcome, ${user?.name || 'Admin'}` : `Welcome, ${user?.name || 'Admin'}`;
 
     // Poll unread notification count every 30s
     useEffect(() => {
@@ -114,7 +114,7 @@ const AdminLayout = ({ role }) => {
                     </div>
                     <div className="user-info">
                         <span className={`role-badge ${isSuperAdmin ? 'badge-super' : 'badge-admin'}`}>
-                            {isSuperAdmin ? 'Super Admin' : 'Admin'}
+                            {isSuperAdmin ? 'Admin' : 'Admin'}
                         </span>
                         <span className="user-name">{welcomeLabel}</span>
                         <button onClick={handleLogout} className="logout-btn">

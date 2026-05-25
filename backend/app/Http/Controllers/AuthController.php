@@ -35,7 +35,7 @@ class AuthController extends Controller
             'address' => $request->address,
             'role' => $request->role,
             'pan_number' => $request->pan_number,
-            'is_approved' => $isAdmin ? false : true,
+            'is_approved' => $isAdmin ? false : true, 
             'registration_status' => $isAdmin ? 'pending' : 'active',
             'email_verification_code' => $code,
             'email_verification_expires_at' => now()->addMinutes(10),
@@ -136,7 +136,7 @@ class AuthController extends Controller
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
-
+  
         // Check email verification
         if (! $user->hasVerifiedEmail()) {
             return response()->json([

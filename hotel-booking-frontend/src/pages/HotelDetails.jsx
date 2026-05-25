@@ -333,7 +333,7 @@ function HotelDetails() {
                                                                     }
                                                                 }}
                                                             >
-                                                                {isInCart(rt.id) ? '✓ In Cart' : '+ Add to Cart'}
+                                                                {isInCart(rt.id) ? '✓ In Cart' : '+ Add'}
                                                             </button>
                                                             {cartError?.roomTypeId === rt.id && (
                                                                 <div className="cart-error-msg">

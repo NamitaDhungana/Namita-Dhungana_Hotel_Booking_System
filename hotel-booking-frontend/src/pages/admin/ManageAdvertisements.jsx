@@ -33,8 +33,11 @@ export default function ManageAdvertisements() {
   const fetchAds = async () => {
     try {
       const res = await apiClient.get("/admin/advertisements");
+      console.log("Admin fetched ads:", res.data);
+      console.log("First ad banner_image:", res.data[0]?.banner_image);
       setAds(res.data);
-    } catch {
+    } catch (error) {
+      console.error("Failed to load advertisements:", error);
       setError("Failed to load advertisements.");
     } finally {
       setLoading(false);
@@ -202,12 +205,22 @@ export default function ManageAdvertisements() {
         <p style={{ color: "#888" }}>No advertisements yet. Submit one above.</p>
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
-          {ads.map((ad) => (
+          {ads.map((ad) => {
+            const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
+            const imageUrl = `${baseUrl}/storage/${ad.banner_image}`;
+            console.log("Admin rendering image URL:", imageUrl);
+            return (
             <div key={ad.id} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 16, display: "flex", gap: 16, alignItems: "flex-start" }}>
               <img
-                src={`http://localhost:8000/storage/${ad.banner_image}`}
+                src={imageUrl}
                 alt={ad.title}
                 style={{ width: 180, height: 90, objectFit: "cover", borderRadius: 8, flexShrink: 0 }}
+                onError={(e) => {
+                  console.error("Admin image failed to load:", e.target.src);
+                  e.target.onerror = null;
+                  e.target.src = 'https://via.placeholder.com/180x90?text=Image+Not+Found';
+                }}
+                onLoad={() => console.log("Admin image loaded successfully:", ad.banner_image)}
               />
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
@@ -241,7 +254,8 @@ export default function ManageAdvertisements() {
                 </button>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

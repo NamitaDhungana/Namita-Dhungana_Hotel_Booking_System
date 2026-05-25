@@ -29,17 +29,17 @@ const values = [
 const team = [
   {
     name: "Alexandra Moore",
-    role: "Chief Executive Officer",
+    role: "CEO",
     img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop",
   },
   {
     name: "James Harrington",
-    role: "Chief Operations Officer",
+    role: "Hotel Owner",
     img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop",
   },
   {
     name: "Priya Sharma",
-    role: "Head of Guest Experience",
+    role: "Manager",
     img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop",
   },
 ];

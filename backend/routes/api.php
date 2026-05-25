@@ -88,7 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/advertisements/{id}', [AdvertisementController::class, 'destroy']);
     });
 
-    Route::middleware('role:super_admin')->prefix('super-admin')->group(function () {
+    Route::middleware('role:admin,super_admin')->prefix('super-admin')->group(function () {
         Route::get('/users', [SuperAdminController::class, 'getUsers']);
         Route::get('/pending-managers', [SuperAdminController::class, 'getPendingManagers']);
         Route::post('/users/{id}/approve', [SuperAdminController::class, 'approveUser']);

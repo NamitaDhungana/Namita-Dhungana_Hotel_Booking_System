@@ -38,7 +38,7 @@ function Contact() {
     : [];
 
   return (
-    <div className="section" style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div className="section" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 40px' }}>
       <h1 className="section-title">Get In Touch</h1>
       <p className="section-subtitle">Have questions? We'd love to hear from you.</p>
 

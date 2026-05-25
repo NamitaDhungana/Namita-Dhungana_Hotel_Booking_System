@@ -140,7 +140,7 @@ class BookingController extends Controller
                         'payment_method' => 'khalti',
                         'payment_error'  => $e->getMessage(),
                     ], 201);
-                }
+                } 
             }
 
             return response()->json($booking, 201);
